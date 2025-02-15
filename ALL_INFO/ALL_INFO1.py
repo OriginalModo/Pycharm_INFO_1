@@ -6423,13 +6423,20 @@ with open('my_testik.txt', mode='r') as file: # -> режимы:   w, w+, wb, wb
 
  -- squash коммитов --
 
- git bash
+ git bash  (команды linux)     СЛЭШИ в ОС Linux  //   в Windows \\
 
- переходим в нужную директорию  	   -  cd c://W_Project/ae-lcp
+ переходим в нужную директорию  	   -  cd c://W_Project/ae-lcp           в Windows   cd C:\W_Project\ae-lcp
  убедимся что находимся в нужной ветку -  git status
  посмотреть сколько коммитов    	   -  git log
  сколько коммитов нужно склеить        -  git rebase HEAD~2  (2 - это число коммитов которые нужно убрать)
  затираем историю   				   -  git push --force
+
+
+ Git Bash, который эмулирует среду Unix, команды и синтаксис отличаются от командной строки Windows
+
+ В Linux и Git Bash используются прямые слэши /.
+
+ В Windows используются обратные слэши \.
 
 
 

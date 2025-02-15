@@ -2940,6 +2940,61 @@ if __name__ == '__main__':
 
 
 
+# Блок Задач на РЕКУРСИЮ   Кстати если внутри функций назвать list  - Всё будет ОК!
+# Затеняются только внутри функции built-in имена
+
+lst = [1, 2, 3]
+
+# 1) Напишите рекурсивную функцию sum
+
+
+
+
+# 2) Напишите рекурсивную функцию count для подсчета элементов в списке.
+
+
+
+
+# 3) Через РЕКУРСИЮ max Найдите наибольшее число в списке.
+
+
+
+
+
+
+# Ответы Блок Задач на РЕКУРСИЮ   если внутри функций назвать list  - Всё будет ОК!
+# Затеняются только внутри функции built-in имена
+"""
+lst = [1, 2, 3]
+
+# 1) Напишите РЕКУРСИВНУЮ функцию sum
+def sum(list):
+    if list == []:
+        return 0
+    return list[0] + sum(list[1:])
+
+print(sum(lst))  # -> 6
+
+# 2) Напишите РЕКУРСИВНУЮ функцию count для подсчета элементов в списке.
+def count(list):
+    if list == []:
+        return 0
+    return 1 + count(list[1:])
+
+print(count(lst))  # -> 3
+
+# 3) Через РЕКУРСИВНУЮ функцию max Найдите наибольшее число в списке.
+def max(list):
+    if len(list) == 2:
+        return list[0] if list[0] > list[1] else list[1]
+    sub_max = max(list[1:])
+    return list[0] if list[0] > sub_max else sub_max
+
+print(max(lst))   # -> 3
+"""
+
+
+
 
 # Использовать  from memory_profiler import memory_usage   и   from pympler.asizeof import asizeof
 
@@ -5498,7 +5553,6 @@ target = 9
 
 
 
-
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5598,7 +5652,7 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 
 # Задача с собеседования
-# Написать Quick Sort/Быстрая сортировка
+# Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
 
 
 
@@ -5606,7 +5660,7 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 
 
-# Реализация Quick Sort/Быстрая сортировка
+# Реализация Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
 """
 # Вариант 1: Опорный элемент — последний элемент массива
 def quick_sort(arr):
@@ -5697,7 +5751,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -5725,7 +5778,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
-
 
 
 
@@ -5761,8 +5813,6 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 
 
-
-
 # 3) Сортировка вставками (Insertion Sort)    Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
 """
 def insertion_sort(arr):
@@ -5784,10 +5834,8 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 
 
-# 4) Написать Быстрая сортировка (Quick Sort)
+# 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
-
-
 
 
 
@@ -5839,7 +5887,6 @@ def quick_sort(lst):
 
 
 
-
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -5876,8 +5923,6 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 # 6) Написать Пирамидальная сортировка (Heap Sort)
 # Время: O(n log n) во всех случаях.  Пространство: O(1)
-
-
 
 
 
@@ -5995,7 +6040,6 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
-
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6023,7 +6067,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
 
 
 
@@ -6068,7 +6111,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 

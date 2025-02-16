@@ -5174,7 +5174,15 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  countdown(3)  # -> 3 2 1
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Можно добавлять также элементы как и в list
 
+ from collections import deque
+
+ a_deque = deque([1, 2])
+ print(type(a_deque))  # -> <class 'collections.deque'>
+ a_deque += [3, 4]
+ a_deque.extend([5, 6])
+ print(a_deque)        # -> deque([1, 2, 3, 4, 5, 6])
  -----------------------------------------------------------------------------------------------------------------------
 
 

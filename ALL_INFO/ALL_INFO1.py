@@ -16966,6 +16966,10 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
 
  Win + вверх/вниз   - Разбить экран на половину
 
+ Win + L            - Заблокировать экран
+
+ Win + В            - Свернуть все окна
+
  Classic UI  - Plugin для Pycharm pro  (Чтобы вернуть старый интерфейс)
 
  Black — это автоматический форматировщик кода для Python.  pip install black

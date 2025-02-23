@@ -1093,9 +1093,9 @@ ________________________________________________________________________________
 
 
  Принципы написания кода
- DRY - don't repeat yourself  - не повторяйся
- YAGNI - You aren't gonna need it  - это не понадобится
- KISS - Keep it simple, stupid  - будь проще
+ DRY - don't repeat yourself             - не повторяйся
+ YAGNI - You aren't gonna need it        - это не понадобится
+ KISS - Keep it simple, stupid           - будь проще
  POLA - Principle Of Least Astonishment  - не удивляй пользователя
  EAFP - Easier to Ask for Forgiveness than Permission  - проще извиниться, чем просить разрешения (сначала действуй)
  EAFP - Оптимистичное программирование   Optimistic Programming  'Python Way'

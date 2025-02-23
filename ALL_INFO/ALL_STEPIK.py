@@ -1012,6 +1012,26 @@ ________________________________________________________________________________
  должны разгладиться в один результирующий список'''
 
 
+ # Вариант который НЕ подвержен ограничению рекурсии Python  (Книга Python. Исчерпывающее руководство Дэвид Бизли)
+
+ def flatten(items):
+     stack = [ iter(items) ]
+     while stack:
+         try:
+             item = next(stack[-1])
+             if isinstance(item, list):
+                 stack.append(iter(item))
+             else:
+                 yield item
+         except StopIteration:
+             stack.pop()
+
+ res = [1, 2, [2, 3, [4, 4]]]
+
+ print([*flatten(res)])      # -> [1, 2, 2, 3, 4, 4]
+ print(list(flatten(res)))   # -> [1, 2, 2, 3, 4, 4]
+
+
  # Классный вариант  из Книги: Python Книга рецептов   Дэвид Бизли
 
  from collections.abc import Iterable
@@ -5513,28 +5533,280 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(next(gen))  # Вывод: "Продолжение генератора", затем 2
  -----------------------------------------------------------------------------------------------------------------------
 
+ # ОПАСНОСТЬ НАСЛЕДОВАНИЯ ОТ ВСТРОЕННЫХ ТИПОВ
+ # Проблема в том, что встроенные типы Python не реализуются как нормальные классы Python — они написаны на C.  <-----
+ # Обычно субклассирования встроенных типов лучше избегать.                                                     <-----
 
+ # принудительно использовать ключи в верхнем регистре, можно переопределить метод __setitem__() так:
+ class udict(dict):
+     def __setitem__(self, key, value):
+         super().__setitem__(key.upper(), value)
+
+ # И на первый взгляд такое решение работает
+ u = udict()
+ u['name'] = 'Guido'
+ u['number'] = 37
+ print(u)  # -> {'NAME': 'Guido', 'NUMBER': 37}
+
+
+ # И теперь начинает казаться, что он вообще НЕ работает
+ # Проблема в том, что встроенные типы Python не реализуются как нормальные классы Python — они написаны на C.  <-----
+ u = udict(name='Guido', number=37)
+ print(u)  # -> {'name': 'Guido', 'number': 37}
+
+ u.update(color='blue')
+ print(u)  # -> {'name': 'Guido', 'number': 37, 'color': 'blue'}
+
+
+
+ # В модуле collections есть специальные классы UserDict, UserList и UserString.
+ # Они могут использоваться для создания БЕЗОПАСНЫХ субклассов dict, list и str.
+
+ from collections import UserDict
+ class udict(UserDict):
+     def __setitem__(self, key, value):
+         super().__setitem__(key.upper(), value)
+
+ # Всё работает как надо!!!
+ u = udict()
+ u['name'] = 'Guido'
+ u['number'] = 37
+ print(u)  # -> {'NAME': 'Guido', 'NUMBER': 37}
+
+ u = udict(name='Guido', number=37)
+ print(u)  # -> {'NAME': 'Guido', 'NUMBER': 37}
+
+ u.update(color='blue')
+ print(u)  # -> {'NAME': 'Guido', 'NUMBER': 37, 'COLOR': 'blue'}
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Учтите: преобразование имен не выполняется в таких функциях, как
+ # getattr(), hasattr(), setattr() или delattr(), где имя атрибута задается
+ # в виде строки. В таких функциях для обращения к атрибуту придется использовать преобразованное имя вида '_Класс__имя'.
 
+ class MyClass:
+     def __init__(self):
+         self.__private_attr = "Я приватный атрибут"
+
+     def get_private_attr(self):
+         return self.__private_attr
+
+ obj = MyClass()
+
+ # Попытка доступа к приватному атрибуту напрямую вызовет ошибку
+ # print(obj.__private_attr)  # AttributeError
+
+ # Правильный способ доступа через метод
+ print(obj.get_private_attr())  # Вывод: Я приватный атрибут
+
+ # Использование getattr для доступа к приватному атрибуту
+ print(getattr(obj, '_MyClass__private_attr'))  # Вывод: Я приватный атрибут
  -----------------------------------------------------------------------------------------------------------------------
 
+ # ДИСПЕТЧЕРИЗАЦИЯ ВЫЗОВОВ В ЗАВИСИМОСТИ ОТ ТИПА
 
+
+ # Такие большие блоки if-elif-else неэлегантны и ненадежны       # Элегантное решение с использованием словаря
+
+ class Duck:                                                      class Duck:
+     pass                                                             pass
+
+ class Trombonist:                                                class Trombonist:
+     pass                                                             pass
+
+ class Cyclist:                                                   class Cyclist:
+     pass                                                             pass
+
+ def handle_duck(obj):                                            def handle_duck(obj):
+     print("Handling a duck.")                                        print("Handling a duck.")
+
+ def handle_trombonist(obj):                                      def handle_trombonist(obj):
+     print("Handling a trombonist.")                                  print("Handling a trombonist.")
+
+ def handle_cyclist(obj):                                         def handle_cyclist(obj):
+     print("Handling a cyclist.")                                     print("Handling a cyclist.")
+
+ def process(obj):                                                # Словарь диспетчеризации
+     if isinstance(obj, Duck):                                    handlers = {
+         handle_duck(obj)                                             Duck: handle_duck,
+     elif isinstance(obj, Trombonist):                                Trombonist: handle_trombonist,
+         handle_trombonist(obj)                                       Cyclist: handle_cyclist,
+     elif isinstance(obj, Cyclist):                               }
+         handle_cyclist(obj)
+     else:                                                        def dispatch(obj):
+         raise RuntimeError('Unknown object')                         func = handlers.get(type(obj))
+                                                                      if func:
+                                                                          return func(obj)
+                                                                      else:
+                                                                          raise RuntimeError(f'No handler for {obj}')
+
+ # Пример вызова                                                  # Пример вызова
+ process(Duck())        # Handling a duck.                        dispatch(Duck())        # Handling a duck.
+ process(Trombonist())  # Handling a trombonist.                  dispatch(Trombonist())  # Handling a trombonist.
+ process(Cyclist())     # Handling a cyclist.                     dispatch(Cyclist())     # Handling a cyclist.
+
+
+ # Поддержка наследования                                  # Реализация через класс с использованием getattr
+                                                           # реализует паттерн "Посетитель" (Visitor)
+
+ def handle_duck(obj):                                     class Duck:
+     print("Handling a duck.")                                 pass
+
+ def handle_trombonist(obj):                               class Trombonist:
+     print("Handling a trombonist.")                           pass
+
+ def handle_cyclist(obj):                                  class Cyclist:
+     print("Handling a cyclist.")                              pass
+
+ class Animal:                                             class Dispatcher:
+     pass                                                      def handle(self, obj):
+                                                                   for ty in type(obj).__mro__:
+ class Duck(Animal):                                                   meth = getattr(self, f'handle_{ty.__name__}', None)
+     pass                                                              if meth:
+                                                                           return meth(obj)
+ class Trombonist(Animal):                                         raise RuntimeError(f'No handler for {obj}')
+     pass
+                                                               def handle_Duck(self, obj):
+ class Cyclist(Animal):                                            print("Handling a duck.")
+     pass
+                                                               def handle_Trombonist(self, obj):
+ handlers = {                                                      print("Handling a trombonist.")
+     Duck: handle_duck,
+     Trombonist: handle_trombonist,                            def handle_Cyclist(self, obj):
+     Cyclist: handle_cyclist,                                      print("Handling a cyclist.")
+ }
+
+ def dispatch(obj):
+     for ty in type(obj).__mro__:
+         func = handlers.get(ty)
+         if func:
+             return func(obj)
+     raise RuntimeError(f'No handler for {obj}')
+                                                           # Создание экземпляра диспетчера
+ # Пример вызова                                           dispatcher = Dispatcher()
+ dispatch(Duck())        # Handling a duck.                dispatcher.handle(Duck())        # Handling a duck.
+ dispatch(Trombonist())  # Handling a trombonist.          dispatcher.handle(Trombonist())  # Handling a trombonist.
+ dispatch(Cyclist())     # Handling a cyclist.             dispatcher.handle(Cyclist())     # Handling a cyclist.
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Пример класса, автоматически создающего __repr__() по сигнатуре __init__()
 
+ import inspect
+ class Base:
+     @classmethod
+     def __init_subclass__(cls):
+         # Создать метод __repr__
+         args = list(inspect.signature(cls).parameters)
+         argvals = ', '.join('{self.%s!r}' % arg for arg in args)
+         code = 'def __repr__(self):\n'
+         code += f' return f"{cls.__name__}({argvals})"\n'
+         locs = { }
+         exec(code, locs)
+         cls.__repr__ = locs['__repr__']
+
+ # Наследование от Base                         # Без наследования
+ class Point(Base):                             class Point:
+     def __init__(self, x, y):                      def __init__(self, x, y):
+         self.x = x                                     self.x = x
+         self.y = y                                     self.y = y
+
+ # Пример использования                         # Пример использования
+ p = Point(1, 2)                                p = Point(1, 2)
+ print(p)  # -> Point(1, 2)                     print(p)  # -> <__main__.Point object at 0x000002BBE23EBF20>
  -----------------------------------------------------------------------------------------------------------------------
 
+ # ДИНАМИЧЕСКОЕ СОЗДАНИЕ КЛАССА
 
+ # Класс может быть создан и без команды class. Для этого используется конструкция types.new_class()
+
+ import types
+
+ def init(self, owner, balance):
+     self.owner = owner
+     self.balance = balance
+
+ def deposit(self, amount):
+     self.balance += amount
+
+ def withdraw(self, amount):
+     self.balance -= amount
+
+ methods = {'__init__': init, 'deposit': deposit, 'withdraw': withdraw}
+ Account = types.new_class('Account', (), exec_body=lambda ns: ns.update(methods))
+
+ # Создание экземпляра класса
+ a = Account('Guido', 1000.0)
+ a.deposit(50)
+ a.withdraw(25)
+
+ print(a.balance)  # Выводит: 1025.0
  -----------------------------------------------------------------------------------------------------------------------
 
+ # При определении нового класса командой class происходит ряд событий.
+ # Следующий код показывает выполняемые низкоуровневые операции
 
+ # Шаг 1: Создание пространства имен класса
+ namespace = type.__prepare__('Account', ())
+
+ # Шаг 2: Выполнение тела класса
+ exec('''
+ def __init__(self, owner, balance):
+     self.owner = owner
+     self.balance = balance
+ def deposit(self, amount):
+     self.balance += amount
+ def withdraw(self, amount):
+     self.balance -= amount
+ ''', globals(), namespace)
+
+ # Шаг 3: Создание итогового объекта класса
+ Account = type('Account', (), namespace)
+
+ p = Account(10, 100)
+ print(p.balance)  # -> 100
+ print(p.owner)    # -> 10
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Определение литерала bytes (обратите внимание на префикс b)
+ a = b'hello'
+ print(a)    # -> b'hello'
+ # Обращение к значениям байтов
+ print(a[0]) # -> выводит 104
 
+
+ # Создание bytes по списку целых чисел
+ b = bytes([0x68, 0x65, 0x6c, 0x6c, 0x6f])
+
+ for x in b: # Выводит 104 101 108 108 111
+     print(x, end=' ')
+
+
+ # Создание и заполнение bytearray по частям
+ c = bytearray()
+ c.extend(b'world') # c = bytearray(b'world')
+ c.append(0x21)     # c = bytearray(b'world!')
+ print(c)           # -> 104 101 108 108 111 bytearray(b'world!')
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Создание файла логов
 
+ # Поддерживаются пять уровней журнального вывода, упорядоченных по критичности.
+
+ import logging
+ log = logging.getLogger(__name__)
+ # Функция, использующая logging
+ def func(args):
+     log.debug("A debugging message")
+     log.info("An informational message")
+     log.warning("A warning message")
+     log.error("An error message")
+     log.critical("A critical message")
+ # Конфигурация вывода в журнал (выполняется один раз при запуске)
+ if __name__ == '__main__':
+     logging.basicConfig(
+     level=logging.WARNING,
+     filename="output.log"
+ )
  -----------------------------------------------------------------------------------------------------------------------
 
 

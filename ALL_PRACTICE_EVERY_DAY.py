@@ -3290,6 +3290,7 @@ print(MyClass.custom_attribute)   # Вывод: This is a custom attribute
 
 
 # Kласс можно создать без использования ключевого слова class, используя типы type:
+# В современном коде лучше использовать types.new_class().                                      <-----
 """
 MyClass = type('MyClass', (), {'x': 42, 'foo': lambda self: self.x})
 my_ = MyClass()
@@ -5553,6 +5554,7 @@ target = 9
 
 
 
+
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5653,7 +5655,6 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
-
 
 
 
@@ -5813,6 +5814,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 
 
+
 # 3) Сортировка вставками (Insertion Sort)    Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
 """
 def insertion_sort(arr):
@@ -5836,6 +5838,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
+
 
 
 
@@ -5887,6 +5890,7 @@ def quick_sort(lst):
 
 
 
+
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -5923,6 +5927,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 # 6) Написать Пирамидальная сортировка (Heap Sort)
 # Время: O(n log n) во всех случаях.  Пространство: O(1)
+
 
 
 
@@ -6073,7 +6078,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 
 
-
 # 9) Сортировка битом (Radix Sort)     Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
 """
 def counting_sort_for_radix(arr, exp):
@@ -6117,7 +6121,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 
 
-
 # 10) Сортировка подсчётом (Counting Sort)  Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
 """
 Отличие заключается в том, сохраняется ли порядок одинаковых элементов после сортировки.  УСТРОЙЧИВАЯ vs НЕ УСТРОЙЧИВАЯ  
@@ -6147,6 +6150,7 @@ __import__('sys').stdout.write(f'(Counting Sort): {sorted_arr}')  # -> (Counting
 
 # 11) Написать Сортировка по ведрам (Bucket Sort):
 # Время: O(n + k) для равномерно распределенных данных, где k — количество ведер. Пространство: O(n + k)
+
 
 
 
@@ -7332,7 +7336,7 @@ numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 должны разгладиться в один результирующий список'''
 
 
-# Написать 2 варианта
+# Написать 3 варианта  и написать вариант который НЕ подвержен ограничению рекурсии!
 def flatten(*args):
     pass
 
@@ -7383,6 +7387,26 @@ print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 '''Напишите функцию flatten, которая принимает любое кол-во аргументов
 и 'разглаживает' их в один список. Все вложенные списки, неважно каких уровней вложенности,
 должны разгладиться в один результирующий список'''
+
+
+# Вариант который НЕ подвержен ограничению рекурсии Python  (Книга Python. Исчерпывающее руководство Дэвид Бизли)
+
+def flatten(items):
+    stack = [ iter(items) ]
+    while stack:
+        try:
+            item = next(stack[-1])
+            if isinstance(item, list):
+                stack.append(iter(item))
+            else:
+                yield item
+        except StopIteration:
+            stack.pop()
+            
+res = [1, 2, [2, 3, [4, 4]]]
+
+print([*flatten(res)])      # -> [1, 2, 2, 3, 4, 4]
+print(list(flatten(res)))   # -> [1, 2, 2, 3, 4, 4]   
 
 
 # Классный вариант  из Книги: Python Книга рецептов   Дэвид Бизли

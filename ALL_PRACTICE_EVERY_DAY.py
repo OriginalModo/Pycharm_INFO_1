@@ -290,7 +290,7 @@ for e in range(10):
     word = word + str(e)
     ids.add(id(word))
 
-print(len(ids))  # -> 2    # CPython оптимизирует строки, так как старые строки больше НЕ используются
+print(len(ids))  # -> 2     # CPython оптимизирует строки, так как старые строки больше НЕ используются
 
 
 
@@ -5647,7 +5647,6 @@ def binary_search(arr, target):
     pass
 
 
-
 # print(binary_search(d, target))  # -> 8
 # __import__('sys').stdout.write(str(binary_search(d, target)))  # -> 8   Тоже самое
 
@@ -5708,6 +5707,7 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
+
 
 
 
@@ -5807,6 +5807,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -5834,7 +5835,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
-
 
 
 
@@ -5900,6 +5900,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 
 
+
 # 4) Быстрая сортировка (Quick Sort)   O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
 """
 def quick_sort(arr):
@@ -5940,6 +5941,8 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
+
+
 
 
 
@@ -5989,6 +5992,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6023,7 +6027,6 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
-
 
 
 
@@ -6097,6 +6100,7 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 # 8) Написать Сортировка Шелла (Shell Sort)
 # Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
+
 
 
 
@@ -6183,6 +6187,7 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 
 
+
 # 10) Сортировка подсчётом (Counting Sort)  Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
 """
 Отличие заключается в том, сохраняется ли порядок одинаковых элементов после сортировки.  УСТРОЙЧИВАЯ vs НЕ УСТРОЙЧИВАЯ  
@@ -6212,7 +6217,6 @@ __import__('sys').stdout.write(f'(Counting Sort): {sorted_arr}')  # -> (Counting
 
 # 11) Написать Сортировка по ведрам (Bucket Sort):
 # Время: O(n + k) для равномерно распределенных данных, где k — количество ведер. Пространство: O(n + k)
-
 
 
 

@@ -12,6 +12,7 @@ import time
 import types
 import re
 from itertools import count
+import ctypes
 
 import more_itertools
 
@@ -5591,6 +5592,202 @@ if __name__ == "__main__":
 
 
 
+# --- ctypes  Прямое манипулирование памятью в Python ---
+
+
+
+
+# Изменение указателя через ctypes
+
+x = 42
+
+
+
+
+
+# Ответ Изменение указателя через ctypes
+"""
+import ctypes
+
+x = 42
+ptr = ctypes.addressof(ctypes.c_int(x))  # Получаем указатель
+print(ptr)      # -> 2773500981272    id
+print(id(x))    # -> 140715386928856
+print(x)        # -> 42
+
+# Изменение id через ctypes
+new_ptr = ptr + 4  # Сдвиг указателя на 4 байта
+print(new_ptr)  # -> 2773500981276    указатель ИЗМЕНИЛСЯ!!!   id + 4
+
+print(id(x))    # -> 140715386928856
+print(x)        # -> 42
+"""
+
+
+
+# Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
+# Однако, так как размеры кортежей разные, копируются только первые элементы.           <-----    <-----
+
+
+tup1 = (1, 2)
+tup2 = (11, 111, 1111, 11111)
+
+
+
+
+
+
+# Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
+
+"""
+# Изменение tuple через ctypes   # Прямое манипулирование памятью в Python
+# Однако, так как размеры кортежей разные, копируются только первые элементы.           <-----    <-----
+
+import ctypes
+
+# Создаем два tuple
+tup1 = (1, 2)                   
+tup2 = (11, 111, 1111, 11111)   
+
+# Печатаем значения и id
+print("Before modification:")
+print(f"tup1: {tup1}, id: {id(tup1)}")  # -> tup1: (1, 2),                 id: 2723780112000
+print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2723780473536
+
+# Вычисляем смещение до данных tuple
+offset = (
+        ctypes.sizeof(ctypes.c_size_t)  # Размер счетчика ссылок
+        + ctypes.sizeof(ctypes.c_void_p)  # Размер указателя на тип объекта
+        + ctypes.sizeof(ctypes.c_void_p)  # Размер указателя на длину tuple
+)
+
+# Вычисляем размер данных, которые нужно скопировать
+size = ctypes.sizeof(ctypes.c_void_p) * len(tup1)  # Размер одного элемента кортежа (указателя) * количество элементов
+
+# Изменяем длину кортежа tup1
+length_offset = ctypes.sizeof(ctypes.c_size_t) + ctypes.sizeof(ctypes.c_void_p)
+ctypes.cast(id(tup1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(tup2)
+
+# Копируем данные из tup2 в tup1
+ctypes.memmove(id(tup1) + offset, id(tup2) + offset, ctypes.sizeof(ctypes.c_void_p) * len(tup2))
+
+# Печатаем измененные значения
+print("After modification:")
+print(f"tup1: {tup1}, id: {id(tup1)}")  # -> tup1: (11, 111, 1111, 11111), id: 2723780112000
+print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2723780473536
+"""
+
+
+
+
+
+
+# Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
+# Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
+
+
+
+
+
+
+# Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
+"""
+# Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
+import ctypes
+
+# Создаем два frozenset
+fs1 = frozenset([1, 2, 3])
+fs2 = frozenset([4, 5, 6, 7, 8])
+
+# Печатаем значения и id
+print("Before modification:")
+print(f"fs1: {fs1}, id: {id(fs1)}")  # -> fs1: frozenset({1, 2, 3}),       id: 2241246576224
+print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2241247428672
+
+# Вычисляем смещение до данных frozenset
+offset = (
+    ctypes.sizeof(ctypes.c_size_t)    # Размер счетчика ссылок
+    + ctypes.sizeof(ctypes.c_void_p)  # Размер указателя на тип объекта
+    + ctypes.sizeof(ctypes.c_void_p)  # Размер указателя на длину frozenset
+)
+
+# Изменяем длину frozenset fs1
+length_offset = ctypes.sizeof(ctypes.c_size_t) + ctypes.sizeof(ctypes.c_void_p)
+ctypes.cast(id(fs1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(fs2)
+
+# Копируем данные из fs2 в fs1
+ctypes.memmove(id(fs1) + offset, id(fs2) + offset, ctypes.sizeof(ctypes.c_void_p) * len(fs2))
+
+# Печатаем измененные значения
+print("After modification:")
+print(f"fs1: {fs1}, id: {id(fs1)}")  # -> fs1: frozenset({4, 5, 6, 7, 8}), id: 2241246576224
+print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2241247428672
+"""
+
+
+
+
+# Изменить str на новое значение чтобы id остался такой как и был
+
+
+str1 = "hello"
+str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
+
+
+
+
+
+
+
+# Ответ Изменить str на новое значение чтобы id остался такой как и был
+
+"""
+# Изменение str через ctypes   # Прямое манипулирование памятью в Python
+
+import ctypes
+
+# Создаем строки   # Заменяет на новые строки, если str2 = "wwwwwwwwww"  то будет  str1 = "wwwww"
+str1 = "hello"
+str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
+print("Before modification:")
+print(f"str1: {str1}, id: {id(str1)}")  # -> str1: hello,      id: 3030659487312
+print(f"str2: {str2}, id: {id(str2)}")  # -> str2: world12345, id: 3030659487504
+
+# Вычисляем смещение до данных строки
+# Внутренняя структура строки в CPython включает:
+# - счетчик ссылок (8 байт)
+# - указатель на тип объекта (8 байт)
+# - длину строки (8 байт)
+# - хэш (8 байт)
+# - флаги (4 байта)
+# - данные строки (зависят от длины и кодировки)
+
+offset = (
+        ctypes.sizeof(ctypes.c_size_t)  # Счетчик ссылок
+        + ctypes.sizeof(ctypes.c_void_p)  # Указатель на тип объекта
+        + ctypes.sizeof(ctypes.c_size_t)  # Длина строки
+        + ctypes.sizeof(ctypes.c_size_t)  # Хэш
+        + ctypes.sizeof(ctypes.c_int)  # Флаги
+)
+
+# Копируем данные из str2 в str1
+size = len(str2.encode('utf-8'))  # Размер данных строки в байтах
+
+# Изменяем str1 на "world"                                              #   world   <-----
+ctypes.memmove(id(str1) + offset, id(str2) + offset, size)
+
+print("After modification:")
+print(f"str1: {str1}, id: {id(str1)}")  # -> str1: world,      id: 3030659487312
+print(f"str2: {str2}, id: {id(str2)}")  # -> str2: world12345, id: 3030659487504
+"""
+
+
+
+
+
+
 
 # --- Алгоритмы сортировки Python ---
 
@@ -5645,6 +5842,7 @@ target = 9
 
 def binary_search(arr, target):
     pass
+
 
 
 # print(binary_search(d, target))  # -> 8
@@ -5707,7 +5905,6 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
-
 
 
 
@@ -5806,8 +6003,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -5835,6 +6030,7 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
+
 
 
 
@@ -5941,7 +6137,6 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
-
 
 
 
@@ -6107,7 +6302,6 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
-
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6180,7 +6374,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 

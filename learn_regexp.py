@@ -1265,64 +1265,6 @@ NP = Полных задач
 
 
 
-# Результат вывода:
-# Module(
-#     body=[
-#         Assign(
-#             targets=[
-#                 Name(id='a', ctx=Store())  # Цель присваивания: переменная 'a'
-#             ],
-#             value=BinOp(
-#                 left=Constant(value=1),  # Левый операнд: число 1
-#                 op=Add(),               # Операция: сложение
-#                 right=Constant(value=2) # Правый операнд: число 2
-#             )
-#         )
-#     ],
-#     type_ignores=[]
-# )
-
-
-
-
-
-# Результат вывода:
-# Module(
-#   body=[
-#     Expr(
-#       value=BinOp(
-#         left=Constant(value=1),  # Левый операнд: число 1
-#         op=Add(),                # Операция: сложение
-#         right=Constant(value=0j)  # Правый операнд: комплексное число 0j
-#       )
-#     )
-#   ],
-#   type_ignores=[]
-# )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

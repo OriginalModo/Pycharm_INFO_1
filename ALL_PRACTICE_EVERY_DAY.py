@@ -5637,6 +5637,9 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
+
+
+
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5661,15 +5664,15 @@ offset = (
         + ctypes.sizeof(ctypes.c_void_p)  # Размер указателя на длину tuple
 )
 
-# Вычисляем размер данных, которые нужно скопировать
-size = ctypes.sizeof(ctypes.c_void_p) * len(tup1)  # Размер одного элемента кортежа (указателя) * количество элементов
+# Вычисляем размер данных, которые нужно скопировать  БЕЗ НЕГО РАБОТАЕТ ТОЖЕ)
+size = ctypes.sizeof(ctypes.c_void_p) * len(tup2)  # Размер одного элемента кортежа (указателя) * количество элементов
 
 # Изменяем длину кортежа tup1
 length_offset = ctypes.sizeof(ctypes.c_size_t) + ctypes.sizeof(ctypes.c_void_p)
-ctypes.cast(id(tup1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(tup2)
+ctypes.cast(id(tup1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(tup2)  # Можно использовать c_size_t
 
 # Копируем данные из tup2 в tup1
-ctypes.memmove(id(tup1) + offset, id(tup2) + offset, ctypes.sizeof(ctypes.c_void_p) * len(tup2))
+ctypes.memmove(id(tup1) + offset, id(tup2) + offset, size)
 
 # Печатаем измененные значения
 print("After modification:")
@@ -5685,6 +5688,9 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 # Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
 
+
+fs1 = frozenset([1, 2, 3])
+fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
@@ -5713,7 +5719,7 @@ offset = (
 
 # Изменяем длину frozenset fs1
 length_offset = ctypes.sizeof(ctypes.c_size_t) + ctypes.sizeof(ctypes.c_void_p)
-ctypes.cast(id(fs1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(fs2)
+ctypes.cast(id(fs1) + length_offset, ctypes.POINTER(ctypes.c_ssize_t))[0] = len(fs2)    # Можно использовать c_size_t
 
 # Копируем данные из fs2 в fs1
 ctypes.memmove(id(fs1) + offset, id(fs2) + offset, ctypes.sizeof(ctypes.c_void_p) * len(fs2))
@@ -5732,8 +5738,6 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
-
-
 
 
 
@@ -5804,7 +5808,6 @@ target = 9
 
 
 
-
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5842,7 +5845,6 @@ target = 9
 
 def binary_search(arr, target):
     pass
-
 
 
 # print(binary_search(d, target))  # -> 8
@@ -6003,6 +6005,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6036,7 +6039,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
-
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -6060,6 +6062,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 # 3) Написать Сортировку вставками (Insertion Sort)
 # Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
+
 
 
 
@@ -6137,8 +6140,6 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
-
-
 
 
 
@@ -6230,6 +6231,8 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 
 
+
+
 # 7) Тим-сорт (Tim Sort)     Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
 """
 def insertion_sort(arr, left, right):
@@ -6302,6 +6305,7 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
+
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6329,7 +6333,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
 
 
 

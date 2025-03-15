@@ -1263,13 +1263,80 @@ NP = Полных задач
 # TODO  посмотреть как ЛКПП  запускает из терпинала  файлы   symtable, байт-код   dis, timeit
 
 
-#   у "моржа" самый низкий приоритет:   приоритет присваивания самый низкий   :=
+#   у "моржа" самый низкий приоритет:   приоритет присваивания самый низкий   :=     Поэтому оборачиваем в ()   (a:=1)
+#   Взять новые задачи на Django
 
 
 
 
 
+f'''
+# 1. Конвертация в другие структуры данных list(): Преобразует QuerySet в список и выполняет запрос.
+ 
+results = list(MyModel.objects.all())
 
+# 2. Использование next() или list()  Если вам нужно только одно значение, вы можете использовать next():
+ 
+queryset = MyModel.objects.all()
+first_item = next(iter(queryset))  # Возвращает первый элемент, выполняя запрос
+
+# 3. len() Получает количество объектов в QuerySet и выполняет запрос.
+ 
+count = len(MyModel.objects.all())
+
+# 4. for циклы Итерирование по QuerySet также выполняет запрос.
+ 
+for obj in MyModel.objects.all():
+    print(obj)
+    
+# 5. get() Получает единственный объект и выполняет запрос.
+ 
+obj = MyModel.objects.get(id=1)
+
+# 6. Методы get() и filter()
+# Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
+ 
+single_object = MyModel.objects.get(id=1)                  # Выполняет SQL-запрос
+filtered_objects = MyModel.objects.filter(name='example')  # Запрос выполняется при дальнейшей обработке
+
+# 7. first() и last() Получает первый или последний объект и выполняет запрос.
+ 
+first_obj = MyModel.objects.first()
+last_obj = MyModel.objects.last()
+
+# 8. exists()
+Проверяет наличие объектов и выполняет запрос.
+ 
+exists = MyModel.objects.filter(condition).exists()
+
+# 9. count() Возвращает количество объектов в QuerySet и выполняет запрос.
+ 
+count = MyModel.objects.all().count()
+
+# 10. aggregate() и annotate() Эти методы возвращают агрегированные данные и также выполняют запрос.
+ 
+from django.db.models import Count
+
+result = MyModel.objects.aggregate(Count('field_name'))  # Подсчитываем количество
+
+# 11. Пример аннотации Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
+ 
+from django.db.models import Count
+
+result = MyModel.objects.annotate(related_count=Count('relatedmodel'))
+for obj in result:
+    print(f'{obj.pk}: {obj.related_count}')
+    
+# 12. values() и values_list() Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+ 
+queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями
+queryset = MyModel.objects.values_list('id', 'name')      # Возвращает список кортежей
+queryset = MyModel.objects.values_list('name', flat=True) # Результаты в виде списков
+
+# 13. Срезы Использование срезов для получения определенного количества объектов.
+ 
+first_five = queryset[:5]  # Выполняет запрос и возвращает первые пять объектов
+'''
 
 
 

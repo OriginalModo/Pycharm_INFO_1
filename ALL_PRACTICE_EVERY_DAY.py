@@ -5607,6 +5607,7 @@ x = 42
 
 
 
+
 # Ответ Изменение указателя через ctypes
 """
 import ctypes
@@ -5692,9 +5693,6 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 
 fs1 = frozenset([1, 2, 3])
 fs2 = frozenset([4, 5, 6, 7, 8])
-
-
-
 
 
 
@@ -6017,7 +6015,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6045,6 +6042,7 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
+
 
 
 
@@ -6112,6 +6110,8 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 
 
+
+
 # 4) Быстрая сортировка (Quick Sort)   O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
 """
 def quick_sort(arr):
@@ -6159,6 +6159,7 @@ def quick_sort(lst):
 
 
 
+
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -6195,7 +6196,6 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 # 6) Написать Пирамидальная сортировка (Heap Sort)
 # Время: O(n log n) во всех случаях.  Пространство: O(1)
-
 
 
 
@@ -6350,6 +6350,9 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 
 
+
+
+
 # 9) Сортировка битом (Radix Sort)     Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
 """
 def counting_sort_for_radix(arr, exp):
@@ -6431,6 +6434,7 @@ __import__('sys').stdout.write(f'(Counting Sort): {sorted_arr}')  # -> (Counting
 
 
 
+
 # 11) Сортировка по ведрам (Bucket Sort)  O(n + k) для равномерно распределенных данных, k - кол-во ведер. Прос. O(n + k)
 """
 def insertion_sort(arr):                                       
@@ -6492,6 +6496,7 @@ __import__('sys').stdout.write(f'(Bucket Sort): {sorted_arr}')  # -> (Bucket Sor
 
 
 
+
 # Ответ Напишите raw-запрос
 """
 people = Person.objects.raw("SELECT id, name FROM hello_person")
@@ -6514,9 +6519,9 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 
-
 # Ответ Перепишите lookups
 r"""
+ Model.objects.all()                                       показать все записи
  Model.objects.filter(budget=1000)                    ==   фильтр на равенство поля
  Model.objects.filter(budget__gt=1000)                 >   фильтр на поле больше значения (great then)
  Model.objects.filter(budget__lt=1000)                 <   фильтр на поле меньше значения
@@ -6530,12 +6535,15 @@ r"""
  Model.objects.filter(name__icontains=’Avatar’)            поле содержит значение, НЕ чувствителен к регистру
  Model.objects.filter(name__startswith=’a’)                поле начинается с “a”
  Model.objects.filter(name__endswith=’a’)                  поле заканчивается на “a”
- Model.objects.filter(id__in=[3,5,6]’)                     выбираются все значения из списка
+ Model.objects.filter(id__in=[3,5,6])                      выбираются все значения из списка
+ 
+ Movie.objects.all()[:2] # Срезы
+ Movie.objects.all()[-1] # ValueError: Negative indexing is not supported.   Отрицательные индексы не поддерживает
  
  # Очень полезные методы   __regex  - чувствительное к регистру       __iregex - НЕчувствительное к регистру
- Model.objects.filter(adv_images__regex=r'^\d\.')[:3]
- Model.objects.filter(adv_images__iregex=r'^\d\.')[:3]
- Model.objects.get(title__regex=r"^(An?|The) +")
+ Model.objects.filter(adv_images__regex=r'^\d\.')[:3]      # фильтрация по регулярному выражению (чувствительно)
+ Model.objects.filter(adv_images__iregex=r'^\d\.')[:3]     # фильтрация по регулярному выражению (не чувствительно)
+ Model.objects.get(title__regex=r"^(An?|The) +")           # получение одного объекта по регулярному выражению
 """
 
 
@@ -6558,6 +6566,8 @@ class Person(models.Model):
 # 1)Вывести список людей и городов где они живут?
 # 2)Вывести всех людей, живущих в городе N
 # 3)Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
+
+
 
 
 
@@ -6596,9 +6606,6 @@ class Person(models.Model):
 
 
 
-
-
-
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -6611,10 +6618,6 @@ for person in people_with_cities:
 # 2. Вывести всех людей, живущих в городе N:
 
 city_name = 'N'  # укажите название города
-
-
-
-
 
 
 
@@ -6650,8 +6653,6 @@ for person in people_in_city_n:
 
 
 
-
-
 # Ответ 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 """
 from django.db.models import Count
@@ -6671,15 +6672,7 @@ for city in top_cities:
 
 
 
-
-
-
-
-
 # 1)OR  Найдем всех людей, у которых имя "John" ИЛИ фамилия "Doe"
-
-
-
 
 
 
@@ -6687,16 +6680,7 @@ for city in top_cities:
 
 
 
-
-
-
-
 # 3)NOT Найдем всех людей, у которых имя "John", кроме тех, у кого фамилия "Doe"
-
-
-
-
-
 
 
 
@@ -6704,17 +6688,7 @@ for city in top_cities:
 
 
 
-
-
-
-
-
-
 # 5)Комбинирование условий Найдем всех людей, у которых имя "John", ИЛИ фамилия "Doe", И возраст не меньше 25
-
-
-
-
 
 
 
@@ -6749,6 +6723,189 @@ people = Person.objects.filter(Q(first_name='John') & (Q(last_name='Doe') | Q(ag
 # 5)Комбинирование условий
 # Найдем всех людей, у которых имя "John", ИЛИ фамилия "Doe", И возраст не меньше 25
 people = Person.objects.filter((Q(first_name='John') | Q(last_name='Doe')) & Q(age__gte=25))
+"""
+
+
+
+# -- В Django ORM запросы по умолчанию ЛЕНИВЫЕ --
+
+# В Django ORM запросы по умолчанию ЛЕНИВЫЕ. Это означает, что они не выполняются до тех пор, пока не потребуется
+# получение данных. Чтобы применить запрос и получить данные, вы можете использовать следующие методы:
+
+# 1. Конвертация в другие структуры данных list(): Преобразует QuerySet в список и выполняет запрос.
+
+
+
+# Ответ 1. Конвертация в другие структуры данных list(): Преобразует QuerySet в список и выполняет запрос.
+"""
+results = list(MyModel.objects.all())
+"""
+
+# 2. Использование next() или list(): Если вам нужно только одно значение, вы можете использовать next():
+
+
+
+# Ответ 2. Использование next() или list(): Если вам нужно только одно значение, вы можете использовать next():
+"""
+queryset = MyModel.objects.all()
+first_item = next(iter(queryset))  # Возвращает первый элемент, выполняя запрос
+"""
+
+# 3. len(): Получает количество объектов в QuerySet и выполняет запрос.
+
+
+
+# Ответ 3. len(): Получает количество объектов в QuerySet и выполняет запрос.
+"""
+count = len(MyModel.objects.all())
+"""
+
+# 4. for циклы: Итерирование по QuerySet также выполняет запрос.
+
+
+
+# Ответ 4. for циклы: Итерирование по QuerySet также выполняет запрос.
+"""
+for obj in MyModel.objects.all():
+    print(obj)
+"""
+
+# 5. get(): Получает единственный объект и выполняет запрос.
+
+
+
+# Ответ 5. get(): Получает единственный объект и выполняет запрос.
+"""
+obj = MyModel.objects.get(id=1)
+"""
+
+# 6. Методы get() и filter():
+# Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
+
+
+
+# Ответ 6. Методы get() и filter():
+# Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
+"""
+single_object = MyModel.objects.get(id=1)                  # Выполняет SQL-запрос
+filtered_objects = MyModel.objects.filter(name='example')  # Запрос выполняется при дальнейшей обработке
+"""
+
+# 7. first() и last(): Получает первый или последний объект и выполняет запрос.
+
+
+
+# Ответ 7. first() и last(): Получает первый или последний объект и выполняет запрос.
+"""
+first_obj = MyModel.objects.first()
+last_obj = MyModel.objects.last()
+"""
+
+# 8. exists(): Проверяет наличие объектов и выполняет запрос.
+
+
+
+# Ответ 8. exists(): Проверяет наличие объектов и выполняет запрос.
+"""
+exists = MyModel.objects.filter(condition).exists()
+"""
+
+# 9. count(): Возвращает количество объектов в QuerySet и выполняет запрос.
+
+
+
+# Ответ 9. count(): Возвращает количество объектов в QuerySet и выполняет запрос.
+"""
+count = MyModel.objects.all().count()
+"""
+
+# 10. aggregate() и annotate(): Эти методы возвращают агрегированные данные и также выполняют запрос.
+
+
+
+# Ответ 10. aggregate() и annotate(): Эти методы возвращают агрегированные данные и также выполняют запрос.
+"""
+from django.db.models import Count, Sum
+
+result = MyModel.objects.aggregate(Count('field_name'))  # Подсчитываем количество
+
+result_aggregate = MyModel.objects.aggregate(total_count=Count('id'), total_sum=Sum('field_name'))
+result_annotate = MyModel.objects.annotate(field_name_sum=Sum('field_name'))
+
+print(result_aggregate)  # Выводит агрегированные результаты
+for obj in result_annotate:
+    print(f'{obj.pk}: {obj.field_name_sum}')
+"""
+
+# 11. Пример аннотации: Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
+
+
+
+# Ответ 11. Пример аннотации: Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
+"""
+from django.db.models import Count
+
+result = MyModel.objects.annotate(related_count=Count('relatedmodel'))
+for obj in result:
+    print(f'{obj.pk}: {obj.related_count}')
+"""
+
+# 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+
+
+
+# Ответ 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+"""
+queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями
+queryset = MyModel.objects.values_list('id', 'name')      # Возвращает список кортежей
+queryset = MyModel.objects.values_list('name', flat=True) # Результаты в виде списков
+"""
+
+# 13. Срезы: Использование срезов для получения определенного количества объектов.
+
+
+
+# Ответ 13. Срезы: Использование срезов для получения определенного количества объектов.
+"""
+first_five = queryset[:5]  # Выполняет запрос и возвращает первые пять объектов
+"""
+
+# 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
+# Пример использования select_related для один-к-одному и один-ко-многим.
+
+
+
+# Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
+"""
+results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
+
+results = MyModel.objects.prefetch_related('related_models').all()  # Пример использования prefetch_related
+"""
+
+# 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
+
+
+
+# Ответ 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
+"""
+for obj in MyModel.objects.all().iterator():
+    print(obj)
+"""
+
+# 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
+
+
+
+# Ответ 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
+"""
+# Пример bulk_create
+MyModel.objects.bulk_create([
+    MyModel(field1='value1', field2='value2'),
+    MyModel(field1='value3', field2='value4'),
+])
+
+# Пример bulk_update
+MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 """
 
 

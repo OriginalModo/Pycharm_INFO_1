@@ -659,6 +659,30 @@ ________________________________________________________________________________
      '1_e.txt',
  ]
 
+
+ # Функция для извлечения ключа сортировки
+ def sort_key(item):
+     number_part = int(item.split('_')[0])  # Извлекаем числовую часть
+     letter_part = item.split('_')[1][0]    # Извлекаем буквенную часть
+     return (number_part, letter_part)
+
+ # Сортируем список
+ sorted_xs = sorted(xs, key=sort_key)
+
+ # Выводим отсортированный список
+ print(sorted_xs)  # -> ['1_a.txt', '1_c.txt', '1_e.txt', '2_b.txt', '3_d.txt']
+
+
+ # Тоже инетерсный вариант
+ def sort_key(item):
+     n, s = re.match(r'\d+(?=_)', item).group(), re.search(r'(?<=_)[a-z]', item)[0]
+     return int(n), s
+
+ print(sorted(xs, key=sort_key))  # -> ['1_a.txt', '1_c.txt', '1_e.txt', '2_b.txt', '3_d.txt']
+
+
+ # МОИ ВАРИАНТЫ
+
  def sub_fun(x):
      return -int(re.sub(r'[^\d]+', '', x)), re.search(r'(?<=_)[a-z]+(?=\.)', x, flags=re.I).group()
 
@@ -1105,6 +1129,44 @@ ________________________________________________________________________________
 ________________________________________________________________________________________________________________________
 
  Задача максимальная последовательность чисел  СБЕР
+
+ # НОВЫЙ ВАРИАНТ
+ def longest_sequence(arr):
+     if not arr:
+         return []
+
+     # Сортируем массив
+     arr = sorted(set(arr))  # используем set для удаления дубликатов
+     max_length = 0
+     current_length = 1
+     start_index = 0
+     max_start_index = 0
+
+     for i in range(1, len(arr)):
+         # Проверяем, является ли текущий элемент последовательным
+         if arr[i] == arr[i - 1] + 1:
+             current_length += 1
+         else:
+             # Проверяем, является ли текущая последовательность максимальной
+             if current_length > max_length:
+                 max_length = current_length
+                 max_start_index = start_index
+
+             # Сбрасываем текущую последовательность
+             current_length = 1
+             start_index = i
+
+     # Проверка последней последовательности
+     if current_length > max_length:
+         max_length = current_length
+         max_start_index = start_index
+
+     return arr[max_start_index:max_start_index + max_length]
+
+ # Пример использования
+ arr = [111, 22, 533, 61, 655, 7333, 911, 11, 211, 1, 2, 3, 4, 5]
+ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
+
 
  # Мой вариант                                                   # Такой вариант выведет   ['1', '2', '3', '4']
  def longest_sequence(arr):                                      def longest_sequence(arr):

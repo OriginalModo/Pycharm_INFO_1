@@ -5475,8 +5475,6 @@ x = 42
 
 
 
-
-
 # Ответ Изменение указателя через ctypes
 """
 import ctypes
@@ -5565,8 +5563,6 @@ fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
-
-
 # Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 """
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
@@ -5609,9 +5605,6 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
-
-
-
 
 
 
@@ -5682,7 +5675,6 @@ target = 9
 
 
 
-
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5720,6 +5712,7 @@ target = 9
 
 def binary_search(arr, target):
     pass
+
 
 
 # print(binary_search(d, target))  # -> 8
@@ -5782,7 +5775,6 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
-
 
 
 
@@ -5881,7 +5873,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -5909,7 +5900,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
-
 
 
 
@@ -5975,6 +5965,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 
 
+
 # 4) Быстрая сортировка (Quick Sort)   O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
 """
 def quick_sort(arr):
@@ -6015,8 +6006,6 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
-
-
 
 
 
@@ -6065,6 +6054,8 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6099,6 +6090,7 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
+
 
 
 
@@ -6178,7 +6170,6 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
-
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6206,7 +6197,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
 
 
 
@@ -6353,9 +6343,6 @@ __import__('sys').stdout.write(f'(Bucket Sort): {sorted_arr}')  # -> (Bucket Sor
 
 
 
-
-
-
 # Ответ Напишите raw-запрос
 """
 people = Person.objects.raw("SELECT id, name FROM hello_person")
@@ -6364,7 +6351,6 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 # Перепишите lookups
-
 
 
 
@@ -6428,6 +6414,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6459,6 +6446,8 @@ class Person(models.Model):
 
 
 
+
+
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -6471,6 +6460,7 @@ for person in people_with_cities:
 # 2. Вывести всех людей, живущих в городе N:
 
 city_name = 'N'  # укажите название города
+
 
 
 
@@ -6497,9 +6487,6 @@ for person in people_in_city_n:
 
 
 
-
-
-
 # Ответ 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 """
 from django.db.models import Count
@@ -6516,6 +6503,7 @@ for city in top_cities:
 
 
 # Первый пример!
+
 
 
 
@@ -6632,6 +6620,7 @@ obj = MyModel.objects.get(id=1)
 
 
 
+
 # Ответ 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
 """
@@ -6640,6 +6629,8 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 """
 
 # 7. first() и last(): Получает первый или последний объект и выполняет запрос.
+
+
 
 
 
@@ -6671,6 +6662,8 @@ count = MyModel.objects.all().count()
 
 
 
+
+
 # Ответ 10. aggregate() и annotate(): Эти методы возвращают агрегированные данные и также выполняют запрос.
 """
 from django.db.models import Count, Sum
@@ -6689,6 +6682,7 @@ for obj in result_annotate:
 
 
 
+
 # Ответ 11. Пример аннотации: Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
 """
 from django.db.models import Count
@@ -6699,6 +6693,7 @@ for obj in result:
 """
 
 # 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+
 
 
 
@@ -6723,6 +6718,8 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
+
+
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -6734,6 +6731,7 @@ results = MyModel.objects.prefetch_related('related_models').all()  # Приме
 
 
 
+
 # Ответ 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
 """
 for obj in MyModel.objects.all().iterator():
@@ -6741,6 +6739,9 @@ for obj in MyModel.objects.all().iterator():
 """
 
 # 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
+
+
+
 
 
 
@@ -6759,7 +6760,6 @@ MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 
 
 # Напиши SQL Задачу с собеседования    НАПИСАТЬ 2 ВАРИАНТА ---
-
 
 
 
@@ -6834,6 +6834,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 # product | count
 # dog     | 2
 # cat     | 3
+
 
 
 
@@ -6925,6 +6926,8 @@ WHERE book_count > 2;
 
 
 
+
+
 # Задача SQL  СИБУР    Исправить код
 """
 Исправить код
@@ -6976,6 +6979,9 @@ GROUP BY
 #  -> PK A1 A2 A3 A4  T
 #     1   1  1  1  1  5
 #     2   2  3  4  5  3
+
+
+
 
 
 
@@ -7035,6 +7041,7 @@ WHERE rn = 1;
 # Написать 3 варианта
 def is_correct_brackets(text):
     pass
+
 
 
 
@@ -7156,7 +7163,6 @@ def clean_duplicates(lst):
 
 
 
-
 # print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
@@ -7216,7 +7222,6 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
-
 
 
 
@@ -7330,7 +7335,6 @@ target = 9
 # Написать 2 варианта
 def twoSum(nums, target):
     pass
-
 
 
 
@@ -7619,6 +7623,7 @@ def sort_array(arr):
 
 
 
+
 # Задача 2
 
 '''Напишите функцию flatten, которая принимает любое кол-во аргументов
@@ -7632,8 +7637,23 @@ def flatten(*args):
 
 
 
+
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
+
+
+
+# 2 Варианта
+def flatten(items):
+    pass
+
+
+
+
+# res = [1, 2, [2, 3, [4, 4]]]
+# print([*flatten(res)])  # -> [1, 2, 2, 3, 4, 4]
+# print(list(flatten(res)))  # -> [1, 2, 2, 3, 4, 4]
+
 
 
 
@@ -7651,6 +7671,7 @@ def sort_array(arr):
     res = []
     for i in arr:
         if i % 2:
+        # if i in odds:  # Тоже самое
             res.append(odds[odd_index])
             odd_index += 1
         else:
@@ -7679,7 +7700,7 @@ print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
 
 # Вариант который НЕ подвержен ограничению рекурсии Python  (Книга Python. Исчерпывающее руководство Дэвид Бизли)
-
+#  1) Избежание переполнения стека  2) Глубокая рекурсия  3) Циклические ссылки      # БУДЕТ РАБОТАТЬ В ЭТИХ СЛУЧАЯХ!
 def flatten(items):
     stack = [ iter(items) ]
     while stack:
@@ -7788,9 +7809,8 @@ def longest_sequence(lst):
 
 
 
-arr = [111, 22, 533, 61, 655, 7333, 911, 11, 211, 1, 2, 3, 4, 5]
+# arr = [111, 22, 533, 61, 655, 7333, 911, 11, 211, 1, 2, 3, 4, 5]
 # print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
-
 
 
 
@@ -7991,9 +8011,6 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
-
-
-
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -8128,7 +8145,6 @@ def string_to_int(value: str) -> int:
     ...
 
 
-
 # print(string_to_int("3248"))  # -> 3248
 
 
@@ -8206,7 +8222,6 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
-
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8276,7 +8291,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 
 
-
 # Ответ Замерить сколько раз вызывается функция      ivi  Иви
 """
 from dataclasses import dataclass, field
@@ -8331,7 +8345,6 @@ print(plus())  # -> 3 None
 
 # Будет последнее значение выводить 10 раз    ПОСМОТРИ ВНИМАТЕЛЬНО КОД  Обрати внимание на    x   Задача Мебель Детали
 # Исправить код. Чтобы текущее состояние сохранялось
-
 
 
 

@@ -1266,55 +1266,7 @@ NP = Полных задач
 #   у "моржа" самый низкий приоритет:   приоритет присваивания самый низкий   :=     Поэтому оборачиваем в ()   (a:=1)
 #   Взять новые задачи на Django
 
-
-
-
-
-
-
-text = 'abcdef'
-
-odds = [v for i, v in enumerate(text) if i % 2]
-idx = 0
-res = []
-for i, v in enumerate(text):
-    if i % 2:
-        res.append(odds[idx])
-        idx += 1
-    else:
-        res.append(v)
-print(res)
-
-# acebdf
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Книги по архитектуре почитать
 
 
 

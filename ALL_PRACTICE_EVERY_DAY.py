@@ -21,6 +21,8 @@ from typing import NamedTuple
 import more_itertools
 import unicodedata
 
+from Again_2.good_functions import value
+
 #  SyntaxWarning: invalid escape sequence - ошибка связанная с многострочной строкой используем r перед строкой r''' '''
 
 
@@ -5162,8 +5164,6 @@ if __name__ == '__main__':
 
 
 
-
-
 # Ответ 3)
 """
 def fibonacci_generator(a, b):
@@ -5507,7 +5507,6 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
-
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5563,6 +5562,8 @@ fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
+
+
 # Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 """
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
@@ -5605,6 +5606,9 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
+
+
 
 
 
@@ -5675,6 +5679,7 @@ target = 9
 
 
 
+
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5710,6 +5715,7 @@ d = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 target = 9
 
 
+
 def binary_search(arr, target):
     pass
 
@@ -5717,6 +5723,8 @@ def binary_search(arr, target):
 
 # print(binary_search(d, target))  # -> 8
 # __import__('sys').stdout.write(str(binary_search(d, target)))  # -> 8   Тоже самое
+
+
 
 
 
@@ -5775,6 +5783,7 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
+
 
 
 
@@ -5872,7 +5881,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -5906,7 +5914,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
-
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -5930,6 +5937,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 # 3) Написать Сортировку вставками (Insertion Sort)
 # Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
+
 
 
 
@@ -6012,6 +6020,7 @@ def quick_sort(lst):
 
 
 
+
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -6055,7 +6064,6 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
-
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6090,7 +6098,6 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
-
 
 
 
@@ -6415,6 +6422,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6441,7 +6449,6 @@ class Person(models.Model):
 
 
 # 1. Вывести список людей и городов, где они живут:
-
 
 
 
@@ -6600,6 +6607,7 @@ count = len(MyModel.objects.all())
 
 
 
+
 # Ответ 4. for циклы: Итерирование по QuerySet также выполняет запрос.
 """
 for obj in MyModel.objects.all():
@@ -6610,6 +6618,7 @@ for obj in MyModel.objects.all():
 
 
 
+
 # Ответ 5. get(): Получает единственный объект и выполняет запрос.
 """
 obj = MyModel.objects.get(id=1)
@@ -6617,6 +6626,7 @@ obj = MyModel.objects.get(id=1)
 
 # 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
+
 
 
 
@@ -6644,12 +6654,15 @@ last_obj = MyModel.objects.last()
 
 
 
+
 # Ответ 8. exists(): Проверяет наличие объектов и выполняет запрос.
 """
 exists = MyModel.objects.filter(condition).exists()
 """
 
 # 9. count(): Возвращает количество объектов в QuerySet и выполняет запрос.
+
+
 
 
 
@@ -6683,6 +6696,7 @@ for obj in result_annotate:
 
 
 
+
 # Ответ 11. Пример аннотации: Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
 """
 from django.db.models import Count
@@ -6693,6 +6707,8 @@ for obj in result:
 """
 
 # 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+
+
 
 
 
@@ -6715,7 +6731,6 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 # 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 # Пример использования select_related для один-к-одному и один-ко-многим.
-
 
 
 
@@ -6744,7 +6759,6 @@ for obj in MyModel.objects.all().iterator():
 
 
 
-
 # Ответ 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
 """
 # Пример bulk_create
@@ -6760,6 +6774,7 @@ MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 
 
 # Напиши SQL Задачу с собеседования    НАПИСАТЬ 2 ВАРИАНТА ---
+
 
 
 
@@ -6842,7 +6857,6 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
-
 # Ответ  Задача SQL  С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 """
 Мой вариант
@@ -6872,7 +6886,6 @@ HAVING COUNT(*) > 2;
 # INSERT INTO author(name) VALUES ('Автор 1'), ('Автор 2'), ('Автор 3');
 # INSERT INTO book(title, publication_date, author_id) VALUES ('Книга 1', '2017-04-01', 1),
 # ('Книга 2', '2018-04-01', 1), ('Книга 3', '2018-05-01', 2);
-
 
 
 
@@ -7044,7 +7057,6 @@ def is_correct_brackets(text):
 
 
 
-
 # print(is_correct_brackets('(((())))'))  # True
 # print(is_correct_brackets('(((())'))  # False
 # print(is_correct_brackets('())))'))  # False
@@ -7163,6 +7175,7 @@ def clean_duplicates(lst):
 
 
 
+
 # print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
@@ -7200,10 +7213,10 @@ def clean_duplicates(lst: list[dict]) -> list[dict]:
 print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
-# Интересный вариант                    # Тоже самое         
-def clean_duplicates(lst):              def clean_duplicates(lst):            
-    res = set()                             res = {str(i) for i in lst}
-    for i in lst:                           return [eval(i) for i in res]    
+# Интересный вариант              # Тоже самое                       # Тоже самое 
+def clean_duplicates(lst):        def clean_duplicates(lst):         def clean_duplicates(lst):            
+    res = set()                       res = {str(i) for i in lst}        return [eval(i) for i in {str(j) for j in lst}]    
+    for i in lst:                     return [eval(i) for i in res]              
         res.add(str(i))                         
     return [eval(i) for i in res]
 
@@ -7222,7 +7235,6 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
-
 
 
 
@@ -7332,7 +7344,7 @@ lst = [2, 7, 9, 10, 11]
 target = 9
 
 
-# Написать 2 варианта
+# Написать 2 варианта  и еще 1 через zip
 def twoSum(nums, target):
     pass
 
@@ -7426,7 +7438,6 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
-
 
 
 
@@ -7637,7 +7648,6 @@ def flatten(*args):
 
 
 
-
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
 
@@ -7806,6 +7816,7 @@ ________________________________________________________________________________
 
 def longest_sequence(lst):
     pass
+
 
 
 
@@ -8011,6 +8022,9 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
+
+
+
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -8137,12 +8151,13 @@ print(a is b)          # -> True       print(a is b)          # -> True
 
 
 def to_digit(val):
-    pass
+    ...
 
 
 
 def string_to_int(value: str) -> int:
-    ...
+    pass
+
 
 
 # print(string_to_int("3248"))  # -> 3248
@@ -8215,6 +8230,10 @@ print(string_to_integer(" +789 "))  # -> 789
 #  Анаграммы - это такие пары слов, в которых одинаковые буквы и одинаковое количество букв, расположенных в разном
 #  порядке. В приведенном примере группы анаграмм: (aba, aab), (abb, bab, bba). Напишите такой код, который выведет
 #  на консоль первую анаграмму из каждой группы.
+
+
+
+
 
 
 

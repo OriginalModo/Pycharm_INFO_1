@@ -743,10 +743,10 @@ ________________________________________________________________________________
  print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
- # Интересный вариант                                # Тоже самое
- def clean_duplicates(lst):                          def clean_duplicates(lst):
-     res = set()                                         res = {str(i) for i in lst}
-     for i in lst:                                       return [eval(i) for i in res]
+ # Интересный вариант              # Тоже самое                       # Тоже самое
+ def clean_duplicates(lst):        def clean_duplicates(lst):         def clean_duplicates(lst):
+     res = set()                       res = {str(i) for i in lst}        return [eval(i) for i in {str(j) for j in lst}]
+     for i in lst:                     return [eval(i) for i in res]
          res.add(str(i))
      return [eval(i) for i in res]
 

@@ -15,14 +15,10 @@ from collections import namedtuple
 from itertools import count, product
 import ctypes
 from dataclasses import dataclass, field
-from pkgutil import resolve_name
 from typing import NamedTuple
 
 import more_itertools
-import unicodedata
 
-from Again_2.debug_new_2 import cycle
-from Again_2.good_functions import value
 
 #  SyntaxWarning: invalid escape sequence - ошибка связанная с многострочной строкой используем r перед строкой r''' '''
 
@@ -5618,7 +5614,6 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
-
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5668,7 +5663,6 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 
 fs1 = frozenset([1, 2, 3])
 fs2 = frozenset([4, 5, 6, 7, 8])
-
 
 
 
@@ -5991,7 +5985,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6079,6 +6072,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
+
 
 
 
@@ -6172,6 +6166,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6206,6 +6201,8 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
+
+
 
 
 
@@ -6319,6 +6316,8 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 
 
+
+
 # 9) Сортировка битом (Radix Sort)     Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
 """
 def counting_sort_for_radix(arr, exp):
@@ -6356,6 +6355,7 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
+
 
 
 
@@ -6481,6 +6481,7 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 
+
 # Ответ Перепишите lookups
 r"""
  Model.objects.all()                                       показать все записи
@@ -6528,6 +6529,9 @@ class Person(models.Model):
 # 1)Вывести список людей и городов где они живут?
 # 2)Вывести всех людей, живущих в городе N
 # 3)Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
+
+
+
 
 
 
@@ -6619,7 +6623,6 @@ for city in top_cities:
 
 
 # Первый пример!
-
 
 
 
@@ -6842,6 +6845,8 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
+
+
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -6861,7 +6866,6 @@ for obj in MyModel.objects.all().iterator():
 """
 
 # 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
-
 
 
 
@@ -7043,8 +7047,6 @@ SELECT id, name
 FROM author_counts
 WHERE book_count > 2;
 """
-
-
 
 
 
@@ -7276,7 +7278,7 @@ ________________________________________________________________________________
 # Создать функцию которая убирает дубликаты           Задача с Live Coding Собеседования
 
 
-# Написать 2 варианта
+# Написать 3 варианта
 def clean_duplicates(lst):
     pass
 
@@ -7342,7 +7344,6 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
-
 
 
 
@@ -7752,7 +7753,6 @@ def sort_array(arr):
 # Написать 4 варианта  и написать вариант который НЕ подвержен ограничению рекурсии!
 def flatten(*args):
     pass
-
 
 
 
@@ -8261,9 +8261,9 @@ def to_digit(val):
     ...
 
 
-
 def string_to_int(value: str) -> int:
     pass
+
 
 
 # print(string_to_int("3248"))  # -> 3248
@@ -8345,7 +8345,6 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
-
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8415,13 +8414,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 
 
-# @my_count
-# def plus():
-#     ...
-#
-# print(plus())  # -> 1 None
-# print(plus())  # -> 2 None
-# print(plus())  # -> 3 None
 
 
 

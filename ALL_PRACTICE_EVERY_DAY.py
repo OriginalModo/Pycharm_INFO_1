@@ -5582,6 +5582,7 @@ x = 42
 
 
 
+
 # Ответ Изменение указателя через ctypes
 """
 import ctypes
@@ -5711,6 +5712,7 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
 
 
 
@@ -5985,6 +5987,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6012,6 +6015,7 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
+
 
 
 
@@ -6048,7 +6052,6 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 
 
-
 # 3) Сортировка вставками (Insertion Sort)    Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
 """
 def insertion_sort(arr):
@@ -6072,6 +6075,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
+
 
 
 
@@ -6124,6 +6128,8 @@ def quick_sort(lst):
 
 
 
+
+
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -6167,6 +6173,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6201,8 +6208,6 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
-
-
 
 
 
@@ -6282,6 +6287,8 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
+
+
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6309,8 +6316,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
-
 
 
 
@@ -6355,6 +6360,7 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
+
 
 
 
@@ -6482,6 +6488,7 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 
+
 # Ответ Перепишите lookups
 r"""
  Model.objects.all()                                       показать все записи
@@ -6529,6 +6536,7 @@ class Person(models.Model):
 # 1)Вывести список людей и городов где они живут?
 # 2)Вывести всех людей, живущих в городе N
 # 3)Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
+
 
 
 
@@ -6586,6 +6594,8 @@ city_name = 'N'  # укажите название города
 
 
 
+
+
 # Ответ 2. Вывести всех людей, живущих в городе N:
 """
 city_name = 'N'  # укажите название города
@@ -6623,6 +6633,8 @@ for city in top_cities:
 
 
 # Первый пример!
+
+
 
 
 
@@ -6742,6 +6754,8 @@ obj = MyModel.objects.get(id=1)
 
 
 
+
+
 # Ответ 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
 """
@@ -6787,6 +6801,8 @@ count = MyModel.objects.all().count()
 
 
 
+
+
 # Ответ 10. aggregate() и annotate(): Эти методы возвращают агрегированные данные и также выполняют запрос.
 """
 from django.db.models import Count, Sum
@@ -6802,6 +6818,7 @@ for obj in result_annotate:
 """
 
 # 11. Пример аннотации: Получаем все объекты MyModel с подсчитанным количеством связанных объектов из RelatedModel.
+
 
 
 
@@ -6847,6 +6864,7 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
+
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -6866,6 +6884,7 @@ for obj in MyModel.objects.all().iterator():
 """
 
 # 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
+
 
 
 
@@ -6968,6 +6987,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
+
 # Ответ  Задача SQL  С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 """
 Мой вариант
@@ -7051,6 +7071,8 @@ WHERE book_count > 2;
 
 
 
+
+
 # Задача SQL  СИБУР    Исправить код
 """
 Исправить код
@@ -7102,6 +7124,7 @@ GROUP BY
 #  -> PK A1 A2 A3 A4  T
 #     1   1  1  1  1  5
 #     2   2  3  4  5  3
+
 
 
 
@@ -7162,7 +7185,6 @@ WHERE rn = 1;
 # Написать 3 варианта
 def is_correct_brackets(text):
     pass
-
 
 
 
@@ -7452,7 +7474,7 @@ lst = [2, 7, 9, 10, 11]
 target = 9
 
 
-# Написать 2 варианта  и еще 1 через zip
+# Написать 2 варианта range(len(nums)-1), zip  и еще 2 через pairwise, combinations
 def twoSum(nums, target):
     pass
 
@@ -7546,6 +7568,8 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
+
+
 
 
 
@@ -7842,9 +7866,9 @@ print(list(flatten(res)))   # -> [1, 2, 2, 3, 4, 4]
 from collections.abc import Iterable
 def flatten(items, ignore_types=(str, bytes)):
     for i in items:
-        if isinstance(i, Iterable) and not isinstance(i, ignore_types):
-            yield from flatten(i)
-        else:
+        if isinstance(i, Iterable) and not isinstance(i, ignore_types):                                         
+            yield from flatten(i)                                         # Тоже самое   for j in flatten(i):
+        else:                                                             #                  yield j    
             yield i
 
 print(list(flatten([1, 2, [2, 3, [4, 4]]])))               # -> [1, 2, 2, 3, 4, 4]
@@ -8261,6 +8285,7 @@ def to_digit(val):
     ...
 
 
+
 def string_to_int(value: str) -> int:
     pass
 
@@ -8344,7 +8369,6 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
-
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8415,9 +8439,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 
 
-
-
-
 # Ответ Замерить сколько раз вызывается функция      ivi  Иви
 """
 from dataclasses import dataclass, field
@@ -8472,6 +8493,7 @@ print(plus())  # -> 3 None
 
 # Будет последнее значение выводить 10 раз    ПОСМОТРИ ВНИМАТЕЛЬНО КОД  Обрати внимание на    x   Задача Мебель Детали
 # Исправить код. Чтобы текущее состояние сохранялось
+
 
 
 

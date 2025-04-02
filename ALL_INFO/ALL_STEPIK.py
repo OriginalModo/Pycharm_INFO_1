@@ -1064,8 +1064,8 @@ ________________________________________________________________________________
  def flatten(items, ignore_types=(str, bytes)):
      for i in items:
          if isinstance(i, Iterable) and not isinstance(i, ignore_types):
-             yield from flatten(i)
-         else:
+             yield from flatten(i)                                         # Тоже самое   for j in flatten(i):
+         else:                                                             #                  yield j
              yield i
 
  print(list(flatten([1, 2, [2, 3, [4, 4]]])))               # -> [1, 2, 2, 3, 4, 4]

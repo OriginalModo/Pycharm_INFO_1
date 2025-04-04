@@ -5615,6 +5615,7 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
+
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5664,6 +5665,7 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 
 fs1 = frozenset([1, 2, 3])
 fs2 = frozenset([4, 5, 6, 7, 8])
+
 
 
 
@@ -6022,6 +6024,8 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
+
+
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -6051,7 +6055,6 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 
 
-
 # 3) Сортировка вставками (Insertion Sort)    Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
 """
 def insertion_sort(arr):
@@ -6075,7 +6078,6 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
-
 
 
 
@@ -6129,7 +6131,6 @@ def quick_sort(lst):
 
 
 
-
 # 5) Сортировка слиянием (Merge Sort)    Время: O(n log n) во всех случаях.    Пространство: O(n)
 """
                                              # Интересный аналог функции merge_sort       
@@ -6166,7 +6167,6 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 # 6) Написать Пирамидальная сортировка (Heap Sort)
 # Время: O(n log n) во всех случаях.  Пространство: O(1)
-
 
 
 
@@ -6406,7 +6406,6 @@ __import__('sys').stdout.write(f'(Counting Sort): {sorted_arr}')  # -> (Counting
 
 
 
-
 # 11) Сортировка по ведрам (Bucket Sort)  O(n + k) для равномерно распределенных данных, k - кол-во ведер. Прос. O(n + k)
 """
 def insertion_sort(arr):                                       
@@ -6536,7 +6535,6 @@ class Person(models.Model):
 # 1)Вывести список людей и городов где они живут?
 # 2)Вывести всех людей, живущих в городе N
 # 3)Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
-
 
 
 
@@ -6839,7 +6837,6 @@ for obj in result:
 
 
 
-
 # Ответ 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
 """
 queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями
@@ -6884,7 +6881,6 @@ for obj in MyModel.objects.all().iterator():
 """
 
 # 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
-
 
 
 
@@ -7017,8 +7013,6 @@ HAVING COUNT(*) > 2;
 # INSERT INTO author(name) VALUES ('Автор 1'), ('Автор 2'), ('Автор 3');
 # INSERT INTO book(title, publication_date, author_id) VALUES ('Книга 1', '2017-04-01', 1),
 # ('Книга 2', '2018-04-01', 1), ('Книга 3', '2018-05-01', 2);
-
-
 
 
 
@@ -7188,6 +7182,7 @@ def is_correct_brackets(text):
 
 
 
+
 # print(is_correct_brackets('(((())))'))  # True
 # print(is_correct_brackets('(((())'))  # False
 # print(is_correct_brackets('())))'))  # False
@@ -7306,7 +7301,6 @@ def clean_duplicates(lst):
 
 
 
-
 # print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
@@ -7366,6 +7360,7 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
+
 
 
 
@@ -7477,6 +7472,7 @@ target = 9
 # Написать 2 варианта range(len(nums)-1), zip  и еще 2 через pairwise, combinations
 def twoSum(nums, target):
     pass
+
 
 
 
@@ -7788,6 +7784,7 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
+
 
 
 
@@ -8155,7 +8152,6 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
-
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -8432,7 +8428,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
-
 
 
 

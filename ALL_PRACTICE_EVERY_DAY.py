@@ -12,6 +12,7 @@ import time
 import types
 import re
 from collections import namedtuple
+from heapq import heapify
 from itertools import count, product
 import ctypes
 from dataclasses import dataclass, field
@@ -5582,7 +5583,6 @@ x = 42
 
 
 
-
 # Ответ Изменение указателя через ctypes
 """
 import ctypes
@@ -5609,6 +5609,8 @@ print(x)        # -> 42
 
 tup1 = (1, 2)
 tup2 = (11, 111, 1111, 11111)
+
+
 
 
 
@@ -5720,7 +5722,6 @@ str2 = "world12345"  # Если заменить на такую строку   
 
 
 
-
 # Ответ Изменить str на новое значение чтобы id остался такой как и был
 
 """
@@ -5825,6 +5826,7 @@ target = 9
 
 def binary_search(arr, target):
     pass
+
 
 
 
@@ -5989,7 +5991,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6017,7 +6018,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
-
 
 
 
@@ -6055,6 +6055,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 
 
+
 # 3) Сортировка вставками (Insertion Sort)    Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
 """
 def insertion_sort(arr):
@@ -6078,6 +6079,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
+
 
 
 
@@ -6323,6 +6325,8 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 
 
+
+
 # 9) Сортировка битом (Radix Sort)     Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
 """
 def counting_sort_for_radix(arr, exp):
@@ -6360,7 +6364,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 
@@ -6543,6 +6546,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6609,6 +6613,7 @@ for person in people_in_city_n:
 # 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 # Для этого нам нужно будет добавить поле для хранения количества людей в каждом городе. Однако, чтобы подсчитать
 # это количество динамически, мы можем использовать аннотирование с `Count`.
+
 
 
 
@@ -6960,6 +6965,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
+
 # Задача SQL                                   С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 # sales
 #
@@ -6975,8 +6981,6 @@ LEFT JOIN products p ON o.product_id = p.id;
 # product | count
 # dog     | 2
 # cat     | 3
-
-
 
 
 
@@ -7125,7 +7129,6 @@ GROUP BY
 
 
 
-
 # Ответ  Задача SQL  СИБУР   НАПИСАТЬ 2 ВАРИАНТА
 #/* Есть таблица t1 <PK, A1, A2, …, AN, T > PK – идентификатор объекта A1, …, AN – это атрибуты T – это время фиксации значения.
 #  Напиши SQL, который вернёт последнюю загруженную запись по оси T для каждого PK. */
@@ -7179,6 +7182,7 @@ WHERE rn = 1;
 # Написать 3 варианта
 def is_correct_brackets(text):
     pass
+
 
 
 
@@ -7564,7 +7568,6 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
-
 
 
 
@@ -8364,7 +8367,6 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
-
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8428,6 +8430,7 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
+
 
 
 

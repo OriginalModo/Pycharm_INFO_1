@@ -5528,7 +5528,7 @@ with ThreadPoolExecutor(max_workers=1) as executor:
 
 
 # Как запустить что-то в Процессах и вывести результат?   # lambda не сериализуется pickle   ProcessPoolExecutor
-
+# if __name__ == "__main__": для защиты от рекурсии.
 
 
 
@@ -5538,12 +5538,15 @@ with ThreadPoolExecutor(max_workers=1) as executor:
 
 
 # Ответ Как запустить что-то в Процессах и вывести результат?   # lambda не сериализуется pickle   ProcessPoolExecutor
+# конструкция if __name__ == "__main__": критически важна не только для multiprocessing, но и для
+# concurrent.futures.ProcessPoolExecutor, поскольку он тоже использует механизм порождения процессов (аналогично multiprocessing).
 """
 from concurrent.futures import ProcessPoolExecutor
 
 # lambda не сериализуется pickle
 fn = lambda: 5
 
+# if __name__ == "__main__": для защиты от рекурсии.
 if __name__ == "__main__":
 # Создание ProcessPoolExecutor с 4 рабочими процессами
     with ProcessPoolExecutor(max_workers=4) as executor:
@@ -5616,8 +5619,6 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
-
-
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5674,6 +5675,7 @@ fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
+
 # Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 """
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
@@ -5716,6 +5718,8 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
+
 
 
 
@@ -5826,7 +5830,6 @@ target = 9
 
 def binary_search(arr, target):
     pass
-
 
 
 
@@ -5991,6 +5994,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6025,7 +6029,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
-
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -6049,6 +6052,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 # 3) Написать Сортировку вставками (Insertion Sort)
 # Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
+
 
 
 
@@ -6291,6 +6295,7 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
+
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6318,7 +6323,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
 
 
 
@@ -6364,7 +6368,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 
@@ -6545,8 +6548,6 @@ class Person(models.Model):
 
 
 
-
-
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6573,7 +6574,6 @@ class Person(models.Model):
 
 
 # 1. Вывести список людей и городов, где они живут:
-
 
 
 
@@ -6734,7 +6734,6 @@ count = len(MyModel.objects.all())
 
 
 
-
 # Ответ 4. for циклы: Итерирование по QuerySet также выполняет запрос.
 """
 for obj in MyModel.objects.all():
@@ -6866,7 +6865,6 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
-
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -6875,6 +6873,7 @@ results = MyModel.objects.prefetch_related('related_models').all()  # Приме
 """
 
 # 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
+
 
 
 
@@ -7186,7 +7185,6 @@ def is_correct_brackets(text):
 
 
 
-
 # print(is_correct_brackets('(((())))'))  # True
 # print(is_correct_brackets('(((())'))  # False
 # print(is_correct_brackets('())))'))  # False
@@ -7479,7 +7477,6 @@ def twoSum(nums, target):
 
 
 
-
 # print(twoSum(lst, target))  # -> [[0, 1]]
 # print(twoSum(lst, target))  # -> [0, 1]
 
@@ -7757,8 +7754,6 @@ def sort_array(arr):
     pass
 
 
-
-
 # numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
@@ -7787,7 +7782,6 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
-
 
 
 
@@ -7948,7 +7942,6 @@ ________________________________________________________________________________
 
 def longest_sequence(lst):
     pass
-
 
 
 
@@ -8491,6 +8484,7 @@ print(plus())  # -> 3 None
 
 # Будет последнее значение выводить 10 раз    ПОСМОТРИ ВНИМАТЕЛЬНО КОД  Обрати внимание на    x   Задача Мебель Детали
 # Исправить код. Чтобы текущее состояние сохранялось
+
 
 
 

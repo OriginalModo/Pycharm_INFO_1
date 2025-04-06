@@ -15314,6 +15314,7 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
  Но: Не все компоненты Django асинхронны (ORM, кэши — работают синхронно).
  Django даёт асинхронность, но с оговорками — это гибридный фреймворк, а не полноценный async (как FastAPI)
 
+
  -- Модуль concurrent.futures --
  concurrent.futures — Запуск параллельных задач, Параллельное выполнения задач в разных процессах или потоках
 
@@ -15532,6 +15533,9 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
 
  # конструкция if __name__ == "__main__": критически важна не только для multiprocessing, но и для
  # concurrent.futures.ProcessPoolExecutor, поскольку он тоже использует механизм порождения процессов (аналогично multiprocessing).
+
+ # if __name__ == "__main__": для защиты от рекурсии.
+
 
  -- ЦЕЛЬ СЕРИАЛИЗАЦИИ с помощью pickle в multiprocessing --
 

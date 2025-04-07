@@ -7174,14 +7174,15 @@ def is_palindrome(s: str) -> bool:
 
 
 
+
 # # Примеры использования с различными символами
 # print(is_palindrome("A man, a plan, a canal: Panama"))  # True
-# print(is_palindrome("race a car"))  # False
-# print(is_palindrome("No 'x' in Nixon"))  # True
-# print(is_palindrome("Was it a car or a cat I saw?"))  # True
-# print(is_palindrome("!@#$%^&*()"))  # True, так как пустая строка между символами и игнорируемые символы
-# print(is_palindrome("12321"))  # True
-# print(is_palindrome("123456"))  # False
+# print(is_palindrome("race a car"))                      # False
+# print(is_palindrome("No 'x' in Nixon"))                 # True
+# print(is_palindrome("Was it a car or a cat I saw?"))    # True
+# print(is_palindrome("!@#$%^&*()"))                      # True, так как пустая строка между символами и игнорируемые символы
+# print(is_palindrome("12321"))                           # True
+# print(is_palindrome("123456"))                          # False
 
 
 

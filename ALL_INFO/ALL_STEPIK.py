@@ -6256,7 +6256,35 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print("Deque after popleft():", my_deque)  # -> deque([2, 3, 4])
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Задача  палиндромом без создания дополнительных строк и с временной сложностью O(n) и пространственной сложностью O(1)
+ def is_palindrome(s: str) -> bool:
+     left, right = 0, len(s) - 1
 
+     while left < right:
+         # Пропускаем не буквенные символы слева
+         while left < right and not s[left].isalnum():
+             left += 1
+         # Пропускаем не буквенные символы справа
+         while left < right and not s[right].isalnum():
+             right -= 1
+
+         # Сравниваем символы, игнорируя регистр
+         if s[left].lower() != s[right].lower():
+             return False
+
+         left += 1
+         right -= 1
+
+     return True
+
+ # Примеры использования с различными символами
+ print(is_palindrome("A man, a plan, a canal: Panama")) # True
+ print(is_palindrome("race a car"))                     # False
+ print(is_palindrome("No 'x' in Nixon"))                # True
+ print(is_palindrome("Was it a car or a cat I saw?"))   # True
+ print(is_palindrome("!@#$%^&*()"))                     # True, так как пустая строка между символами и игнорируемые символы
+ print(is_palindrome("12321"))                          # True
+ print(is_palindrome("123456"))                         # False
  -----------------------------------------------------------------------------------------------------------------------
 
 

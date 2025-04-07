@@ -5619,6 +5619,7 @@ tup2 = (11, 111, 1111, 11111)
 
 
 
+
 # Ответ Изменить tuple на новое значение чтобы id остался такой как и был # tuple хранит элементы в виде массива указателей
 
 """
@@ -5668,7 +5669,6 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 
 fs1 = frozenset([1, 2, 3])
 fs2 = frozenset([4, 5, 6, 7, 8])
-
 
 
 
@@ -5902,7 +5902,6 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 
 
-
 # Реализация Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
 """
 # Вариант 1: Опорный элемент — последний элемент массива
@@ -5994,7 +5993,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6052,7 +6050,6 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 # 3) Написать Сортировку вставками (Insertion Sort)
 # Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
-
 
 
 
@@ -6130,6 +6127,7 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
+
 
 
 
@@ -6222,6 +6220,7 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 
 
+
 # 7) Тим-сорт (Tim Sort)     Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
 """
 def insertion_sort(arr, left, right):
@@ -6287,8 +6286,6 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 # 8) Написать Сортировка Шелла (Shell Sort)
 # Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
-
-
 
 
 
@@ -6368,7 +6365,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 
@@ -6548,6 +6544,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6579,6 +6576,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -6591,7 +6589,6 @@ for person in people_with_cities:
 # 2. Вывести всех людей, живущих в городе N:
 
 city_name = 'N'  # укажите название города
-
 
 
 
@@ -6613,7 +6610,6 @@ for person in people_in_city_n:
 # 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 # Для этого нам нужно будет добавить поле для хранения количества людей в каждом городе. Однако, чтобы подсчитать
 # это количество динамически, мы можем использовать аннотирование с `Count`.
-
 
 
 
@@ -6642,6 +6638,7 @@ for city in top_cities:
 
 
 # 1)OR  Найдем всех людей, у которых имя "John" ИЛИ фамилия "Doe"
+
 
 
 
@@ -6865,6 +6862,7 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
+
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -6986,7 +6984,6 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
-
 # Ответ  Задача SQL  С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 """
 Мой вариант
@@ -7016,6 +7013,8 @@ HAVING COUNT(*) > 2;
 # INSERT INTO author(name) VALUES ('Автор 1'), ('Автор 2'), ('Автор 3');
 # INSERT INTO book(title, publication_date, author_id) VALUES ('Книга 1', '2017-04-01', 1),
 # ('Книга 2', '2018-04-01', 1), ('Книга 3', '2018-05-01', 2);
+
+
 
 
 
@@ -7128,6 +7127,7 @@ GROUP BY
 
 
 
+
 # Ответ  Задача SQL  СИБУР   НАПИСАТЬ 2 ВАРИАНТА
 #/* Есть таблица t1 <PK, A1, A2, …, AN, T > PK – идентификатор объекта A1, …, AN – это атрибуты T – это время фиксации значения.
 #  Напиши SQL, который вернёт последнюю загруженную запись по оси T для каждого PK. */
@@ -7160,6 +7160,116 @@ WHERE rn = 1;
 
 
 # --- Задачи с Собеседования Python ---
+
+
+
+# Полиндром от Санька
+# Задача  палиндромом без создания дополнительных строк и с временной сложностью O(n) и пространственной сложностью O(1)
+
+
+
+def is_palindrome(s: str) -> bool:
+    pass
+
+
+
+
+# # Примеры использования с различными символами
+# print(is_palindrome("A man, a plan, a canal: Panama"))  # True
+# print(is_palindrome("race a car"))  # False
+# print(is_palindrome("No 'x' in Nixon"))  # True
+# print(is_palindrome("Was it a car or a cat I saw?"))  # True
+# print(is_palindrome("!@#$%^&*()"))  # True, так как пустая строка между символами и игнорируемые символы
+# print(is_palindrome("12321"))  # True
+# print(is_palindrome("123456"))  # False
+
+
+
+
+
+
+
+# Ответ  Полиндром он Санька
+# Задача  палиндромом без создания дополнительных строк и с временной сложностью O(n) и пространственной сложностью O(1)
+"""
+
+# 1 Вариант
+
+def is_palindrome(s: str) -> bool:
+    left, right = 0, len(s) - 1
+
+    while left < right:
+        # Пропускаем не буквенные символы слева
+        while left < right and not s[left].isalnum():
+            left += 1
+        # Пропускаем не буквенные символы справа
+        while left < right and not s[right].isalnum():
+            right -= 1
+
+        # Сравниваем символы, игнорируя регистр
+        if s[left].lower() != s[right].lower():
+            return False
+
+        left += 1
+        right -= 1
+
+    return True
+
+
+# Примеры использования с различными символами
+print(is_palindrome("A man, a plan, a canal: Panama"))  # True
+print(is_palindrome("race a car"))                      # False
+print(is_palindrome("No 'x' in Nixon"))                 # True
+print(is_palindrome("Was it a car or a cat I saw?"))    # True
+print(is_palindrome("!@#$%^&*()"))                      # True, так как пустая строка между символами и игнорируемые символы
+print(is_palindrome("12321"))                           # True
+print(is_palindrome("123456"))                          # False
+
+
+
+# Вариант 2: Более компактная запись
+
+def is_palindrome(s: str) -> bool:
+    left, right = 0, len(s) - 1
+    while left < right:
+        if not s[left].isalnum():
+            left += 1
+        elif not s[right].isalnum():
+            right -= 1
+        else:
+            if s[left].lower() != s[right].lower():
+                return False
+            left += 1
+            right -= 1
+    return True
+    
+    
+# Вариант 3: continue (уменьшает вложенность условий)   
+def is_palindrome(s: str) -> bool:
+    left, right = 0, len(s) - 1
+    while left < right:
+        if not s[left].isalnum():
+            left += 1
+            continue
+        if not s[right].isalnum():
+            right -= 1
+            continue
+        if s[left].lower() != s[right].lower():
+            return False
+        left += 1
+        right -= 1
+    return True
+    
+    
+# Вариант 4: С предварительным фильтром (но это уже не O(1) по памяти)
+  
+# Этот вариант не соответствует требованиям O(1) памяти, но может быть полезен для сравнения
+def is_palindrome(s: str) -> bool:
+    filtered = [c.lower() for c in s if c.isalnum()]
+    return filtered == filtered[::-1] 
+"""
+
+
 
 
 
@@ -7369,6 +7479,7 @@ xs = [
 
 
 
+
 # Ответ  Yandex-Маркет Задача Отсортировать по двум параметрам. Как я сделал я не знаю
 r"""
 xs = [
@@ -7477,6 +7588,7 @@ def twoSum(nums, target):
 
 
 
+
 # print(twoSum(lst, target))  # -> [[0, 1]]
 # print(twoSum(lst, target))  # -> [0, 1]
 
@@ -7565,6 +7677,8 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
+
+
 
 
 
@@ -7754,6 +7868,7 @@ def sort_array(arr):
     pass
 
 
+
 # numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
@@ -7771,6 +7886,7 @@ def sort_array(arr):
 # Написать 4 варианта  и написать вариант который НЕ подвержен ограничению рекурсии!
 def flatten(*args):
     pass
+
 
 
 
@@ -7942,6 +8058,7 @@ ________________________________________________________________________________
 
 def longest_sequence(lst):
     pass
+
 
 
 
@@ -8148,6 +8265,7 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
+
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -8280,7 +8398,6 @@ def to_digit(val):
 
 def string_to_int(value: str) -> int:
     pass
-
 
 
 # print(string_to_int("3248"))  # -> 3248
@@ -8484,8 +8601,6 @@ print(plus())  # -> 3 None
 
 # Будет последнее значение выводить 10 раз    ПОСМОТРИ ВНИМАТЕЛЬНО КОД  Обрати внимание на    x   Задача Мебель Детали
 # Исправить код. Чтобы текущее состояние сохранялось
-
-
 
 
 

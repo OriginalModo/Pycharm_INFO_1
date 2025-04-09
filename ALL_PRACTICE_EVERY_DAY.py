@@ -12,7 +12,6 @@ import time
 import types
 import re
 from collections import namedtuple
-from heapq import heapify
 from itertools import count, product
 import ctypes
 from dataclasses import dataclass, field
@@ -5578,9 +5577,13 @@ if __name__ == "__main__":
 
 
 
+
+
+
 # Изменение указателя через ctypes
 
 x = 42
+
 
 
 
@@ -5612,6 +5615,7 @@ print(x)        # -> 42
 
 tup1 = (1, 2)
 tup2 = (11, 111, 1111, 11111)
+
 
 
 
@@ -5669,6 +5673,8 @@ print(f"tup2: {tup2}, id: {id(tup2)}")  # -> tup2: (11, 111, 1111, 11111), id: 2
 
 fs1 = frozenset([1, 2, 3])
 fs2 = frozenset([4, 5, 6, 7, 8])
+
+
 
 
 
@@ -5792,6 +5798,7 @@ target = 9
 
 
 
+
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -5902,6 +5909,7 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 
 
+
 # Реализация Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
 """
 # Вариант 1: Опорный элемент — последний элемент массива
@@ -5993,6 +6001,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6020,6 +6029,7 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
+
 
 
 
@@ -6080,7 +6090,6 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
-
 
 
 
@@ -6220,7 +6229,6 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 
 
-
 # 7) Тим-сорт (Tim Sort)     Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
 """
 def insertion_sort(arr, left, right):
@@ -6293,6 +6301,7 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
+
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6320,6 +6329,7 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
+
 
 
 
@@ -6365,6 +6375,8 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
+
+
 
 
 
@@ -6545,6 +6557,8 @@ class Person(models.Model):
 
 
 
+
+
 # Ответ:
 # Вот пример определения моделей с учетом этих деталей:
 """
@@ -6616,6 +6630,7 @@ for person in people_in_city_n:
 
 
 
+
 # Ответ 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 """
 from django.db.models import Count
@@ -6632,6 +6647,7 @@ for city in top_cities:
 
 
 # Первый пример!
+
 
 
 
@@ -6731,6 +6747,7 @@ count = len(MyModel.objects.all())
 
 
 
+
 # Ответ 4. for циклы: Итерирование по QuerySet также выполняет запрос.
 """
 for obj in MyModel.objects.all():
@@ -6755,6 +6772,7 @@ obj = MyModel.objects.get(id=1)
 
 
 
+
 # Ответ 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
 """
@@ -6763,7 +6781,6 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 """
 
 # 7. first() и last(): Получает первый или последний объект и выполняет запрос.
-
 
 
 
@@ -6875,7 +6892,6 @@ results = MyModel.objects.prefetch_related('related_models').all()  # Приме
 
 
 
-
 # Ответ 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
 """
 for obj in MyModel.objects.all().iterator():
@@ -6883,6 +6899,7 @@ for obj in MyModel.objects.all().iterator():
 """
 
 # 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
+
 
 
 
@@ -6901,7 +6918,9 @@ MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 
 
 
+
 # Напиши SQL Задачу с собеседования    НАПИСАТЬ 2 ВАРИАНТА ---
+
 
 
 
@@ -6963,6 +6982,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
+
 # Задача SQL                                   С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 # sales
 #
@@ -6978,6 +6998,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 # product | count
 # dog     | 2
 # cat     | 3
+
 
 
 
@@ -7003,6 +7024,7 @@ WHERE CAST(year AS CHAR) REGEXP '2024'
 GROUP BY product 
 HAVING COUNT(*) > 2;
 """
+
 
 
 
@@ -7170,6 +7192,8 @@ WHERE rn = 1;
 
 def is_palindrome(s: str) -> bool:
     pass
+
+
 
 
 
@@ -7414,6 +7438,7 @@ def clean_duplicates(lst):
 
 
 
+
 # print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
@@ -7473,6 +7498,7 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
+
 
 
 
@@ -7589,7 +7615,6 @@ def twoSum(nums, target):
 
 
 
-
 # print(twoSum(lst, target))  # -> [[0, 1]]
 # print(twoSum(lst, target))  # -> [0, 1]
 
@@ -7678,7 +7703,6 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
-
 
 
 
@@ -7890,7 +7914,6 @@ def flatten(*args):
 
 
 
-
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
 
@@ -7899,7 +7922,6 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
-
 
 
 
@@ -8059,6 +8081,8 @@ ________________________________________________________________________________
 
 def longest_sequence(lst):
     pass
+
+
 
 
 
@@ -8397,8 +8421,11 @@ def to_digit(val):
 
 
 
+
 def string_to_int(value: str) -> int:
     pass
+
+
 
 
 # print(string_to_int("3248"))  # -> 3248
@@ -8478,6 +8505,7 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
+
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8541,6 +8569,7 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
+
 
 
 

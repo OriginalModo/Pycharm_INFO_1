@@ -5579,12 +5579,18 @@ if __name__ == "__main__":
 
 
 
-
 # Изменение указателя через ctypes
 
 x = 42
 
 
+
+# Ошибки НЕ будет если бежать по пустому [], {}, (), ''
+for i in []:
+    print(i) # Ничего не выводит
+
+for i in '':
+    print(i) # Ничего не выводит
 
 
 
@@ -5615,9 +5621,6 @@ print(x)        # -> 42
 
 tup1 = (1, 2)
 tup2 = (11, 111, 1111, 11111)
-
-
-
 
 
 
@@ -5680,8 +5683,6 @@ fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
-
-
 # Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 """
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
@@ -5724,6 +5725,7 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
 
 
 
@@ -5790,7 +5792,6 @@ print(f"str2: {str2}, id: {id(str2)}")  # -> str2: world12345, id: 3030659487504
 
 d = [-1, -3, 2, 4, 5, 7, 8, 9]
 target = 9
-
 
 
 
@@ -5903,7 +5904,6 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 # Задача с собеседования
 # Написать Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
-
 
 
 
@@ -6036,7 +6036,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
-
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -6090,6 +6089,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
+
 
 
 
@@ -6229,6 +6229,7 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 
 
+
 # 7) Тим-сорт (Tim Sort)     Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
 """
 def insertion_sort(arr, left, right):
@@ -6301,7 +6302,6 @@ __import__('sys').stdout.write(f'(Tim Sort): {sorted_arr}')  # -> (Tim Sort): [1
 
 
 
-
 # 8) Сортировка Шелла (Shell Sort)     Время: O(n²) в худшем, O(n log n) в среднем.  Пространство: O(1)
 """
 def shell_sort(arr):
@@ -6329,7 +6329,6 @@ __import__('sys').stdout.write(f'(Shell Sort): {sorted_arr}')  # -> (Shell Sort)
 
 # 9) Написать Сортировка битом (Radix Sort)
 # Время: O(nk), где k — количество разрядов.  Пространство: O(n + k)
-
 
 
 
@@ -6375,7 +6374,6 @@ __import__('sys').stdout.write(f'(Radix Sort): {sorted_arr}')  # -> (Radix Sort)
 
 # 10) Написать Сортировка подсчётом (Counting Sort)
 # Время: O(n + k), где k — максимальное значение в массиве. Пространство: O(k)
-
 
 
 
@@ -6590,7 +6588,6 @@ class Person(models.Model):
 
 
 
-
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -6624,6 +6621,7 @@ for person in people_in_city_n:
 # 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 # Для этого нам нужно будет добавить поле для хранения количества людей в каждом городе. Однако, чтобы подсчитать
 # это количество динамически, мы можем использовать аннотирование с `Count`.
+
 
 
 
@@ -6785,6 +6783,7 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 
 
 
+
 # Ответ 7. first() и last(): Получает первый или последний объект и выполняет запрос.
 """
 first_obj = MyModel.objects.first()
@@ -6873,6 +6872,7 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 # 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 # Пример использования select_related для один-к-одному и один-ко-многим.
+
 
 
 
@@ -6983,6 +6983,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
+
 # Задача SQL                                   С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 # sales
 #
@@ -6998,8 +6999,6 @@ LEFT JOIN products p ON o.product_id = p.id;
 # product | count
 # dog     | 2
 # cat     | 3
-
-
 
 
 
@@ -7035,6 +7034,7 @@ HAVING COUNT(*) > 2;
 # INSERT INTO author(name) VALUES ('Автор 1'), ('Автор 2'), ('Автор 3');
 # INSERT INTO book(title, publication_date, author_id) VALUES ('Книга 1', '2017-04-01', 1),
 # ('Книга 2', '2018-04-01', 1), ('Книга 3', '2018-05-01', 2);
+
 
 
 
@@ -7149,7 +7149,6 @@ GROUP BY
 
 
 
-
 # Ответ  Задача SQL  СИБУР   НАПИСАТЬ 2 ВАРИАНТА
 #/* Есть таблица t1 <PK, A1, A2, …, AN, T > PK – идентификатор объекта A1, …, AN – это атрибуты T – это время фиксации значения.
 #  Напиши SQL, который вернёт последнюю загруженную запись по оси T для каждого PK. */
@@ -7192,9 +7191,6 @@ WHERE rn = 1;
 
 def is_palindrome(s: str) -> bool:
     pass
-
-
-
 
 
 
@@ -7615,6 +7611,8 @@ def twoSum(nums, target):
 
 
 
+
+
 # print(twoSum(lst, target))  # -> [[0, 1]]
 # print(twoSum(lst, target))  # -> [0, 1]
 
@@ -7703,6 +7701,7 @@ ________________________________________________________________________________
 
 
 # Релизация своего класса имитируещего СЛОВАРЬ   ML
+
 
 
 
@@ -7894,6 +7893,7 @@ def sort_array(arr):
 
 
 
+
 # numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
@@ -7914,6 +7914,7 @@ def flatten(*args):
 
 
 
+
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
 
@@ -7922,6 +7923,7 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
+
 
 
 
@@ -8081,8 +8083,6 @@ ________________________________________________________________________________
 
 def longest_sequence(lst):
     pass
-
-
 
 
 
@@ -8421,7 +8421,6 @@ def to_digit(val):
 
 
 
-
 def string_to_int(value: str) -> int:
     pass
 
@@ -8569,7 +8568,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
-
 
 
 

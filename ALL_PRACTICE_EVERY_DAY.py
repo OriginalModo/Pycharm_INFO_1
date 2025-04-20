@@ -5578,11 +5578,10 @@ if __name__ == "__main__":
 
 
 
+
 # Изменение указателя через ctypes
 
 x = 42
-
-
 
 
 
@@ -5615,6 +5614,7 @@ print(x)        # -> 42
 
 tup1 = (1, 2)
 tup2 = (11, 111, 1111, 11111)
+
 
 
 
@@ -5675,6 +5675,9 @@ fs2 = frozenset([4, 5, 6, 7, 8])
 
 
 
+
+
+
 # Ответ Изменить frozenset на новое значение чтобы id остался такой как и был  # frozenset использует хэш-таблицу.
 """
 # Однако, так как размеры frozenset разные, копируются только первые элементы.           <-----    <-----
@@ -5717,6 +5720,8 @@ print(f"fs2: {fs2}, id: {id(fs2)}")  # -> fs2: frozenset({4, 5, 6, 7, 8}), id: 2
 
 str1 = "hello"
 str2 = "world12345"  # Если заменить на такую строку    str2 = "worldworld"   то str1 будет равно    str1 = "world"
+
+
 
 
 
@@ -5828,6 +5833,7 @@ target = 9
 
 def binary_search(arr, target):
     pass
+
 
 
 
@@ -5993,6 +5999,7 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
+
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -6020,6 +6027,7 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
+
 
 
 
@@ -6087,6 +6095,7 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 
 
+
 # 4) Быстрая сортировка (Quick Sort)   O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
 """
 def quick_sort(arr):
@@ -6127,7 +6136,6 @@ def quick_sort(lst):
 
 # 5) Написать Сортировку слиянием (Merge Sort)
 # Время: O(n log n) во всех случаях.    Пространство: O(n)
-
 
 
 
@@ -6178,6 +6186,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6212,6 +6221,9 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
+
+
+
 
 
 
@@ -6409,7 +6421,6 @@ __import__('sys').stdout.write(f'(Counting Sort): {sorted_arr}')  # -> (Counting
 
 
 
-
 # 11) Сортировка по ведрам (Bucket Sort)  O(n + k) для равномерно распределенных данных, k - кол-во ведер. Прос. O(n + k)
 """
 def insertion_sort(arr):                                       
@@ -6492,6 +6503,7 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 
+
 # Ответ Перепишите lookups
 r"""
  Model.objects.all()                                       показать все записи
@@ -6525,6 +6537,7 @@ r"""
 
 
 
+
 # Задачи на ORM
 """
 class City(models.Model):
@@ -6539,7 +6552,6 @@ class Person(models.Model):
 # 1)Вывести список людей и городов где они живут?
 # 2)Вывести всех людей, живущих в городе N
 # 3)Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
-
 
 
 
@@ -6580,6 +6592,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -6592,6 +6605,7 @@ for person in people_with_cities:
 # 2. Вывести всех людей, живущих в городе N:
 
 city_name = 'N'  # укажите название города
+
 
 
 
@@ -6613,7 +6627,6 @@ for person in people_in_city_n:
 # 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 # Для этого нам нужно будет добавить поле для хранения количества людей в каждом городе. Однако, чтобы подсчитать
 # это количество динамически, мы можем использовать аннотирование с `Count`.
-
 
 
 
@@ -6738,6 +6751,7 @@ count = len(MyModel.objects.all())
 
 
 
+
 # Ответ 4. for циклы: Итерирование по QuerySet также выполняет запрос.
 """
 for obj in MyModel.objects.all():
@@ -6763,6 +6777,7 @@ obj = MyModel.objects.get(id=1)
 
 
 
+
 # Ответ 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
 """
@@ -6776,6 +6791,8 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 
 
 
+
+
 # Ответ 7. first() и last(): Получает первый или последний объект и выполняет запрос.
 """
 first_obj = MyModel.objects.first()
@@ -6783,6 +6800,7 @@ last_obj = MyModel.objects.last()
 """
 
 # 8. exists(): Проверяет наличие объектов и выполняет запрос.
+
 
 
 
@@ -6841,6 +6859,9 @@ for obj in result:
 """
 
 # 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
+
+
+
 
 
 
@@ -6919,7 +6940,6 @@ MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 
 
 
-
 # --- SQL Задача с собеседования    НАПИСАТЬ 2 ВАРИАНТА  ---
 
 """
@@ -6976,6 +6996,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 
 
 
+
 # Задача SQL                                   С книгами сильный чел   НАПИСАТЬ 2 ВАРИАНТА
 # sales
 #
@@ -6991,6 +7012,7 @@ LEFT JOIN products p ON o.product_id = p.id;
 # product | count
 # dog     | 2
 # cat     | 3
+
 
 
 
@@ -7028,7 +7050,6 @@ HAVING COUNT(*) > 2;
 # INSERT INTO author(name) VALUES ('Автор 1'), ('Автор 2'), ('Автор 3');
 # INSERT INTO book(title, publication_date, author_id) VALUES ('Книга 1', '2017-04-01', 1),
 # ('Книга 2', '2018-04-01', 1), ('Книга 3', '2018-05-01', 2);
-
 
 
 
@@ -7079,6 +7100,8 @@ SELECT id, name
 FROM author_counts
 WHERE book_count > 2;
 """
+
+
 
 
 
@@ -7175,7 +7198,689 @@ WHERE rn = 1;
 
 
 
+
 # --- Задачи с Собеседования Python ---
+
+
+# 2 Задачи    компания ГК “МТ-Интеграция”
+# Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!  АНАГРАММА И ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ   НАПИШИ ВСЕ ВАРИАНТЫ!!!
+
+
+# ЗАДАЧА 1  АНАГРАММА   НАПИСАТЬ 5 СПОСОБОВ!
+def anagramma(s: str, s1: str) -> bool:
+    pass
+
+
+
+
+
+# print(anagramma('нора', 'рано'))     # -> True
+# print(anagramma('нораар', 'раноо'))  # -> False
+
+
+
+
+
+# ЗАДАЧА 2  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ  НАПИСАТЬ 8 СПОСОБОВ!
+def is_service_good(lst: list[tuple]):
+    pass
+
+
+
+
+# a_res = [(123456, "AuthService", "ERROR"), (1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+# EXPECTED_OUTPUT = [(1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+#
+# print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'AuthService', 'INFO')]
+
+
+
+
+
+
+# ОТВЕТ 2 Задачи    компания ГК “МТ-Интеграция”
+# ОТВЕТ Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!  АНАГРАММА И ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ   НАПИШИ ВСЕ ВАРИАНТЫ!!!
+"""
+
+# Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!    АНАГРАММА  И  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ
+
+
+# ЗАДАЧА 1) АНАГРАММА - это слово или фраза, образованная перестановкой букв другого слова или фразы.
+# Примеры АНАГРАММ:  "Кот" → "Ток"    "Апельсин" → "Спаниель"
+
+
+
+# Способ 1: Через сортировку                                                                            O(n log n)
+def anagramma(s: str, s1: str) -> bool:
+    return sorted(s) == sorted(s1)
+
+
+# Способ 2: Через collections.Counter (быстро и надёжно)                                                O(n)
+from collections import Counter
+
+def anagramma(s: str, s1: str) -> bool:
+    return Counter(s) == Counter(s1)
+
+
+# Способ 3: Через defaultdict (альтернатива Counter)  Быстрее обычного словаря (не требует .get()).     O(n)
+from collections import defaultdict
+
+def anagramma(s: str, s1: str) -> bool:
+    if len(s) != len(s1):
+        return False
+    counts = defaultdict(int)
+    for char in s:
+        counts[char] += 1
+    for char in s1:
+        counts[char] -= 1
+        if counts[char] < 0:
+            return False
+    return True
+
+
+# Способ 4: Вручную через словарь (без библиотек)                                                       O(n)
+def anagramma(s: str, s1: str) -> bool:
+    if len(s) != len(s1):
+        return False
+    char_count = {}
+    for char in s:
+        char_count[char] = char_count.get(char, 0) + 1
+    for char in s1:
+        if char not in char_count or char_count[char] == 0:
+            return False
+        char_count[char] -= 1
+    return True
+
+
+# Способ 5: Через массив ASCII (оптимально для английского)  Супербыстрый для ASCII (кириллицу нужно доработать). O(n)
+def anagramma(s: str, s1: str) -> bool:
+    if len(s) != len(s1):
+        return False
+    # counts = [0] * 128  # ASCII-таблица (0-127)  # кириллица требует [0] * 1104 для базового Unicode
+    # counts = [0] * 1104  # ASCII-таблица (0-127)  # кириллица требует [0] * 1104 для базового Unicode
+    counts = [0] * 1114112  # Полная поддержка Unicode
+    for c in s:
+        counts[ord(c)] += 1
+    for c in s1:
+        counts[ord(c)] -= 1
+        if counts[ord(c)] < 0:
+            return False
+    return True
+
+
+print(anagramma('нора', 'рано'))     # -> True
+print(anagramma('нораар', 'раноо'))  # -> False
+
+
+
+
+
+# ЗАДАЧА 2)   ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ
+
+# ЗАДАЧА фильтрации списка сервисов, оставляя только первую запись для каждого уникального сервиса
+# (с учетом сортировки по времени):
+
+
+# Способ 1: МОЁ РЕШЕНИЕ              O(n²) - из-за вложенного поиска через itertools.chain  НЕ РЕКОМЕНДУЕТСЯ
+def is_service_good(lst: list[tuple]):
+    res = []
+    for i in lst:
+        if i[1] not in list(itertools.chain(*res)):
+            res.append(i)
+    return sorted(res, key=lambda x: x[0])
+
+
+# Способ 2: Использование set()        O(n log n) - из-за сортировки + O(n) для прохода       Лучший баланс
+import itertools
+ 
+def is_service_good(lst: list[tuple]):
+    seen_services = set()
+    res = []
+
+    for entry in sorted(lst, key=lambda x: x[0]):  # sort by timestamp first
+        service = entry[1]
+        if service not in seen_services:
+            seen_services.add(service)
+            res.append(entry)
+
+    return res
+
+
+# Способ 3: Использование словаря с обновлением   O(n log n) для сортировки + O(n) для прохода   Лучший баланс
+
+def is_service_good(lst: list[tuple]):
+    service_dict = {}
+    for entry in sorted(lst, key=lambda x: x[0]):
+        service = entry[1]
+        if service not in service_dict:
+            service_dict[service] = entry
+    return sorted(service_dict.values(), key=lambda x: x[0])
+
+
+# Способ 4: Использование groupby из itertools  O(n log n) - две сортировки + O(n) для groupby
+ 
+from itertools import groupby
+from operator import itemgetter
+
+def is_service_good(lst: list[tuple]):
+    # Сначала сортируем по имени сервиса, затем по времени
+    sorted_by_service = sorted(lst, key=itemgetter(1))
+    # Берем первую запись для каждого сервиса
+    grouped = groupby(sorted_by_service, key=itemgetter(1))
+    first_entries = [next(group) for _, group in grouped]
+    # Сортируем результат по timestamp
+    return sorted(first_entries, key=itemgetter(0))
+
+
+# Способ 5: Использование OrderedDict    O(n log n) для сортировки + O(n) для прохода
+
+from collections import OrderedDict
+
+def is_service_good(lst: list[tuple]):
+    services = OrderedDict()
+    for entry in sorted(lst, key=lambda x: x[0]):
+        services.setdefault(entry[1], entry)
+    return list(services.values())
+
+
+# Способ 6: Использование множества с фильтрацией  O(n log n) для сортировки + O(n) для прохода
+def is_service_good(lst: list[tuple]):
+    seen = set()
+    return [entry for entry in sorted(lst, key=lambda x: x[0])
+            if not (entry[1] in seen or seen.add(entry[1]))]
+
+a_res = [(123456, "AuthService", "ERROR"), (1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+EXPECTED_OUTPUT = [(1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+
+print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'AuthService', 'INFO')]
+
+
+# Способ 7: pandas   O(n log n) - зависит от реализации pandas   Для больших данных лучше использовать pandas  (7-8)
+import pandas as pd
+
+def is_service_good(lst: list[tuple]):
+    df = pd.DataFrame(lst, columns=['timestamp', 'service', 'status'])
+    df = df.sort_values('timestamp').drop_duplicates('service', keep='first')
+    return [tuple(x) for x in df.to_numpy()]
+
+
+# Способ 8: Использование pandas с более компактным синтаксисом   O(n log n) - зависит от реализации pandas
+import pandas as pd
+
+def is_service_good(lst: list[tuple]):
+    return (pd.DataFrame(lst, columns=['time', 'service', 'status'])
+              .sort_values('time')
+              .drop_duplicates('service')
+              .sort_values('time')
+              .to_records(index=False)
+              .tolist())
+
+a_res = [(123456, "AuthService", "ERROR"), (1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+EXPECTED_OUTPUT = [(1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+
+print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'AuthService', 'INFO')]
+"""
+
+
+
+
+
+# 4 Задачи    компания Медиалогия  НАПИШИ ВСЕ ВАРИАНТЫ!!!
+
+
+# ЗАДАЧА 1  РЮКЗАК   НАПИСАТЬ 4 СПОСОБА!
+
+weights = [10, 20, 30, 40]
+costs = [20, 10, 30, 40]
+max_limit = 40
+
+
+def knapsack(weights, costs, max_limit):
+    pass
+
+
+
+# cost, items = knapsack(weights, costs, max_limit)
+# print(f"Максимальная стоимость: {cost}")           # ->  Максимальная стоимость: 50
+# print(f"Выбранные предметы: {items}")              # ->  Выбранные предметы: [(10, 20), (30, 30)]
+
+
+
+
+# ЗАДАЧА 2  Two Sum тоже самое но НЕ обязательно стоят рядом   НАПИСАТЬ 4 СПОСОБА!
+
+lst = [2, 7, 11, 15, 7]
+target = 9
+
+def find_two_sum(nums, target):
+    pass
+
+
+# print(find_two_sum(lst, target))  # -> [0, 1]
+# print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+
+
+
+
+# ЗАДАЧА 3 заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений  3 СПОСОБА
+from string import ascii_lowercase
+
+s = 'aaaaaaaaaa'
+alphabet = 'abcdefghijklmnopqrstuvwxyz'
+alphabet = ascii_lowercase
+
+
+def replace_odd_chars(s):
+    pass
+
+
+# print(replace_odd_chars(s))  # -> aacaeagaia
+
+
+
+
+# ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.   НАПИСАТЬ 4 СПОСОБА!
+
+json_data = [[], 123, 'aaa', {'a': 1}, [1, 2, 3], {'a': 2}, (1, 2), {'a': 1}]
+
+def count_dict_a_1(data):
+    pass
+
+
+
+# result = count_dict_a_1(json_data)
+# print(result)  # -> 2
+
+
+
+# ОТВЕТ  4 Задачи    компания Медиалогия  НАПИШИ ВСЕ ВАРИАНТЫ!!!
+"""
+# ЗАДАЧА 1)  Задача о рюкзаке (или задача о ранце)
+# суммарный вес не превышал максимальную грузоподъемность рюкзака, а суммарная стоимость была максимальной.
+
+
+weights = [10, 20, 30, 40]
+costs = [20, 10, 30, 40]
+max_limit = 40
+
+
+# Способ 1: Жадный алгоритм (не всегда дает оптимальное решение)
+
+def knapsack(weights, costs, max_limit):
+    n = len(weights)
+    # Сортируем предметы по убыванию удельной стоимости (стоимость/вес)
+    items = sorted(zip(weights, costs), key=lambda x: x[1] / x[0], reverse=True)
+
+    total_weight = 0
+    total_cost = 0
+    selected = []
+
+    for weight, cost in items:
+        if total_weight + weight <= max_limit:
+            selected.append((weight, cost))
+            total_weight += weight
+            total_cost += cost
+
+    return total_cost, selected
+
+
+# Способ 2: Динамическое программирование (точное решение)
+
+def knapsack(weights, costs, max_limit):
+    n = len(weights)
+    # Создаем таблицу для хранения максимальной стоимости для каждого веса
+    dp = [[0] * (max_limit + 1) for _ in range(n + 1)]
+
+    for i in range(1, n + 1):
+        for w in range(1, max_limit + 1):
+            if weights[i - 1] <= w:
+                dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + costs[i - 1])
+            else:
+                dp[i][w] = dp[i - 1][w]
+
+    # Восстановление выбранных предметов
+    w = max_limit
+    selected = []
+    total_cost = dp[n][max_limit]
+
+    for i in range(n, 0, -1):
+        if dp[i][w] != dp[i - 1][w]:
+            selected.append((weights[i - 1], costs[i - 1]))
+            w -= weights[i - 1]
+
+    return total_cost, selected[::-1]
+
+
+# Способ 3: Метод ветвей и границ (точное решение)
+
+import heapq
+
+class Node:
+    def __init__(self, level, weight, cost, bound, items):
+        self.level = level
+        self.weight = weight
+        self.cost = cost
+        self.bound = bound
+        self.items = items
+
+    # Для сравнения в heapq (чем больше bound, тем выше приоритет)
+    def __lt__(self, other):
+        return self.bound > other.bound
+
+def bound(node, n, max_limit, weights, costs):
+    if node.weight >= max_limit:
+        return 0
+    bound_value = node.cost
+    j = node.level + 1
+    total_weight = node.weight
+
+    while j < n and total_weight + weights[j] <= max_limit:
+        total_weight += weights[j]
+        bound_value += costs[j]
+        j += 1
+
+    if j < n:
+        bound_value += (max_limit - total_weight) * (costs[j] / weights[j])
+
+    return bound_value
+
+def knapsack(weights, costs, max_limit):
+    n = len(weights)
+    # Сортируем предметы по убыванию удельной стоимости
+    items = sorted(zip(weights, costs), key=lambda x: x[1] / x[0], reverse=True)
+    weights = [w for w, _ in items]
+    costs = [c for _, c in items]
+
+    # Используем приоритетную очередь
+    heap = []
+    root = Node(-1, 0, 0, 0, [])
+    root.bound = bound(root, n, max_limit, weights, costs)
+    heapq.heappush(heap, root)
+
+    max_cost = 0
+    best_items = []
+
+    while heap:
+        node = heapq.heappop(heap)
+
+        # Если текущая оценка меньше максимальной стоимости, дальше можно не смотреть
+        if node.bound <= max_cost:
+            continue
+
+        if node.level == n - 1:
+            continue
+
+        # Включаем следующий предмет
+        next_level = node.level + 1
+        next_weight = node.weight + weights[next_level]
+        next_cost = node.cost + costs[next_level]
+        next_items = node.items + [(weights[next_level], costs[next_level])]
+
+        if next_weight <= max_limit and next_cost > max_cost:
+            max_cost = next_cost
+            best_items = next_items.copy()
+
+        # Считаем bound для включения предмета
+        next_bound = bound(Node(next_level, next_weight, next_cost, 0, next_items),
+                          n, max_limit, weights, costs)
+        if next_bound > max_cost:
+            heapq.heappush(heap, Node(next_level, next_weight, next_cost, next_bound, next_items))
+
+        # Не включаем следующий предмет
+        next_bound = bound(Node(next_level, node.weight, node.cost, 0, node.items),
+                          n, max_limit, weights, costs)
+        if next_bound > max_cost:
+            heapq.heappush(heap, Node(next_level, node.weight, node.cost, next_bound, node.items))
+
+    return max_cost, best_items
+
+
+# Способ 4: Полный перебор (точное решение)
+
+from itertools import combinations
+
+
+def knapsack(weights, costs, max_limit):
+    n = len(weights)
+    max_cost = 0
+    best_combination = []
+
+    for r in range(1, n + 1):
+        for indices in combinations(range(n), r):
+            total_weight = sum(weights[i] for i in indices)
+            total_cost = sum(costs[i] for i in indices)
+            if total_weight <= max_limit and total_cost > max_cost:
+                max_cost = total_cost
+                best_combination = [(weights[i], costs[i]) for i in indices]
+
+    return max_cost, best_combination
+
+
+cost, items = knapsack(weights, costs, max_limit)
+print(f"Максимальная стоимость: {cost}")           # ->  Максимальная стоимость: 50
+print(f"Выбранные предметы: {items}")              # ->  Выбранные предметы: [(10, 20), (30, 30)]
+
+
+
+
+# ЗАДАЧА 2) Two Sum тоже самое но НЕ обязательно стоят рядом
+
+lst = [2, 7, 11, 15, 7]
+target = 9
+
+
+# Способ 1: Использование хэш-таблицы (словаря) — O(n)
+
+def find_two_sum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
+
+print(find_two_sum(lst, target))  # -> [0, 1]
+
+
+
+# Способ 2: Вариант с возвратом всех пар (если их несколько) — O(n)
+
+def find_two_sum(nums, target):
+    seen = {}
+    result = []
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            result.append([seen[complement], i])
+        seen[num] = i
+    return result
+
+print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+
+
+# Способ 3: Решение с двумя указателями (для отсортированного списка) — O(n log n)
+
+def find_two_sum(nums, target):
+    nums_sorted = sorted([(num, i) for i, num in enumerate(nums)], key=lambda x: x[0])
+    left, right = 0, len(nums_sorted) - 1
+    while left < right:
+        current_sum = nums_sorted[left][0] + nums_sorted[right][0]
+        if current_sum == target:
+            return [nums_sorted[left][1], nums_sorted[right][1]]
+        elif current_sum < target:
+            left += 1
+        else:
+            right -= 1
+    return []
+
+
+print(find_two_sum(lst, target))  # -> [0, 4] (но индексы могут отличаться из-за сортировки)
+
+
+# Способ 4: менее эффективен для больших списков.  (полный перебор, brute force)    O(n²)
+
+def find_two_sum(nums, target):
+    res = []
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                res.append([i, j])
+    return res
+
+
+print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+
+
+
+
+# ЗАДАЧА 3)  заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений
+
+
+import re
+from string import ascii_lowercase
+
+s = 'aaaaaaaaaa'
+alphabet = 'abcdefghijklmnopqrstuvwxyz'
+alphabet = ascii_lowercase
+
+
+# Способ 1:  Простой
+
+def replace_odd_chars(s):
+    result = []
+    for i in range(len(s)):
+        if i % 2 == 0:  # нечетные позиции (индексация с 0)
+            # берем соответствующую букву из алфавита
+            char = alphabet[i % 26]
+            result.append(char)
+        else:
+            result.append(s[i])
+
+    return ''.join(result)
+
+print(replace_odd_chars(s))  # -> aacaeagaia
+
+
+# Способ 2:  Через РЕГУЛЯРКУ  (сложный)
+
+def replace_odd_chars_regex(s):
+    # Используем регулярное выражение для замены каждого второго символа (начиная с 0)
+    # Функция замены будет использовать позицию совпадения для выбора буквы из алфавита
+    return re.sub(
+        r'(?P<odd>.)?(?P<even>.)?',  # ищем пары символов (1-й и 2-й)
+        lambda m: (alphabet[m.start() % 26] if m.group('odd') else '') + (m.group('even') if m.group('even') else ''),
+        s
+    )
+
+
+# Способ 3:  Через РЕГУЛЯРКУ   Более простой
+
+def replace_odd_chars_regex(s):
+    return re.sub(
+        r'(.)',  # ищем каждый символ
+        lambda m: alphabet[m.start() % 26] if m.start() % 2 == 0 else m.group(1),
+        s
+    )
+
+print(replace_odd_chars_regex(s))  # -> aacaeagaia
+
+
+
+
+# ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.
+
+import json
+json_data = [[], 123, 'aaa', {'a': 1}, [1, 2, 3], {'a': 2}, (1, 2), {'a': 1}]
+
+
+# Способ 1: Рекурсивный подход     стоит учитывать ограничение глубины рекурсии   RecursionError          ПРАВИЛЬНЫЙ
+
+def count_dict_a_1(data):
+    count = 0
+    # Проверяем, является ли текущий элемент искомым словарём
+    if isinstance(data, dict) and data == {'a': 1}:
+        count += 1
+    # Если элемент является списком или кортежем, рекурсивно обходим его элементы
+    elif isinstance(data, (list, tuple)):
+        for item in data:
+            count += count_dict_a_1(item)
+    # Если элемент является словарём, рекурсивно обходим его значения
+    elif isinstance(data, dict):
+        for value in data.values():
+            count += count_dict_a_1(value)
+    return count
+
+result = count_dict_a_1(json_data)
+print(result)  # -> 2
+
+
+# Способ 2: Итеративный подход с использованием стека (без рекурсии)   избежания ограничений рекурсии     ПРАВИЛЬНЫЙ
+
+
+# Для очень больших JSON-файлов   эффективный по памяти
+def count_dict_a_1(data):
+    count = 0
+    stack = [data]
+
+    while stack:
+        current = stack.pop()
+        if isinstance(current, dict):
+            if current == {'a': 1}:
+                count += 1
+            stack.extend(current.values())
+        elif isinstance(current, (list, tuple)):
+            stack.extend(current)
+
+    return count
+
+result = count_dict_a_1(json_data)
+print(result)  # -> 2
+
+
+# Способ 3: Использование генераторов для ленивого обхода        эффективны по памяти способы (2, 3)      ПРАВИЛЬНЫЙ
+
+# Для очень больших JSON-файлов   эффективный по памяти
+def count_dict_a_1(data):
+    if isinstance(data, dict):
+        yield data
+        for value in data.values():
+            yield from count_dict_a_1(value)
+    elif isinstance(data, (list, tuple)):
+        for item in data:
+            yield from count_dict_a_1(item)
+
+
+def count_dict_a_3(data):
+    return sum(1 for item in count_dict_a_1(data) if item == {'a': 1})
+
+result = count_dict_a_3(json_data)
+print(result)  # -> 2
+
+
+# Способ 4: Использование object_hook в json.loads (которая все равно загружает весь JSON в память)    НЕ ПРАВИЛЬНЫЙ
+
+# Преобразуем данные в JSON-строку
+json_data = json.dumps(json_data)
+
+
+def count_dict_a_1(json_str):
+    count = 0
+
+    def hook(obj):
+        nonlocal count
+        if isinstance(obj, dict) and obj == {'a': 1}:
+            count += 1
+        return obj
+
+    json.loads(json_str, object_hook=hook)
+    return count
+
+result = count_dict_a_1(json_data)
+print(result)  # -> 2
+"""
+
+
 
 
 
@@ -7186,7 +7891,6 @@ WHERE rn = 1;
 
 def is_palindrome(s: str) -> bool:
     pass
-
 
 
 
@@ -7324,7 +8028,6 @@ def is_palindrome(s: str) -> bool:
 # Написать 3 варианта
 def is_correct_brackets(text):
     pass
-
 
 
 
@@ -7514,7 +8217,6 @@ xs = [
 
 
 
-
 # Ответ  Yandex-Маркет Задача Отсортировать по двум параметрам. Как я сделал я не знаю
 r"""
 xs = [
@@ -7620,7 +8322,6 @@ target = 9
 # Написать 2 варианта range(len(nums)-1), zip  и еще 2 через pairwise, combinations
 def twoSum(nums, target):
     pass
-
 
 
 
@@ -7903,6 +8604,7 @@ def sort_array(arr):
 
 
 
+
 # numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
@@ -7923,7 +8625,6 @@ def flatten(*args):
 
 
 
-
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
 
@@ -7932,6 +8633,7 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
+
 
 
 
@@ -8513,6 +9215,7 @@ print(string_to_integer(" +789 "))  # -> 789
 
 
 
+
 # Ответ
 # Есть список                                              Грузовая кампания
 # words = ['aba', 'bac', 'abb', 'bab', 'bba',
@@ -8576,6 +9279,7 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
+
 
 
 

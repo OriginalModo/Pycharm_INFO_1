@@ -287,6 +287,56 @@ ________________________________________________________________________________
  уменьшение количество запросов к базе данных
 
 
+  -- select_related  vs  prefetch_related --
+
+ select_related   - Использует JOIN в SQL-запросе, чтобы получить связанные объекты за один запрос
+ prefetch_related - Делает ОТДЕЛЬНЫЕ ЗАПРОСЫ для связанных объектов, а затем объединяет их в Python
+
+
+ Короткие примеры SQL для select_related и prefetch_related:
+
+ 1. select_related (один JOIN-запрос)
+
+ Пример Django:
+
+ Book.objects.select_related('author').get(id=1)
+
+
+ SQL:
+
+ SELECT book.*, author.*
+ FROM book
+ JOIN author ON book.author_id = author.id
+ WHERE book.id = 1;
+
+ → Один запрос с JOIN, данные автора сразу в результате.
+
+
+
+ 2. prefetch_related (отдельные запросы + объединение в Python)
+
+ Пример Django:
+
+ Publisher.objects.prefetch_related('books').all()
+
+
+ SQL:
+
+ Сначала запрос для издателей:
+
+ SELECT * FROM publisher;
+
+ Затем запрос для книг этих издателей (через промежуточную таблицу publisher_books):
+
+ SELECT book.*
+ FROM book
+ JOIN publisher_books ON book.id = publisher_books.book_id
+ WHERE publisher_books.publisher_id IN (1, 2, 3, ...);
+
+ → Два запроса, связывание происходит в Python.
+
+
+
   -- Транзакции/transaction в django --
 
  Поведение транзакции по умолчанию в Django
@@ -1382,6 +1432,57 @@ ________________________________________________________________________________
 
  фласк крут, потому что он простой, всё что надо ставишь сам, а чего не надо там и так нет, но как по мне, всё равно потом получается django.
 
+
+ -- АВТОРИЗАЦИЯ В Django --
+ В Django авторизация реализуется с помощью встроенного модуля django.contrib.auth. Основные шаги:
+
+ Модели: Django предоставляет готовые модели User и Group.
+
+ URLs: Подключите стандартные URL-адреса авторизации:
+
+ urlpatterns = [
+     path('accounts/', include('django.contrib.auth.urls')),
+ ]
+
+ - Views: Используйте готовые представления для входа (LoginView), выхода (LogoutView) и т.д.
+ - Шаблоны: Создайте шаблоны в templates/registration/ (например, login.html).
+ - Декораторы: Защитите представления с помощью @login_required.
+
+
+ Пример входа:
+
+ from django.contrib.auth import authenticate, login
+
+ user = authenticate(request, username='user', password='pass')
+ if user is not None:
+     login(request, user)
+
+
+ Пример проверки аутентификации в шаблоне:
+
+ html
+ {% if user.is_authenticated %}
+     Привет, {{ user.username }}!
+ {% endif %}
+
+
+
+ КОРОТКО:
+
+ - Модели – Используется встроенная User (или AbstractUser для кастомизации).
+ - URLs – Подключение стандартных путей (login/, logout/, password_reset/ и др.).
+ - Views – Готовые классы (LoginView, LogoutView).
+ - Шаблоны – Лежат в templates/registration/ (например, login.html).
+ - Декораторы – @login_required для ограничения доступа.
+ - Проверка в шаблоне – {% if user.is_authenticated %}.
+
+ Django Allauth – это аналог?
+ Нет, django-allauth – это расширение стандартной аутентификации Django, а не аналог.
+ django-allauth – отличное решение, но это надстройка, а не замена.
+
+ -- END АВТОРИЗАЦИЯ В Django --
+
+
  WebSocket (веб-сокеты) — независимый веб-протокол, который позволяет создавать
  интерактивное соединение между сервером и клиентом (браузером) и обмениваться сообщениями в реальном времени
 
@@ -1645,6 +1746,7 @@ ________________________________________________________________________________
 
  Django-allauth — Библиотека авторизации:
  помогает реализовать функции регистрации, авторизации и управления учётными записями
+ django-allauth – это расширение стандартной аутентификации Django
 
  ipython  - для удобства в терминале
  django-extensions - набор инструментов, которые помогут вам в вашей повседневной работе. manage.py shell_plus --print-sql
@@ -1664,6 +1766,14 @@ ________________________________________________________________________________
  и что она не блокирует поставщиков (producers) этих самых задач.
 
  Celery на самом деле не хранит все эти задачи в памяти, брокер сообщений хранит задачи.
+
+  -- Как работает CELERY --
+ Celery по умолчанию использует процессы, но можно переключить на потоки (-P threads) или асинхронные пулы
+ (eventlet/gevent) для специфичных задач.                                                                     <-----
+
+ - Celery по умолчанию использует процессы (prefork pool).
+ - Можно переключить на потоки: -P threads (но GIL может мешать в CPU-задачах).
+ - Для I/O-задач лучше eventlet/gevent (асинхронные пулы).
 
 
  Django предназначен для создания полнофункциональных веб-приложений,

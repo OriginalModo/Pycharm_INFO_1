@@ -793,6 +793,56 @@
  уменьшение количество запросов к базе данных
 
 
+  -- select_related  vs  prefetch_related --
+
+ select_related   - Использует JOIN в SQL-запросе, чтобы получить связанные объекты за один запрос
+ prefetch_related - Делает ОТДЕЛЬНЫЕ ЗАПРОСЫ для связанных объектов, а затем объединяет их в Python
+
+
+ Короткие примеры SQL для select_related и prefetch_related:
+
+ 1. select_related (один JOIN-запрос)
+
+ Пример Django:
+
+ Book.objects.select_related('author').get(id=1)
+
+
+ SQL:
+
+ SELECT book.*, author.*
+ FROM book
+ JOIN author ON book.author_id = author.id
+ WHERE book.id = 1;
+
+ → Один запрос с JOIN, данные автора сразу в результате.
+
+
+
+ 2. prefetch_related (отдельные запросы + объединение в Python)
+
+ Пример Django:
+
+ Publisher.objects.prefetch_related('books').all()
+
+
+ SQL:
+
+ Сначала запрос для издателей:
+
+ SELECT * FROM publisher;
+
+ Затем запрос для книг этих издателей (через промежуточную таблицу publisher_books):
+
+ SELECT book.*
+ FROM book
+ JOIN publisher_books ON book.id = publisher_books.book_id
+ WHERE publisher_books.publisher_id IN (1, 2, 3, ...);
+
+ → Два запроса, связывание происходит в Python.
+
+
+
   --- ПРОБЛЕМА N+1 запроса ---      Решение - select_related, prefetch_related, annotate и подзапросы
 
  ПРОБЛЕМА N+1 запроса — это НЕ эффективный способ обращения к базе данных, когда приложение генерирует запрос на каждый вызов объекта.

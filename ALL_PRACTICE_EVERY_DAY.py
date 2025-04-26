@@ -1493,6 +1493,11 @@ transposed = []
 
 
 
+matrix = [
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+]
 
 
 
@@ -1507,6 +1512,10 @@ matrix = [
 # Сравни их
 print([i for row in matrix for i in row])    # -> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 print([[i for i in row] for row in matrix])  # -> [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]
+
+# ГЕНЕРАТОР  Опустили []
+print(i for row in matrix for i in row)    # -> <generator object <genexpr> at 0x000001AF700EB850>
+print([i for i in row] for row in matrix)  # -> <generator object <genexpr> at 0x0000025DB01BE500>
 
 
 # Все результаты будут одинаковые!!!
@@ -1871,7 +1880,7 @@ print(parse_json(json_data))  # -> ('1234', {'email': 'xxx@mail.com'})
 
 
 
-# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros
+# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИШИ ВСЕ ВАРИАНТЫ!!!
 
 head = [0, 3, 1, 0, 4, 5, 2, 0]
 
@@ -1898,6 +1907,141 @@ def mergeNodes(head):
     res = ''.join([*map(str, head)]).split('0')
     return [sum(map(int, ' '.join(i).split())) for i in res if i]
 
+print(mergeNodes(head))  # -> [4, 11]
+
+
+# Решение АРСЕНИЯ Live-coding  если в конце нет нулей
+def mergeNodes(head):
+    summ, res = 0, []
+    for val in head:
+        if val != 0:
+            summ += val
+        else:
+            if summ != 0:
+                res.append(summ)
+            summ = 0
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2]
+print(mergeNodes(head))  # -> [4]
+
+
+
+# Решение АРСЕНИЯ Live-coding   если в конце нет нулей
+def mergeNodes(head):
+    summ, res = 0, []
+    for val in head:
+        if val != 0:
+            summ += val
+        else:
+            if summ != 0:
+                res.append(summ)
+            summ = 0
+    if summ != 0:
+        res.append(summ)
+    return res
+print(mergeNodes(head))  # -> [4, 11]
+
+
+# ДОПОЛНИТЕЛЬНЫЕ ВАРИАНТЫ РЕШЕНИЯ
+
+# Вариант 1: Использование генераторов и itertools
+from itertools import groupby
+
+def mergeNodes(head):
+    return [sum(group) for key, group in groupby(head, key=lambda x: x != 0) if key]
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
+
+
+
+# Вариант 2: С использованием флага для отслеживания между нулями
+def mergeNodes(head):
+    res = []
+    between_zeros = False
+    current_sum = 0
+
+    for num in head:
+        if num == 0:
+            if between_zeros:
+                res.append(current_sum)
+                current_sum = 0
+            between_zeros = True
+        else:
+            current_sum += num
+
+    return res
+
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
+
+
+
+# Вариант 3: Функциональный стиль с reduce
+from functools import reduce
+
+def mergeNodes(head):
+    def reducer(acc, val):
+        sums, current = acc
+        if val == 0:
+            if current != 0:
+                sums.append(current)
+            return (sums, 0)
+        return (sums, current + val)
+    
+    sums, _ = reduce(reducer, head, ([], 0))
+    return sums
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
+
+
+
+# Вариант 4: Итеративный подход с двумя указателями
+def mergeNodes(head):
+    res = []
+    left = 0
+    
+    # Пропускаем начальные нули
+    while left < len(head) and head[left] == 0:
+        left += 1
+    
+    right = left
+    while right < len(head):
+        if head[right] == 0:
+            res.append(sum(head[left:right]))
+            left = right + 1
+        right += 1
+    
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
+
+
+
+# Вариант 5: С использованием deque
+from collections import deque
+
+def mergeNodes(head):
+    q = deque(head)
+    res = []
+    current_sum = 0
+    
+    while q:
+        num = q.popleft()
+        if num == 0:
+            if current_sum != 0:
+                res.append(current_sum)
+                current_sum = 0
+        else:
+            current_sum += num
+    
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
 print(mergeNodes(head))  # -> [4, 11]
 """
 
@@ -1969,7 +2113,7 @@ r"""
 res = '12345'
 print(re.search(r'\d{,3}', res).group())  # -> 123
 print(re.search(r'\d{3,}', res).group())  # -> 12345
-print(re.search(r'\d{3,}?', res).group())  # -> 12345
+print(re.search(r'\d{3,}?', res).group())  # -> 123
 
 print(re.findall(r'\d{,3}', res))         # -> ['123', '45', '']
 print(re.findall(r'\d{3,}', res))         # -> ['12345']
@@ -2056,8 +2200,6 @@ text = 'ABC123---'
 
 
 
-
-
 # Использование re.compile 2 Способа
 """
 regex = re.compile("[A-Za-z_]"      # letter or underscore             буква или подчеркивание
@@ -2074,7 +2216,6 @@ regex.findall('ABC123---')  # -> ['ABC123']
 # Использовать flags=re.VERBOSE  (?x)   Можно ставить комменты внутри регулярки  и пробелы не работают
 
 text = '4G22ABC'
-
 
 
 
@@ -2187,7 +2328,6 @@ print(re.findall(r'(?:\w)(\w)+', text))         # -> ['3']
 # Напишите   Lookahead   Lookbehind
 
 text = '123ABC'
-
 
 
 
@@ -2339,6 +2479,7 @@ print(c)  # -> {'z': 8, 'w': 5, 'x': 6, 'y': 7}
 
 
 
+
 # Ответ Интересные распаковки ПОВТОРИТЬ!   В конце ПОСМОТРИ Примеры!!!
 """
 # слева при распаковке должен стоять кортеж.
@@ -2381,8 +2522,6 @@ print(f.__defaults__) # -> ([1],)     print(f.__defaults__) # -> ({1},)     prin
 print(f(2))           # -> [1, 2]     print(f(2))           # -> {1, 2}     print(f(2, 'B'))      # -> {1: 'A', 2: 'B'}
 print(f.__defaults__) # -> ([1, 2],)  print(f.__defaults__) # -> ({1, 2},)  print(f.__defaults__) # -> ({1: 'A', 2: 'B'},)
 """
-
-
 
 
 
@@ -2438,7 +2577,6 @@ print(add_numbers.__name__)  # -> add_numbers
 
 
 
-
 # Итератор  range(10)  iter
 """
 # Итератор
@@ -2453,8 +2591,6 @@ print([*it])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 # Напишите Функцию-Генератор  range(5) и Обычный генератор
-
-
 
 
 
@@ -2489,6 +2625,7 @@ print(i for i in range(5))         # <generator object <genexpr> at 0x000001790A
 
 
 # Напишите Конструкцию yield from и ЕЁ аналог
+
 
 
 
@@ -2572,9 +2709,6 @@ print(list(my_generator))            # -> []
 
 
 # Cоздайте свой Итератор
-
-
-
 
 
 
@@ -2744,7 +2878,6 @@ print(names()((lambda x: x+5)(2)))        # -> [7]
 
 
 
-
 # Замыкание lambda
 """
 def pow_(base):
@@ -2770,26 +2903,24 @@ print(pow_(2)(3))  # -> 9
 
 
 
-
-
 # Ответ Замыкание class vs def   Реализация своей функции avg
 """
- # Замыкание class vs def    Реализация своей функции avg
- 
- # Функция НЕЭФФЕКТИВНА              # ЭФФЕКТИВНА                               # Через КЛАСС
- def make_averager():                def make_averager():                       class Averager:
-     series = []                         total = 0                                  def __init__(self):
-                                         count = 0                                      self.series = []
-     def averager(new_value):
-         series.append(new_value)        def averager(new_value):                   def __call__(self, new_value):
-         total = sum(series)                 nonlocal total, count                      self.series.append(new_value)
-         return total / len(series)          count +=1                                  total = sum(self.series)
-     return averager                         total += new_value                         return total / len(self.series)
-                                             return total/count
- avg = make_averager()                   return averager                        avg = Averager()
- print(avg(10))  # -> 10.0                                                      print(avg(10))  # -> 10.0
- print(avg(11))  # -> 10.5                                                      print(avg(11))  # -> 10.5
- print(avg(12))  # -> 11.0                                                      print(avg(12))  # -> 11.0                               
+# Замыкание class vs def    Реализация своей функции avg
+
+# Функция НЕЭФФЕКТИВНА              # ЭФФЕКТИВНА                               # Через КЛАСС
+def make_averager():                def make_averager():                       class Averager:
+    series = []                         total = 0                                  def __init__(self):
+                                        count = 0                                      self.series = []
+    def averager(new_value):
+        series.append(new_value)        def averager(new_value):                   def __call__(self, new_value):
+        total = sum(series)                 nonlocal total, count                      self.series.append(new_value)
+        return total / len(series)          count +=1                                  total = sum(self.series)
+    return averager                         total += new_value                         return total / len(self.series)
+                                            return total/count
+avg = make_averager()                   return averager                        avg = Averager()
+print(avg(10))  # -> 10.0                                                      print(avg(10))  # -> 10.0
+print(avg(11))  # -> 10.5                                                      print(avg(11))  # -> 10.5
+print(avg(12))  # -> 11.0                                                      print(avg(12))  # -> 11.0                               
  
 # __code__ Откомпилированное ТЕЛО ФУНКЦИИ
 print(avg.__code__.co_varnames)          # -> ('new_value', 'total')  # Локальные переменные функции
@@ -2802,7 +2933,6 @@ print(avg.__closure__[0].cell_contents)  # -> [10, 11, 12]            # Теку
 
 
 # Напишите лямбда-функцию с присвоением переменной и без. Сразу вызов
-
 
 
 
@@ -2945,6 +3075,7 @@ if __name__ == '__main__':
 
 
 
+
 # Написать Решение с nonlocal и Решение с global   Переписать решение выше чтобы НЕ было ошибки
 # Ошибка UnboundLocalError:
 """
@@ -3035,6 +3166,7 @@ maxheap = [20, 10, 1, 2]
 
 
 
+
 # Ответ Использовать heapq   Написать    MaxHeap/MinHeap     _heapify_max или умножение на -1 или добавить - к числу
 """
 import heapq
@@ -3117,8 +3249,8 @@ lst = [1, 2, 3]
 
 
 
-# 3) Через РЕКУРСИЮ max Найдите наибольшее число в списке.
 
+# 3) Через РЕКУРСИЮ max Найдите наибольшее число в списке.
 
 
 
@@ -3159,7 +3291,6 @@ print(max(lst))   # -> 3
 
 
 # Использовать  from memory_profiler import memory_usage   и   from pympler.asizeof import asizeof
-
 
 
 
@@ -3236,9 +3367,6 @@ b.name = 'a'                                                b.name = 'a'
 
 
 # Использовать __slots__ в dataclasses
-
-
-
 
 
 
@@ -3429,9 +3557,6 @@ print(MyClass.custom_attribute)   # Вывод: This is a custom attribute
 
 
 # Как создать класс без слова class?  И Создать такой же обычный class и dataclass
-
-
-
 
 
 
@@ -3669,6 +3794,7 @@ second = {2: 2, 1: 1}
 
 
 
+
 # Ответы OrderedDict
 """
 from collections import OrderedDict
@@ -3710,7 +3836,6 @@ text = 'hello'
 
 
 
-
 # Ответы defaultdict
 """
 from collections import defaultdict
@@ -3732,7 +3857,6 @@ print(sorted(a_dict.items(), key=lambda x: x[1], reverse=True))  # -> [('l', 2),
 
 # -- collections.namedtuple(typename, field_names, *, rename=False, defaults=None, module=None) --
 # Использовать namedtuple
-
 
 
 
@@ -3781,9 +3905,6 @@ print(c)  # -> C(a=1, b=3, c=2)
 
 # -- class collections.deque([iterable[, maxlen]]) --
 # Использовать deque
-
-
-
 
 
 
@@ -3848,6 +3969,7 @@ print(a_deque)  # -> deque([5, 1, 2, 3, 4], maxlen=5)
 
 
 
+
 # Ответы count
 """
 from itertools import count
@@ -3872,7 +3994,6 @@ print(list(islice(count(10), 2, 5)))  # -> [12, 13, 14]
 
 # itertools.cycle(iterable)
 # Использовать cycle
-
 
 
 
@@ -4198,7 +4319,6 @@ a = [1, 2, 3]
 
 
 
-
 # Ответы pairwise
 """
 from itertools import pairwise
@@ -4212,7 +4332,6 @@ print(list(result))  # -> [(1, 2), (2, 3)]
 # Использовать starmap
 
 a = [(2, 5, 4), (3, 2, 1), (10, 3, 8)]
-
 
 
 
@@ -4261,8 +4380,6 @@ print([*itertools.starmap(lambda x, y, z: x*y+z, a)])  # -> [14, 7, 38]
 # Использовать tee
 
 a = [1, 2, 3]
-
-
 
 
 
@@ -4337,7 +4454,6 @@ print(*itertools.zip_longest(a, b, a))     # -> (1, 1, 1) (2, 2, 2) (None, 3, No
 # Повтори from itertools import groupby
 
 res = 'AAAABBBCCDAABBB'
-
 
 
 
@@ -4487,7 +4603,6 @@ a = 'XYZ'
 
 
 
-
 # Ответ
 #  --- Отличия    combinations  vs  combinations_with_replacement vs  permutations ---
 """
@@ -4562,7 +4677,6 @@ print(spy(iterable))    # -> ([], <itertools.chain object at 0x000002ADE9E0FB20>
 
 
 iterable = [0, 1, 2, 3]
-
 
 
 
@@ -4685,6 +4799,7 @@ print(timeit('list(unique_everseen(a_set, key=frozenset))', globals=globals())) 
 
 
 iterable = iter('abcdefgh')
+
 
 
 
@@ -4916,8 +5031,6 @@ example_function(1000000)  # -> Время выполнения функции '
 
 
 
-
-
 # Ответ 1.1)
 # Класс как ДЕКОРАТОР
 """
@@ -5016,7 +5129,6 @@ print(item.__dict__)  # -> {'name': 'HEHE', 'unit_price': 12, 'quantity': 100}
 
 
 
-
 # 1.2.1) Ответ compare=False   Написать dataclass  В котором Исключить поле из сравнения
 # @dataclasses.dataclass(*, init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False, match_args=True,
 # kw_only=False, slots=False, weakref_slot=False)
@@ -5044,6 +5156,7 @@ print(item2 == item3)  # True, так как priority 1 == 1, но при это
 
 
 # 1.3) Сделать по умолчанию пустой список и НЕ пустой  Сравнение __eq__()  уже встроенно в dataclass
+
 
 
 
@@ -5422,6 +5535,38 @@ print(c.fff())  # -> None
 """
 
 
+
+
+# НАПИСАТЬ Protocol vs ABC
+
+
+
+
+
+# Ответ Protocol vs ABC
+"""
+# С ABC (обязательное наследование)                # С Protocol (без наследования)
+from abc import ABC, abstractmethod                from typing import Protocol
+
+class Animal(ABC):                                 class Animal(Protocol):
+    @abstractmethod                                    def sound(self) -> str: ...
+    def sound(self) -> str:
+        pass                                       class Dog:  # Просто имеет нужный метод
+                                                       def sound(self) -> str:
+class Dog(Animal):  # Должен наследовать Animal            return "Гав!"
+    def sound(self) -> str:
+        return "Гав!"                              # Использование
+                                                   def make_sound(animal: Animal) -> None:
+# Использование                                        print(animal.sound())
+dog = Dog()
+print(dog.sound())  # Гав!                         make_sound(Dog())  # Гав!
+"""
+
+
+
+
+
+
 # Написать Асинхронный код
 
 
@@ -5502,6 +5647,79 @@ if __name__ == '__main__':                                       if __name__ == 
 """
 
 
+
+
+# НАПИШИТЕ gather vs TaskGroup
+
+
+
+
+
+
+# ОТВЕТ gather vs TaskGroup
+"""
+# ПРИМЕР gather
+# gather Если одна упадет, остальные работают дальше.                                                                                    
+import asyncio                                                           
+                                                                         
+async def task_success(name, delay):                                                             
+    await asyncio.sleep(delay)                                                     
+    print(f"{name} завершена успешно")                                                             
+                                                                         
+async def task_fail(name, delay):                                                         
+    await asyncio.sleep(delay)                                                     
+    raise Exception(f"{name} сломалась!")                                                                 
+                                                                         
+async def main_gather():                                                    
+    print("Запуск gather с ошибкой")                                                                
+    tasks = [                                                            
+        asyncio.create_task(task_success("Задача 1", 1)),                                                                     
+        asyncio.create_task(task_fail("Задача 2", 2)),                                                                              
+        asyncio.create_task(task_success("Задача 3", 3))                                                                             
+    ]                                                                               
+    results = await asyncio.gather(*tasks, return_exceptions=True)                                                 
+    for i, res in enumerate(results):                                                                   
+        if isinstance(res, Exception):                                                                                 
+            print(f"Задача {i + 1} завершилась с ошибкой: {res}")                         
+        else:                                                            
+            print(f"Задача {i + 1} успешно завершена")                                                        
+    print("Все задачи в gather завершены независимо, ошибки обработаны")                         
+                                                                                        
+if __name__ == '__main__':                                                                                      
+    asyncio.run(main_gather())   
+    
+
+
+# ПРИМЕР TaskGroup
+# TaskGroup - отменяет все задачи, если хоть одна сломалась. 
+import asyncio                         
+              
+async def task_success(name, delay):                         
+    await asyncio.sleep(delay)                               
+    print(f"{name} завершена успешно")                       
+              
+async def task_fail(name, delay):                            
+    await asyncio.sleep(delay)                               
+    raise Exception(f"{name} сломалась!")                    
+              
+async def main_taskgroup():                                  
+    print("Запуск TaskGroup с ошибкой")                      
+    try:                         
+        async with asyncio.TaskGroup() as tg:                
+            tg.create_task(task_success("Задача 1", 1))      
+            tg.create_task(task_fail("Задача 2", 2))         
+            tg.create_task(task_success("Задача 3", 3))      
+    except Exception as e:                                   
+        print(f"Обработка исключения: {e}")                  
+    print("Все задачи в TaskGroup завершены или отменены")   
+                                                             
+if __name__ == '__main__':                         
+    asyncio.run(main_taskgroup())                                                                                                                                                                                
+"""
+
+
+
+
 # Как запустить что-то в потоке и вывести результат?   from concurrent.futures import ThreadPoolExecutor
 
 
@@ -5567,6 +5785,324 @@ if __name__ == "__main__":
         result = future.result()
         print(result)  # -> 100000
 """
+
+
+
+
+
+# --- Хорошие задачи PYTHON ---
+
+
+
+# Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ
+
+def lengthOfLongestSubstring(s: str) -> int:
+    pass
+
+
+
+
+# print(lengthOfLongestSubstring("bbbbb"))     # -> 1
+# print(lengthOfLongestSubstring("abcabcbb"))  # -> 3
+# print(lengthOfLongestSubstring("abcb"))      # -> 3
+# print(lengthOfLongestSubstring("pwwkew"))    # -> 3
+# print(lengthOfLongestSubstring("ckilbkd"))   # -> 5
+# print(lengthOfLongestSubstring("dvdf"))      # -> 3
+
+
+
+
+
+
+
+
+# Ответ Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ
+"""
+
+# ВАРИАНТ 1: Метод скользящего окна с использованием множества баланс между простотой и эффективностью  (O(n))
+# O(min(m, n)) по памяти (m - размер алфавита)
+
+def lengthOfLongestSubstring(s: str) -> int:
+    char_set = set()
+    left = 0
+    max_length = 0
+    
+    for right in range(len(s)):
+        while s[right] in char_set:
+            char_set.remove(s[left])
+            left += 1
+        char_set.add(s[right])
+        max_length = max(max_length, right - left + 1)
+    
+    return max_length
+
+
+# Лучший - Вариант 2, обеспечивает оптимальную производительность O(n) и обрабатывает каждый символ ровно один раз.
+# ВАРИАНТ 2: Оптимизированный метод скользящего окна с хэш-мап для больших строк    (O(n))    O(min(m, n)) по памяти
+
+def lengthOfLongestSubstring(s: str) -> int:
+    char_map = {}
+    left = 0
+    max_length = 0
+    
+    for right in range(len(s)):
+        if s[right] in char_map and char_map[s[right]] >= left:
+            left = char_map[s[right]] + 1
+        char_map[s[right]] = right
+        max_length = max(max_length, right - left + 1)
+    
+    return max_length
+
+
+# ВАРИАНТ 2: с комментариями УПРОЩЕННЫЙ
+
+def lengthOfLongestSubstring(s: str) -> int:
+    char_index = {}  # Словарь для хранения индексов символов
+    max_length = 0   # Максимальная длина подстроки
+    start = 0        # Начало текущей подстроки
+
+    for i, char in enumerate(s):
+        # Если символ уже встречался и его индекс больше или равен началу текущей подстроки
+        if char in char_index and char_index[char] >= start:
+            start = char_index[char] + 1  # Обновляем начало подстроки
+
+        char_index[char] = i  # Обновляем индекс текущего символа
+        max_length = max(max_length, i - start + 1)  # Вычисляем максимальную длину
+
+    return max_length  # Возвращаем только максимальную длину
+
+
+
+# ВАРИАНТ 3: Использование OrderedDict (из collections) если нужно сохранять порядок Сложность: O(n) в среднем случае
+
+from collections import OrderedDict
+
+def lengthOfLongestSubstring(s: str) -> int:
+    char_dict = OrderedDict()
+    max_len = 0
+    start = 0
+    
+    for i, char in enumerate(s):
+        if char in char_dict and char_dict[char] >= start:
+            start = char_dict[char] + 1
+        char_dict[char] = i
+        max_len = max(max_len, i - start + 1)
+    return max_len
+
+
+
+#  лучше не использовать в продакшене (из-за O(n²))
+# Вариант 4: Использование списка вместо множества    O(n^2) в худшем случае  O(n) по памяти
+def lengthOfLongestSubstring(s: str) -> int:
+    chars = []
+    max_length = 0
+    
+    for char in s:
+        if char in chars:
+            chars = chars[chars.index(char)+1:]
+        chars.append(char)
+        max_length = max(max_length, len(chars))
+    
+    return max_length
+    
+    
+    
+# ВАРИАНТ 5: Использование deque (двусторонней очереди)  Сложность: O(n) в среднем случае   Память: O(min(m, n))
+
+from collections import deque
+
+def lengthOfLongestSubstring(s: str) -> int:
+    q = deque()
+    max_len = 0
+    
+    for char in s:
+        while char in q:
+            q.popleft()
+        q.append(char)
+        max_len = max(max_len, len(q))
+    return max_len
+
+
+
+
+print(lengthOfLongestSubstring("bbbbb"))     # -> 1
+print(lengthOfLongestSubstring("abcabcbb"))  # -> 3
+print(lengthOfLongestSubstring("abcb"))      # -> 3
+print(lengthOfLongestSubstring("pwwkew"))    # -> 3
+print(lengthOfLongestSubstring("ckilbkd"))   # -> 5
+print(lengthOfLongestSubstring("dvdf"))      # -> 3
+"""
+
+
+
+# Нахождение самой длинной палиндромной подстроки  НАПИШИ 5 ВАРИАНТОВ   Алгоритм Манакера (O(n) времени и O(n) памяти)
+def longestPalindrome(s: str) -> str:
+    pass
+
+
+
+
+# print(longestPalindrome("babad"))     # -> bab
+# print(longestPalindrome("cbbd"))      # -> bb
+# print(longestPalindrome("aaaaa"))     # -> aaaaa
+
+
+
+
+
+
+# ОТВЕТ Нахождение самой длинной палиндромной подстроки НАПИШИ 5 ВАРИАНТОВ Алгоритм Манакера (O(n) времени и O(n) памяти)
+# Brute Force	                O(n³)	Только для тестирования, tiny strings
+# Оптимизированный перебор	    O(n³)	Лучше не использовать
+# Динамическое программирование	O(n²)	Для ясности кода, n ≤ 10⁴
+# Расширение вокруг центра	    O(n²)	Лучший баланс (n ≤ 10⁵)
+# Алгоритм Манакера	            O(n)	Максимальная производительность (n > 10⁵)
+"""
+# Очень медленный для больших строк    
+# ВАРИАНТ 1: Перебор всех подстрок (Bute Force) Сложность: O(n³) - два вложенных цикла O(n²) и проверка палиндрома O(n)
+
+def longestPalindrome(s: str) -> str:
+    if not s:
+        return ""
+
+    longest = ""
+    n = len(s)
+
+    for i in range(n):
+        for j in range(i, n):
+            substring = s[i:j + 1]
+            if substring == substring[::-1] and len(substring) > len(longest):
+                longest = substring
+
+    return longest
+
+
+
+# ВАРИАНТ 2: Оптимизированный перебор (с ранним прекращением)   В худшем случае O(n³) медленный для больших строк
+def longestPalindrome(s: str) -> str:
+    if not s:
+        return ""
+    
+    n = len(s)
+    longest = s[0]  # минимальный палиндром - первый символ
+    
+    for i in range(n):
+        # Если оставшаяся длина меньше текущего максимального, выходим
+        if n - i <= len(longest):
+            break
+            
+        for j in range(n, i, -1):  # идем с конца к началу
+            # Если длина текущей подстроки меньше максимальной, пропускаем
+            if j - i <= len(longest):
+                break
+                
+            substring = s[i:j]
+            if substring == substring[::-1]:
+                longest = substring
+                break  # нашли максимальный для этого i
+    
+    return longest    
+    
+    
+
+# ВАРИАНТ 3: Динамическое программирование (O(n²) времени и O(n²) памяти)
+
+def longestPalindrome(s: str) -> str:
+    n = len(s)
+    if n < 2:
+        return s
+    
+    # Инициализация таблицы DP
+    dp = [[False] * n for _ in range(n)]
+    start = 0
+    max_len = 1
+    
+    # Все подстроки длины 1 - палиндромы
+    for i in range(n):
+        dp[i][i] = True
+    
+    # Проверяем подстроки длины 2
+    for i in range(n-1):
+        if s[i] == s[i+1]:
+            dp[i][i+1] = True
+            start = i
+            max_len = 2
+    
+    # Проверяем подстроки длины > 2
+    for length in range(3, n+1):
+        for i in range(n - length + 1):
+            j = i + length - 1
+            if s[i] == s[j] and dp[i+1][j-1]:
+                dp[i][j] = True
+                if length > max_len:
+                    start = i
+                    max_len = length
+    
+    return s[start:start+max_len]
+    
+
+
+# ВАРИАНТ 4: Расширение вокруг центра (O(n²) времени, O(1) памяти)    достаточно быстро, проще в реализаци
+
+ def longestPalindrome(s: str) -> str:
+    def expandAroundCenter(left, right):
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            left -= 1
+            right += 1
+        return s[left+1:right]
+    
+    longest = ""
+    for i in range(len(s)):
+        # Нечетная длина
+        palindrome1 = expandAroundCenter(i, i)
+        if len(palindrome1) > len(longest):
+            longest = palindrome1
+        
+        # Четная длина
+        palindrome2 = expandAroundCenter(i, i+1)
+        if len(palindrome2) > len(longest):
+            longest = palindrome2
+    
+    return longest   
+    
+
+
+# ВАРИАНТ 5: Алгоритм Манакера (O(n) времени и O(n) памяти)  макс. производительность! самый быстрый известный алгоритм 
+
+def longestPalindrome(s: str) -> str:
+    # Преобразование строки для обработки четных палиндромов
+    T = '#'.join('^{}$'.format(s))
+    n = len(T)
+    P = [0] * n
+    center = right = 0
+    
+    for i in range(1, n-1):
+        # Используем зеркальное отражение
+        if i < right:
+            mirror = 2 * center - i
+            P[i] = min(right - i, P[mirror])
+        
+        # Пытаемся расширить палиндром
+        while T[i + P[i] + 1] == T[i - P[i] - 1]:
+            P[i] += 1
+        
+        # Если палиндром выходит за текущий правый край
+        if i + P[i] > right:
+            center, right = i, i + P[i]
+    
+    # Находим максимальный палиндром
+    max_len, center_index = max((P[i], i) for i in range(n))
+    start = (center_index - max_len) // 2
+    return s[start:start + max_len]
+
+    
+print(longestPalindrome("babad"))     # -> bab
+print(longestPalindrome("cbbd"))      # -> bb
+print(longestPalindrome("aaaaa"))     # -> aaaaa    
+"""
+
+
+
 
 
 
@@ -7207,10 +7743,10 @@ WHERE rn = 1;
 
 
 # ЗАДАЧА 1  АНАГРАММА   НАПИСАТЬ 5 СПОСОБОВ!
+
+
 def anagramma(s: str, s1: str) -> bool:
     pass
-
-
 
 
 
@@ -7222,6 +7758,7 @@ def anagramma(s: str, s1: str) -> bool:
 
 
 # ЗАДАЧА 2  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ  НАПИСАТЬ 8 СПОСОБОВ!
+
 def is_service_good(lst: list[tuple]):
     pass
 
@@ -7435,6 +7972,7 @@ costs = [20, 10, 30, 40]
 max_limit = 40
 
 
+
 def knapsack(weights, costs, max_limit):
     pass
 
@@ -7456,8 +7994,10 @@ def find_two_sum(nums, target):
     pass
 
 
+
 # print(find_two_sum(lst, target))  # -> [0, 1]
 # print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+
 
 
 
@@ -7474,7 +8014,9 @@ def replace_odd_chars(s):
     pass
 
 
+
 # print(replace_odd_chars(s))  # -> aacaeagaia
+
 
 
 
@@ -7890,7 +8432,7 @@ print(result)  # -> 2
 
 
 def is_palindrome(s: str) -> bool:
-    pass
+   pass
 
 
 
@@ -8208,7 +8750,6 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
-
 
 
 
@@ -8625,6 +9166,7 @@ def flatten(*args):
 
 
 
+
 # print(flatten([1, 2, [2, 3, [4, 4]]]))                  # -> [1, 2, 2, 3, 4, 4]
 # print(flatten([1, 2, [2, 3, [4, 4]], [[[[[5, 5]]]]]]))  # -> [1, 2, 2, 3, 4, 4, 5, 5]
 
@@ -8633,6 +9175,7 @@ def flatten(*args):
 # 2 Варианта
 def flatten(items):
     pass
+
 
 
 
@@ -9001,7 +9544,6 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
-
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -9134,7 +9676,6 @@ def to_digit(val):
 
 def string_to_int(value: str) -> int:
     pass
-
 
 
 # print(string_to_int("3248"))  # -> 3248
@@ -9279,7 +9820,6 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
-
 
 
 

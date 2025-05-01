@@ -820,7 +820,7 @@
 
  Где использовать: рейтинги, топ-N запросы, аналитика.
 
- -- RANK, DENSE_RANK и ROW_NUMBER  оконные функции --
+ -- END RANK, DENSE_RANK и ROW_NUMBER  оконные функции --
 
 
 

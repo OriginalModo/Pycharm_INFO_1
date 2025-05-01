@@ -582,6 +582,88 @@ a()  # -> 1
 
 
 
+# ПРОСТО ПОСМОТРЕТЬ!!!
+"""
+# 2 Задачи  компания EdgeЦентр
+
+
+# ЗАДАЧА 1)
+
+a_list = [1, 2, 3, 4, 5]
+res = filter(lambda x: x % 2, a_list)
+
+if any(res):              # потребляет элементы генератора res до первого элемента, который оценивается как True
+    for i in res:
+        print(i, end=' ') # -> 3 5
+
+for i in res:
+    print(i, end=' ')     # Будет пусто потому что Генератор пуст
+
+
+
+# ЗАДАЧА 2)
+
+# Редкий случай гонки данных (race condition)     Это корректный пример гонки данных в асинхронном коде.
+import asyncio
+
+WORK_COUNTER = 0  # Изначально счетчик равен 0
+
+
+async def foo():
+    global WORK_COUNTER
+    if WORK_COUNTER == 0:        # Первая проверка: условие True (0 == 0)
+        await asyncio.sleep(.5)  # foo() засыпает на 0.5 сек (передает управление)
+        # В этот момент управление переходит к задачам bar()
+
+        WORK_COUNTER += 1        # После пробуждения увеличивает счетчик на 1
+        # Но! Это произойдет только после того, как обе bar() проверят условие
+    print(f"Foo - Work Counter: {WORK_COUNTER}")  # Выведет 1 (см. объяснение ниже)
+
+
+async def bar():
+    global WORK_COUNTER
+    if WORK_COUNTER == 0:        # Условие изначально True (0 == 0)
+        await asyncio.sleep(.5)  # bar() тоже засыпает на 0.5 сек
+        # Во время сна foo() и другие bar() могут выполняться
+
+        WORK_COUNTER += 2        # После пробуждения увеличивает счетчик на 2
+        # Критический момент: обе bar() могут выполнить это ДО того, как foo() изменит счетчик
+    print(f"Bar - Work Counter: {WORK_COUNTER}")  # Выведет 3 и 5 (см. объяснение)
+
+
+async def main():
+    # Создаем две асинхронные задачи bar() (они начинают выполняться)
+    asyncio.create_task(bar())  # Задача 1
+    asyncio.create_task(bar())  # Задача 2
+    # Вызываем foo() и ждем его завершения
+    await foo()  # Главная корутина ждет завершения foo()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())              # Запускаем event loop
+    print(f"Total: {WORK_COUNTER}")  # Итоговый вывод: 5
+
+
+# Вывод:
+
+# Foo - Work Counter: 1
+# Bar - Work Counter: 3
+# Bar - Work Counter: 5
+# Total: 5
+
+
+# Итог:
+# Гонка данных между foo() и bar() приводит к тому, что обе bar() могут выполнить свои += 2,
+# даже если foo() уже изменил счетчик.
+
+# Почему так  Результат: Total: 5.:
+# create_task() не гарантирует порядок выполнения, а await foo() не блокирует bar() полностью из-за асинхронности.
+# Если bar() успевают проверить WORK_COUNTER == 0 до изменения foo(), они выполнят свои += 2.
+"""
+
+
+
+
 # Будет последнее значение выводить 10 раз    ПОСМОТРИ ВНИМАТЕЛЬНО КОД  Обрати внимание на    x   Задача Мебель Детали
 # Просто посмотреть в конце будет такое же задание написать
 """
@@ -2467,6 +2549,29 @@ c = {"z": 8}
 c = c | a | b
 print(c)  # -> {'z': 8, 'w': 5, 'x': 6, 'y': 7}
 """
+
+
+
+
+# Устранить дубликаты и оставить Порядок элементов  fromkeys
+
+
+
+
+
+
+# ОТВЕТ  Устранить дубликаты и оставить Порядок элементов  fromkeys
+"""
+my_lst = [10, 10, 10, 2, 3]
+# Порядок НЕ УПОРЯДОЧЕННЫЙ!!!
+print(set(my_lst))                         # -> {3, 10, 2}
+
+# Сохраняем порядок
+print(dict.fromkeys(my_lst).keys())        # -> dict_keys([10, 2, 3])
+print(list(dict.fromkeys(my_lst).keys()))  # -> [10, 2, 3]
+"""
+
+
 
 
 
@@ -5794,7 +5899,229 @@ if __name__ == "__main__":
 
 
 
-# Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ
+
+# Необходимо найти максимальное количество последовательно идущих единиц.  Max Consecutive Ones    НАПИСАТЬ 3 ВАРИАНТА
+
+
+
+
+
+
+
+# ОТВЕТ Необходимо найти максимальное количество последовательно идущих единиц.  Max Consecutive Ones
+R"""
+# Максимальное количество подряд идущих единиц  Max Consecutive Ones
+
+# ВАРИАНТ 1
+# Имеет временную сложность O(n), где n - длина массива, так как мы проходим по массиву только один раз.
+# Пространственная сложность O(1), так как используем только константное количество дополнительной памяти.
+def findMaxConsecutiveOnes(nums: list) -> int:
+    max_count = 0
+    current_count = 0
+
+    for num in nums:
+        if num == 1:
+            current_count += 1
+            max_count = max(max_count, current_count)
+        else:
+            current_count = 0
+
+    return max_count
+
+
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> 3
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
+
+
+
+# ВАРИАНТ 2
+# Время: O(n) (один проход по массиву).
+# Память: O(k), где k — длина максимальной последовательности (в худшем случае O(n)).
+def findMaxConsecutiveOnes(nums: list) -> tuple[int, list]:
+    max_seq = []
+    current_seq = []
+
+    for num in nums:
+        if num == 1:
+            current_seq.append(num)
+            if len(current_seq) > len(max_seq):
+                max_seq = current_seq.copy()
+        else:
+            current_seq = []
+
+    return len(max_seq), max_seq
+
+
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> (3, [1, 1, 1])
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> (2, [1, 1])
+
+
+
+# ВАРИАНТ 3 
+# МОЁ РЕШЕНИЕ НЕ ОПТИМАЛЬНОЕ         Сложность: O(n) время, но с большими константами из-за преобразований
+def findMaxConsecutiveOnes(nums):
+    res = re.sub(r'[\[\]\,\s]', '', str(nums))
+    return len(max(res.split('0'), key=len))
+
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> 3
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
+"""
+
+
+
+
+
+# Максимальное количество последовательных единиц II (с возможностью переворота одного нуля)  Max Consecutive Ones II
+# НАПИСАТЬ 3 ВАРИАНТА   # YANDEX  (Второй ЗАХОД)
+
+
+
+
+
+# ОТВЕТ Максимальное количество последовательных единиц II (с возможностью переворота одного нуля)  Max Consecutive Ones II
+"""
+# ВАРИАНТ 1
+# Решение С БИТОВЫМИ ОПЕРАЦИЯМИ  XOR (^) для инвертирования битов
+# Время: O(n) - один проход по массиву
+# Память: O(1) - константное доп. пространство
+
+# Использует битовую операцию ^ для инвертирования 0/1   x ^ 1 работает как инвертор бита (0→1, 1→0)
+# Возвращает len(nums) - l (максимальное окно)
+def findMaxConsecutiveOnes(nums: list) -> int:
+    l = cnt = 0
+    for x in nums:
+        cnt += x ^ 1 # Эквивалентно: cnt += 0 if x == 1 else 1
+        if cnt > 1:  # Если встретили второй ноль
+            cnt -= nums[l] ^ 1
+            l += 1
+    return len(nums) - l # Длина максимального окна
+
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0]))     # 4 (можно перевернуть последний 0)
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # 4 (можно перевернуть предпоследний 0)
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # 6 (уже максимально)
+print(findMaxConsecutiveOnes([0, 0, 1, 1, 0]))     # 3 (переворачиваем один из первых нулей)
+
+
+
+# ВАРИАНТ 2
+# ОПТИМИЗИРОВАННОЕ РЕШЕНИЕ (скользящее окно)
+# Время: O(n) - один проход по массиву
+# Память: O(1) - константное доп. пространство
+def findMaxConsecutiveOnes(nums: list) -> int:
+    max_length = 0
+    left = 0
+    zero_count = 0
+
+    for right in range(len(nums)):
+        if nums[right] == 0:
+            zero_count += 1
+
+        # Если нулей больше одного, двигаем левую границу
+        while zero_count > 1:
+            if nums[left] == 0:
+                zero_count -= 1
+            left += 1
+
+        max_length = max(max_length, right - left + 1)
+
+    return max_length
+
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0]))     # 4 (можно перевернуть последний 0)
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # 4 (можно перевернуть предпоследний 0)
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # 6 (уже максимально)
+print(findMaxConsecutiveOnes([0, 0, 1, 1, 0]))     # 3 (переворачиваем один из первых нулей)
+
+
+
+# ВАРИАНТ 3
+# ВЫВОД ДЛИНА ПОСЛЕДОВАТЕЛЬНОСТЬ
+# Временная сложность: O(n) - один проход по массиву
+# Пространственная сложность: O(k), где k - длина максимальной последовательности
+def findMaxConsecutiveSequence(nums: list) -> tuple[int, list]:
+    max_sequence = []
+    current_sequence = []
+    zero_pos = -1  # Позиция перевернутого нуля
+
+    for i, num in enumerate(nums):
+        if num == 1:
+            current_sequence.append(1)
+        else:
+            if zero_pos == -1:  # Первый ноль - переворачиваем
+                current_sequence.append(1)
+                zero_pos = len(current_sequence) - 1
+            else:  # Второй ноль - сбрасываем последовательность
+                if len(current_sequence) > len(max_sequence):
+                    max_sequence = current_sequence.copy()
+
+                # Начинаем новую последовательность после перевернутого нуля
+                current_sequence = current_sequence[zero_pos + 1:] + [1]
+                zero_pos = len(current_sequence) - 1
+
+        # Обновляем максимальную последовательность
+        if len(current_sequence) > len(max_sequence):
+            max_sequence = current_sequence.copy()
+
+    # Проверяем последовательность в конце массива
+    if len(current_sequence) > len(max_sequence):
+        max_sequence = current_sequence.copy()
+
+    return len(max_sequence), max_sequence
+
+
+print(findMaxConsecutiveSequence([1, 0, 1, 1, 0]))     # -> (4, [1, 1, 1, 1])
+print(findMaxConsecutiveSequence([1, 0, 1, 1, 0, 1]))  # -> (4, [1, 1, 1, 1])
+print(findMaxConsecutiveSequence([1, 1, 0, 1, 1, 1]))  # -> (6, [1, 1, 1, 1, 1, 1])
+print(findMaxConsecutiveSequence([0, 0, 1, 1, 0]))     # -> (3, [1, 1, 0])
+print(findMaxConsecutiveSequence([1, 1, 1]))           # -> (3, [1, 1, 1])
+print(findMaxConsecutiveSequence([0, 0, 0]))           # -> (1, [1])
+"""
+
+
+
+# Максимальное количество последовательных единиц  (разрешено перевернуть не более k нулей)  Max Consecutive Ones III
+# ТОЖЕ САМОЕ   Max Consecutive Ones II  Только меняем       while zero_count > 1   на   while zero_count > k   1 ВАРИАНТ
+
+
+
+
+
+
+
+# ОТВЕТ Максимальное количество последовательных единиц  (разрешено перевернуть не более k нулей)  Max Consecutive Ones III
+"""
+# ВАРИАНТ 1
+# Оптимальное решение (метод скользящего окна)
+# Временная сложность: O(n), где n - длина массива (каждый элемент обрабатывается дважды в худшем случае)
+# Пространственная сложность: O(1) (используем константное количество переменных)
+def findMaxConsecutiveOnes(nums: list[int], k: int) -> int:
+    max_length = 0
+    left = 0
+    zero_count = 0
+
+    for right in range(len(nums)):
+        if nums[right] == 0:
+            zero_count += 1
+
+        # Если нулей больше одного, двигаем левую границу
+        while zero_count > k:                               # Теперь сравниваем с k вместо 1
+            if nums[left] == 0:
+                zero_count -= 1
+            left += 1
+
+        max_length = max(max_length, right - left + 1)
+
+    return max_length
+
+
+print(findMaxConsecutiveOnes([1,1,1,0,0,0,1,1,1,1,0], 2))                  # 6
+print(findMaxConsecutiveOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3))  # 10
+"""
+
+
+
+
+
+# Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ + ЕЩЕ 5 СО СТРОКОЙ
 
 def lengthOfLongestSubstring(s: str) -> int:
     pass
@@ -5813,47 +6140,44 @@ def lengthOfLongestSubstring(s: str) -> int:
 
 
 
-
-
-
-# Ответ Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ
+# Ответ Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ + ЕЩЕ 5 СО СТРОКОЙ
 """
 
 # ВАРИАНТ 1: Метод скользящего окна с использованием множества баланс между простотой и эффективностью  (O(n))
 # O(min(m, n)) по памяти (m - размер алфавита)
-
-def lengthOfLongestSubstring(s: str) -> int:
-    char_set = set()
-    left = 0
-    max_length = 0
-    
-    for right in range(len(s)):
-        while s[right] in char_set:
-            char_set.remove(s[left])
-            left += 1
-        char_set.add(s[right])
-        max_length = max(max_length, right - left + 1)
-    
-    return max_length
-
+            
+def lengthOfLongestSubstring(s: str) -> int:                def lengthOfLongestSubstring(s: str) -> tuple[int, str]:                                                
+    char_set = set()                                            char_set = set()                        
+    left = 0                                                    left = 0                
+    max_length = 0                                              max_sub = ""                    
+                                                                for right, char in enumerate(s):        
+    for right in range(len(s)):                                     while char in char_set:                                
+        while s[right] in char_set:                                     char_set.remove(s[left])                                    
+            char_set.remove(s[left])                                    left += 1                                        
+            left += 1                                               char_set.add(char)                        
+        char_set.add(s[right])                                      if right - left + 1 > len(max_sub):                                
+        max_length = max(max_length, right - left + 1)                  max_sub = s[left:right+1]                                                        
+                                                                       
+    return max_length                                           return len(max_sub), max_sub                      
+                                                                
 
 # Лучший - Вариант 2, обеспечивает оптимальную производительность O(n) и обрабатывает каждый символ ровно один раз.
 # ВАРИАНТ 2: Оптимизированный метод скользящего окна с хэш-мап для больших строк    (O(n))    O(min(m, n)) по памяти
 
-def lengthOfLongestSubstring(s: str) -> int:
-    char_map = {}
-    left = 0
-    max_length = 0
-    
-    for right in range(len(s)):
-        if s[right] in char_map and char_map[s[right]] >= left:
-            left = char_map[s[right]] + 1
-        char_map[s[right]] = right
-        max_length = max(max_length, right - left + 1)
-    
-    return max_length
-
-
+def lengthOfLongestSubstring(s: str) -> int:                     def lengthOfLongestSubstring(s: str) -> tuple[int, str]:                                         
+    char_map = {}                                                    last_seen = {}             
+    left = 0                                                         start = 0         
+    max_length = 0                                                   max_sub = ""             
+                                                                     for i, char in enumerate(s): 
+    for right in range(len(s)):                                          if char in last_seen and last_seen[char] >= start:                         
+        if s[right] in char_map and char_map[s[right]] >= left:              start = last_seen[char] + 1                                                         
+            left = char_map[s[right]] + 1                                last_seen[char] = i                                     
+        char_map[s[right]] = right                                       if i - start + 1 > len(max_sub):                             
+        max_length = max(max_length, right - left + 1)                       max_sub = s[start:i+1]                                                 
+                                                                     
+    return max_length                                                return len(max_sub), max_sub               
+                                                                     
+                                                                
 # ВАРИАНТ 2: с комментариями УПРОЩЕННЫЙ
 
 def lengthOfLongestSubstring(s: str) -> int:
@@ -5876,61 +6200,63 @@ def lengthOfLongestSubstring(s: str) -> int:
 # ВАРИАНТ 3: Использование OrderedDict (из collections) если нужно сохранять порядок Сложность: O(n) в среднем случае
 
 from collections import OrderedDict
-
-def lengthOfLongestSubstring(s: str) -> int:
-    char_dict = OrderedDict()
-    max_len = 0
-    start = 0
-    
-    for i, char in enumerate(s):
-        if char in char_dict and char_dict[char] >= start:
-            start = char_dict[char] + 1
-        char_dict[char] = i
-        max_len = max(max_len, i - start + 1)
-    return max_len
-
-
-
+                                                          # Вариант с двумя указателями (без дополнительной памяти)  
+def lengthOfLongestSubstring(s: str) -> int:              def lengthOfLongestSubstring(s: str) -> tuple[int, str]:                                          
+    char_dict = OrderedDict()                                 start = 0                          
+    max_len = 0                                               max_sub = ""          
+    start = 0                                                 for i, char in enumerate(s):          
+                                                                  # Проверяем, есть ли текущий символ в текущей подстроке  
+    for i, char in enumerate(s):                                  while char in s[start:i]:                              
+        if char in char_dict and char_dict[char] >= start:            start += 1                                                      
+            start = char_dict[char] + 1                           if i - start + 1 > len(max_sub):                                  
+        char_dict[char] = i                                           max_sub = s[start:i+1]                      
+        max_len = max(max_len, i - start + 1)                 return len(max_sub), max_sub                                          
+    return max_len                                                      
+                                                            
+                                                            
+                                                            
 #  лучше не использовать в продакшене (из-за O(n²))
 # Вариант 4: Использование списка вместо множества    O(n^2) в худшем случае  O(n) по памяти
-def lengthOfLongestSubstring(s: str) -> int:
-    chars = []
-    max_length = 0
-    
-    for char in s:
-        if char in chars:
-            chars = chars[chars.index(char)+1:]
-        chars.append(char)
-        max_length = max(max_length, len(chars))
-    
-    return max_length
-    
-    
+
+                                                      # Вариант со словарём (индексы символов)  
+def lengthOfLongestSubstring(s: str) -> int:          def lengthOfLongestSubstring(s: str) -> tuple[int, str]:                                          
+    chars = []                                            char_index = {}          
+    max_length = 0                                        start = 0              
+                                                          max_sub = ""  
+    for char in s:                                        for i, char in enumerate(s):              
+        if char in chars:                                     if char in char_index and char_index[char] >= start:                      
+            chars = chars[chars.index(char)+1:]                   start = char_index[char] + 1                                          
+        chars.append(char)                                    char_index[char] = i                      
+        max_length = max(max_length, len(chars))              current_sub = s[start:i+1]                                              
+                                                              if len(current_sub) > len(max_sub):  
+    return max_length                                             max_sub = current_sub                  
+                                                          return len(max_sub), max_sub  
+                                                        
     
 # ВАРИАНТ 5: Использование deque (двусторонней очереди)  Сложность: O(n) в среднем случае   Память: O(min(m, n))
 
-from collections import deque
+from collections import deque                             from collections import deque                    
+                                                         
+def lengthOfLongestSubstring(s: str) -> int:              def lengthOfLongestSubstring(s: str) -> tuple[int, str]:                                            
+    q = deque()                                               q = deque()
+    max_len = 0                                               max_sub = ""
+                                                              for char in s:
+    for char in s:                                                while char in q:   
+        while char in q:                                              q.popleft()          
+            q.popleft()                                           q.append(char)     
+        q.append(char)                                            if len(q) > len(max_sub):                
+        max_len = max(max_len, len(q))                                max_sub = "".join(q)                               
+    return max_len                                            return len(max_sub), max_sub
+                                                          
 
-def lengthOfLongestSubstring(s: str) -> int:
-    q = deque()
-    max_len = 0
-    
-    for char in s:
-        while char in q:
-            q.popleft()
-        q.append(char)
-        max_len = max(max_len, len(q))
-    return max_len
 
 
-
-
-print(lengthOfLongestSubstring("bbbbb"))     # -> 1
-print(lengthOfLongestSubstring("abcabcbb"))  # -> 3
-print(lengthOfLongestSubstring("abcb"))      # -> 3
-print(lengthOfLongestSubstring("pwwkew"))    # -> 3
-print(lengthOfLongestSubstring("ckilbkd"))   # -> 5
-print(lengthOfLongestSubstring("dvdf"))      # -> 3
+print(lengthOfLongestSubstring("bbbbb"))     # -> 1       print(lengthOfLongestSubstring("bbbbb"))     # -> (1, 'b')  
+print(lengthOfLongestSubstring("abcabcbb"))  # -> 3       print(lengthOfLongestSubstring("abcabcbb"))  # -> (3, 'abc')  
+print(lengthOfLongestSubstring("abcb"))      # -> 3       print(lengthOfLongestSubstring("abcb"))      # -> (3, 'abc')  
+print(lengthOfLongestSubstring("pwwkew"))    # -> 3       print(lengthOfLongestSubstring("pwwkew"))    # -> (3, 'wke')  
+print(lengthOfLongestSubstring("ckilbkd"))   # -> 5       print(lengthOfLongestSubstring("ckilbkd"))   # -> (5, 'ckilb')  
+print(lengthOfLongestSubstring("dvdf"))      # -> 3       print(lengthOfLongestSubstring("dvdf"))      # -> (3, 'vdf')  
 """
 
 
@@ -6264,7 +6590,6 @@ str2 = "world12345"  # Если заменить на такую строку   
 
 
 
-
 # Ответ Изменить str на новое значение чтобы id остался такой как и был
 
 """
@@ -6330,7 +6655,6 @@ target = 9
 
 
 
-
 # Ответ БЕЗ ФУНКЦИИ  Написать Алгоритм БИНАРНОГО поиска на Python  O(log n)   без конца делит область поиска пополам.
 # Важно отметить, что массив должен быть ОТСОРТИРОВАН для применения бинарного поиска.
 """
@@ -6369,7 +6693,6 @@ target = 9
 
 def binary_search(arr, target):
     pass
-
 
 
 
@@ -6723,6 +7046,7 @@ __import__('sys').stdout.write(f'(Merge Sort): {sorted_arr}')  # -> (Merge Sort)
 
 
 
+
 # 6) Пирамидальная сортировка (Heap Sort)     Время: O(n log n) во всех случаях.  Пространство: O(1)
 """
 def heapify(arr, n, i):
@@ -6757,9 +7081,6 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 # 7) Написать Тим-сорт (TimSort)
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
-
-
-
 
 
 
@@ -7328,7 +7649,6 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 
 
 
-
 # Ответ 7. first() и last(): Получает первый или последний объект и выполняет запрос.
 """
 first_obj = MyModel.objects.first()
@@ -7421,6 +7741,7 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 # 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 # Пример использования select_related для один-к-одному и один-ко-многим.
+
 
 
 
@@ -9507,7 +9828,7 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
-
+# НАПИШИ 2 ВАРИАНТА   1 - Через функцию  2 - Через Класс
 # Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с ошибкой.
 # Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 #
@@ -9543,7 +9864,7 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 
 
 
-
+# ОТВЕТ НАПИШИ 2 ВАРИАНТА   1 - Через функцию  2 - Через Класс
 # Ответ Создайте декоратор retry, который повторяет выполнение функции заданное количество раз, если она завершилась с
 # ошибкой. Если все попытки неудачны, декоратор должен вернуть сообщение об ошибке или выбросить исключение.   Сбер
 """
@@ -9573,6 +9894,25 @@ def unstable_function():    # При передаче их как именова
     return "Успех!"
 
 print(unstable_function())
+
+
+# ТОЖЕ САМОЕ ЧЕРЕЗ КЛАСС
+class retry:
+    def __init__(self, retries, delay):
+        self.retries = retries
+        self.delay = delay
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for i in range(1, self.retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except ValueError as e:
+                    print(f'Попытка {i} не удалась: {e}. Повтор через {self.delay} секунд.')
+                    time.sleep(self.delay)
+            return 'Функция не отработала корректно'
+        return wrapper
 """
 
 

@@ -5903,8 +5903,14 @@ if __name__ == "__main__":
 # Необходимо найти максимальное количество последовательно идущих единиц.  Max Consecutive Ones    НАПИСАТЬ 3 ВАРИАНТА
 
 
+def findMaxConsecutiveOnes(nums: list) -> int:
+    pass
 
 
+
+
+# print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> 3
+# print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
 
 
 
@@ -5975,6 +5981,16 @@ print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
 # НАПИСАТЬ 3 ВАРИАНТА   # YANDEX  (Второй ЗАХОД)
 
 
+def findMaxConsecutiveOnes(nums: list) -> int:
+    pass
+
+
+
+
+# print(findMaxConsecutiveOnes([1, 0, 1, 1, 0]))     # 4 (можно перевернуть последний 0)
+# print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # 4 (можно перевернуть предпоследний 0)
+# print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # 6 (уже максимально)
+# print(findMaxConsecutiveOnes([0, 0, 1, 1, 0]))     # 3 (переворачиваем один из первых нулей)
 
 
 
@@ -6082,7 +6098,13 @@ print(findMaxConsecutiveSequence([0, 0, 0]))           # -> (1, [1])
 # ТОЖЕ САМОЕ   Max Consecutive Ones II  Только меняем       while zero_count > 1   на   while zero_count > k   1 ВАРИАНТ
 
 
+def findMaxConsecutiveOnes(nums: list[int], k: int) -> int:
+    pass
 
+
+
+# print(findMaxConsecutiveOnes([1,1,1,0,0,0,1,1,1,1,0], 2))                  # 6
+# print(findMaxConsecutiveOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3))  # 10
 
 
 

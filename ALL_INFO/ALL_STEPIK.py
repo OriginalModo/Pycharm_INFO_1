@@ -7112,6 +7112,80 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(longestPalindrome("aaaaa"))     # -> aaaaa
  -----------------------------------------------------------------------------------------------------------------------
 
+ # Даны строка-шаблон pattern и строка s. Нужно определить, соответствует ли строка s шаблону pattern.    Word Pattern
+
+ # Время: O(n), где n — длина pattern (один проход по всем символам и словам).
+ # Память: O(n), так как храним словари для всех уникальных символов и слов.
+ def wordPattern(pattern: str, s: str) -> bool:
+     words = s.split()  # Разбиваем строку на слова
+
+     # Если длины не совпадают, соответствия быть не может
+     if len(pattern) != len(words):
+         return False
+
+     # Создаём два словаря для двустороннего соответствия
+     char_to_word = {}  # ключ: символ, значение: слово
+     word_to_char = {}  # ключ: слово, значение: символ
+
+     for char, word in zip(pattern, words):
+         # Проверяем, что символ соответствует слову
+         if char in char_to_word:
+             if char_to_word[char] != word:
+                 return False
+         else:
+             char_to_word[char] = word
+
+         # Проверяем, что слово соответствует символу
+         if word in word_to_char:
+             if word_to_char[word] != char:
+                 return False
+         else:
+             word_to_char[word] = char
+
+     return True
+
+
+ print(wordPattern("abba", "dog cat cat dog")) # -> True
+ print(wordPattern("aaaa", "dog cat cat dog")) # -> False
+ -----------------------------------------------------------------------------------------------------------------------
+
+ # Даны две строки s и t. Нужно определить, являются ли они изоморфными.   Тоже самое     leetcode   Word Pattern
+
+ def isIsomorphic(s: str, t: str) -> bool:
+     if len(s) != len(t):
+         return False
+
+     s_to_t = {}  # Словарь для соответствия s → t
+     t_to_s = {}  # Словарь для соответствия t → s
+
+     for char_s, char_t in zip(s, t):
+         # Проверяем соответствие s → t
+         if char_s in s_to_t:
+             if s_to_t[char_s] != char_t:
+                 return False
+         else:
+             s_to_t[char_s] = char_t
+
+         # Проверяем соответствие t → s
+         if char_t in t_to_s:
+             if t_to_s[char_t] != char_s:
+                 return False
+         else:
+             t_to_s[char_t] = char_s
+
+     return True
+
+
+ print(isIsomorphic("egg", "add")) # -> True
+ print(isIsomorphic("foo", "bar")) # -> False
+ -----------------------------------------------------------------------------------------------------------------------
+
+
+ -----------------------------------------------------------------------------------------------------------------------
+
+
+ -----------------------------------------------------------------------------------------------------------------------
+
 
  -----------------------------------------------------------------------------------------------------------------------
 

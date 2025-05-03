@@ -3176,6 +3176,30 @@ if __name__ == '__main__':
     greet_method = operator.methodcaller('greet', 'Alice', age=30)   # Тоже самое что и НИЖЕ
     print(greet_method(cats[1]))                                     # -> Hello, Alice! Age: 30 Angela
     print(operator.methodcaller('greet', 'Alice', age=30)(cats[0]))  # -> Hello, Alice! Age: 30 Tom
+    
+    
+    
+# ДОПОЛНИТЕЛЬНЫЙ ПРИМЕР
+from operator import itemgetter
+
+a_dict = {
+    'banana': 2,
+    'orange': 2,
+    'kiwi': 1,
+    'app': 2,
+}
+
+# Обычная сортировка идёт по ключу
+print(sorted(a_dict.items()))                              # -> [('app', 2), ('banana', 2), ('kiwi', 1), ('orange', 2)]
+
+# Сортировка по значению (1), а затем по ключу (0)
+print(sorted(a_dict.items(), key=itemgetter(1, 0)))        # -> [('kiwi', 1), ('app', 2), ('banana', 2), ('orange', 2)]
+
+# Сортировка только по значению с использованием lambda
+print(sorted(a_dict.items(), key=lambda s: (s[1],)))       # -> [('kiwi', 1), ('banana', 2), ('orange', 2), ('app', 2)]
+
+# Сортировка по значению, затем по ключу с использованием lambda
+print(sorted(a_dict.items(), key=lambda s: (s[1], s[0])))  # -> [('kiwi', 1), ('app', 2), ('banana', 2), ('orange', 2)]
 """
 
 
@@ -5905,8 +5929,6 @@ if __name__ == "__main__":
 
 def findMaxConsecutiveOnes(nums: list) -> int:
     pass
-
-
 
 
 # print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> 3

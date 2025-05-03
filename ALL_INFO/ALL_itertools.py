@@ -270,6 +270,8 @@ ________________________________________________________________________________
  разбивает пакетные данные из итерируемого объекта iterable на кортежи длиной n. Последняя партия может быть короче n.
 
  Примерно эквивалентно:
+ from itertools import islice
+
  def batched(iterable, n):
     # batched('ABCDEFG', 3) → ABC DEF G
     if n < 1:
@@ -278,16 +280,7 @@ ________________________________________________________________________________
     while batch := tuple(islice(it, n)):
         yield batch
 
- Примеры 1:
- from itertools import islice, batched
-
- def batched(iterable, n):
-     # batched('ABCDEFG', 3) --> ABC DEF G
-     if n < 1:
-         raise ValueError('n must be at least one')
-     it = iter(iterable)
-     while batch := tuple(islice(it, n)):
-         yield batch
+ Примеры:
 
  flattened_data = ['roses', 'red', 'violets', 'blue', 'sugar', 'sweet']
  unflattened = list(batched(flattened_data, 2))
@@ -1148,6 +1141,8 @@ ________________________________________________________________________________
  # Кстати, такой же трюк можно провернуть при помощи обычной sum(), задав ей начальный параметр [] (т. е. пустой список)
  a = sum([["A", "B", "C"],["D", "E", "F"],["G", "H", "I"]], [])
  print(a)         # -> ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+
+ chain() — быстрее и правильнее, sum() — медленный костыль.
 
  # Возвращает элементы входной коллекции попарно
  i6 = pairwise([1, 2, 3, 4, 5])

@@ -303,7 +303,7 @@ ________________________________________________________________________________
 
  -- Операция SQL WHERE --
 
- SELECT * FROM tips WHERE time = 'Dinner';                  tips['time' == 'Dinner']
+ SELECT * FROM tips WHERE time = 'Dinner';                  tips[tips['time'] == 'Dinner']
  SELECT * FROM tips WHERE time = 'Dinner' AND tip > 5.00;   tips[(tips['time'] == 'Dinner') & (tips['tip'] > 5.00)]
  SELECT * FROM tips WHERE size >= 5 OR total_bill > 45;     tips[(tips['size'] >= 5) | (tips['total_bill'] > 45)]
 

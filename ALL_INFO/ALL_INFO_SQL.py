@@ -223,8 +223,6 @@
  - CHECK — проверка условия (например, age > 0).
 
  Пример:
- sql
- Copy
  CREATE TABLE users (
      id INT PRIMARY KEY,
      email VARCHAR(255) UNIQUE NOT NULL,

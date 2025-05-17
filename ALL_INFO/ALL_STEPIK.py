@@ -2102,6 +2102,140 @@ ________________________________________________________________________________
  print(result)  # -> 2
 ________________________________________________________________________________________________________________________
 
+ # VERME Биржа Смен   ИЧАР С ПРОСТЫМИ ЗАДАЧКАМИ  3 Задачи
+
+ # Какие значения вернет функция print?
+ a = [1,2,3]
+ b = a
+ c = [1,2,3]
+ print(a == b)  # -> True
+ print(a == c)  # -> True
+ print(a is b)  # -> True
+ print(a is c)  # -> False
+
+ # Простые задания
+
+ # Задача №1
+ # Напишите программу для объединения двух разных словарей. При объединении, если вы
+ # найдете одинаковые ключи, вы должны сложить значения этих ключей. Выведите новый словарь
+ # Задание:  РЕЗУЛЬТАТ ДОЛЖЕН БЫТЬ ВОТ ТАКОЙ:  {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+ d1 = {'a': 50, 'b': 100, 'c':200}
+ d2 = {'a': 200, 'b': 100, 'd':300}
+
+ # Способ 1
+ res = d1.copy()
+
+ for k, v in d2.items():
+     if k in res:
+         res[k] += v
+     else:
+         res[k] = v
+
+ print(res)  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+ # Способ 2   ОЧЕНЬ ИНЕТЕРЕСНЫЙ ПРИМЕР!!!  <-----     (с использованием Counter)
+ from collections import Counter
+
+ res = Counter(d1)+Counter(d2)
+ print(res)        # -> Counter({'d': 300, 'a': 250, 'b': 200, 'c': 200})
+ print(dict(res))  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+ # Способ 3 (с использованием dict comprehension)  ПОРЯДОК БУДЕТ ВСЕГДА РАЗНЫЙ!
+ all_keys = set(d1) | set(d2)
+ res = {k: d1.get(k, 0) + d2.get(k, 0) for k in all_keys}
+ print(res)  # -> {'b': 200, 'd': 300, 'c': 200, 'a': 250}
+
+
+ # Способ 4 (с использованием defaultdict)
+ from collections import defaultdict
+ res = defaultdict(int)
+ for d in (d1, d2):          # d БУДЕТ СЛОВАРЕМ!!!  d - это переменная, которая поочерёдно становится d1, затем d2
+     for k, v in d.items():
+         res[k] += v
+ print(dict(res))  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+ # Способ 5: Через dict.get() с циклом
+ res = {}
+ for d in (d1, d2):          # d БУДЕТ СЛОВАРЕМ!!!  d - это переменная, которая поочерёдно становится d1, затем d2
+     for k, v in d.items():
+         res[k] = res.get(k, 0) + v
+ print(res)  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+
+ # Задача №2
+ # Есть произвольный массив чисел, необходимо вывести произведение всех значений, то есть умножить первое значение
+ # на второе, затем полученный результат на третье значение и тд
+ # Задание:
+
+ from functools import reduce
+ import operator, math
+
+ # Способ 1  Использование цикла for
+ def mult(lst):
+     result = 1
+     for num in lst:
+         result *= num
+     return result
+
+ # Способ 2  Использование встроенной функции reduce и operator.mul
+ def mult(lst):
+     return reduce(operator.mul, lst, 1)      # ((((1*1)*2)*3)*4)*5) = 120
+
+ # Способ 3  reduce и lambda
+ def mult(lst):
+     return reduce(lambda x, y: x*y, lst, 1)  # ((((1*1)*2)*3)*4)*5) = 120
+
+ # Способ 4 Использование math.prod (Python 3.8+)
+ def mult(lst):
+     return math.prod(lst)                    # 1*2*3*4*5 = 120
+
+ a = [1, 2, 3, 4, 5]
+ print(mult(a))  # -> 120
+________________________________________________________________________________________________________________________
+
+ # ЗАДАЧА ИЗ ПЛОХОГО СОБЕСА  СУММА В СЕКУНДАХ В ЛОГАХ
+ from datetime import datetime
+
+ res = [
+     '2022-05-20Z logs',
+     '2022-05-21Z logs',
+     '2022-05-22Z logs',
+ ]
+
+ # Извлекаем и парсим даты
+ dates = [datetime.fromisoformat(item[:10]) for item in res]
+ print(dates)
+ # [datetime.datetime(2022, 5, 20, 0, 0), datetime.datetime(2022, 5, 21, 0, 0), datetime.datetime(2022, 5, 22, 0, 0)]
+
+ # Сортируем даты на случай, если они не в хронологическом порядке
+ sorted_dates = sorted(dates)
+
+ # Вычисляем разницу между всеми последовательными датами
+ total_seconds = 0.0
+ for i in range(1, len(sorted_dates)):
+     delta = sorted_dates[i] - sorted_dates[i-1]
+     total_seconds += delta.total_seconds()
+
+ # Вычисляем общую разницу между первой и последней датой
+ full_delta = sorted_dates[-1] - sorted_dates[0]
+ full_seconds = full_delta.total_seconds()
+
+ print(f"\nОбщая сумма всех интервалов: {total_seconds} секунд")
+ # Общая сумма всех интервалов: 172800.0 секунд
+
+ print(f"Прямая разница от первой до последней даты: {full_seconds} секунд")
+ # Прямая разница от первой до последней даты: 172800.0 секунд
+
+ print(f"Это соответствует {full_seconds/86400:.1f} дням")
+ # Это соответствует 2.0 дням
+________________________________________________________________________________________________________________________
+
+
 
 
 
@@ -7180,7 +7314,16 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(isIsomorphic("foo", "bar")) # -> False
  -----------------------------------------------------------------------------------------------------------------------
 
+ # МОЖНО ПЕРЕДЕЛАТЬ В СТАНДАРТНЫЕ СТРУКТУРЫ ДАННЫХ PYTHON!  collections
+ from collections import deque, Counter
 
+ a_deque = deque([1, 2, 3])
+ print(a_deque)         # -> deque([1, 2, 3])
+ print(list(a_deque))   # -> [1, 2, 3]
+
+ b_counter = Counter([1, 2, 3])
+ print(b_counter)         # -> Counter({1: 1, 2: 1, 3: 1})
+ print(dict(b_counter))   # -> {1: 1, 2: 1, 3: 1}
  -----------------------------------------------------------------------------------------------------------------------
 
 

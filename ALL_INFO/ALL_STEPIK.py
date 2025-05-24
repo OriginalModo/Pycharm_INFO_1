@@ -31,7 +31,7 @@
 ________________________________________________________________________________________________________________________
 
  --- Задачи с Собеседования ---                                       тех. собеседования 1):  32/4
-                                                                      тех. собеседования 2):  11/0
+                                                                      тех. собеседования 2):  15/0
 ________________________________________________________________________________________________________________________
 
  # Задача на логику    Сбер
@@ -407,7 +407,7 @@ ________________________________________________________________________________
  print(plus())  # -> 3 None
 ________________________________________________________________________________________________________________________
 
- Есть список                                            Грузовая кампания
+ Есть список                                            Грузовая компания
  words = ['aba', 'bac', 'abb', 'bab', 'bba',
  'aab', 'abca']
  Анаграммы - это такие пары слов, в которых одинаковые буквы и одинаковое количество букв, расположенных в разном
@@ -2233,6 +2233,1062 @@ ________________________________________________________________________________
 
  print(f"Это соответствует {full_seconds/86400:.1f} дням")
  # Это соответствует 2.0 дням
+________________________________________________________________________________________________________________________
+
+ # компания вроде DOG  2 задачи  FizzBuzz  и Code review  Django
+
+ # Задание 1) FizzBuzz  компания вроде DOG
+
+ n => [1...n]
+ i % 3 => Fizz
+ i % 5 => Buzz
+ i % 3,5 => FizzBuzz
+
+
+ # i % 15 == 0 действительно эквивалентно i % 3 == 0 and i % 5 == 0
+
+
+ # Моя версия садо-мазо
+ def fizzbuzz(n: int) -> None:
+     for i in range(True, n + True):
+         if i % 3 == 0 and i % 5 == 0:  # Тоже самое  i % 15 == 0
+             # __import__('sys').stdout.write(f'FizzBuzz ')
+             print('FizzBuzz', end=' ')
+         elif i % 3 == 0:
+             # __import__('sys').stdout.write(f'Fizz ')
+             print('Fizz', end=' ')
+         elif i % 5 == 0:
+             # __import__('sys').stdout.write(f'Buzz ')
+             print('Buzz', end=' ')
+         else:
+             # __import__('sys').stdout.write(f'{i} ')
+             print(str(i), end=' ')
+
+ fizzbuzz(15)
+ # 1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz
+ print()
+
+ # Короткая версия (для любителей однострочников):
+ fizzbuzz = lambda n: ['FizzBuzz' if i % 15 == 0 else 'Fizz' if i % 3 == 0 else 'Buzz' if i % 5 == 0 else str(i) for i in range(1, n + 1)]
+ # i % 15 == 0 действительно эквивалентно i % 3 == 0 and i % 5 == 0
+ fizzbuzz = lambda n: ['FizzBuzz' if i % 3 == 0 and i % 5 == 0 else 'Fizz' if i % 3 == 0 else 'Buzz' if i % 5 == 0 else str(i) for i in range(1, n + 1)]
+ print(*fizzbuzz(15))
+ # 1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz
+
+
+
+ # Задание 2 Code review  Django  ПРОСТО ПОСМОТРЕТЬ
+
+ Вот основные проблемы в этом коде:
+
+ Уязвимость безопасности:
+  - Хеш кода SHA256 не использует соль, что делает его уязвимым к атакам по радужным таблицам.
+  - Соль - случайные данные, добавляемые перед хешированием. Соль в криптографии
+
+ Проблемы с кодом:
+  - Синтаксическая ошибка в методе isActive() (лишнее двоеточие в условии)
+  - Неправильное сравнение времени в isActive() (используется tz_created() без определения)
+
+ Логирование чувствительных данных:
+  - Вывод кода и его хеша в консоль (print)
+
+ Проблемы с производительностью:
+  - Нет ограничения на количество запросов кода для одного IP/номера
+
+ Нет обработки ошибок:
+  - Нет обработки ошибок при отправке SMS
+
+ Хрупкость:
+  - Жестко закодированный отправитель SMS ('hellodoc')
+
+ Потенциальная race condition:
+ - Между проверкой can_send_sms и сохранением кода
+
+ Нет очистки:
+  - Старых/неактивных кодов в базе данных
+
+ # модель с одноразовыми кодами
+ class PhoneAuth(Base):
+     phone = models.TextField()  # Проблема: Лучше использовать CharField с max_length
+     code = models.TextField()   # Проблема: Хранение хеша без соли, уязвимость безопасности
+     ip_address = models.TextField(null=True)  # Проблема: Лучше GenericIPAddressField
+     is_active = models.BooleanField(default=True)
+
+     objects: Manager()  # Проблема: Отсутствует импорт Manager
+
+     @staticmethod
+     def get_phone_auth_for_number(phone, code) -> PhoneAuth:
+         return PhoneAuth.objects.filter(phone=phone, code=code, is_active=True).first()
+
+     @staticmethod
+     def get_last_auth_for_number(phone, ip):
+         date = datetime.now() - timedelta(hours=constants.IP_ADDRESS_BAN_HOURS)
+         result = PhoneAuth.objects.filter(phone=phone, ip_address=ip).order_by('-created').first()
+         count_from_ip = PhoneAuth.objects.filter(ip_address=ip, created__gte=date).count()
+
+         return result, count_from_ip
+
+     @staticmethod
+     def delete_by_phone(phone):
+         PhoneAuth.objects.filter(phone=phone, is_active=True).update(is_active=False)
+
+     def deactivate(self):
+         self.is_active = False
+         self.save()
+
+     def isActive(self):
+         return to_timestamp(datetime.utcnow()) - to_timestamp(
+             self.tz_created()) <= constants.PHONE_CONF_CODE_LIFE_SECONDS and self.is_active:
+             # Проблема 1: Лишнее двоеточие в конце
+             # Проблема 2: Метод tz_created() не определен
+             # Проблема 3: Нет обработки случая, когда tz_created() = None
+
+ # апи отправки кода по смс
+ class Phone(views.APIView):
+     authentication_classes = (BaseAppAuthentication, UserNotRequiredAuthentication)
+
+     class PhoneRegisterParams(serializers.Serializer):
+         phone = serializers.CharField(max_length=12, min_length=10)
+
+         def validate_phone(self, phone):
+             success, result = validate_phone(phone)
+             if success:
+                 return result
+             else:
+                 raise serializers.ValidationError(result)
+
+     def post(self, request):
+         data = Phone.PhoneRegisterParams(data=request.data)
+
+         if not data.is_valid():
+             return response_error(BadRequestParams.init_dev_err(data.errors))
+
+         phone = data.validated_data['phone']
+         print(phone)  # Проблема: Логирование конфиденциальных данных
+         ip = get_client_ip(request)
+         err = can_send_sms(phone, ip)
+         if err:
+             return response_error(err)
+
+         code = random.randrange(MIN_VER_INT, MAX_VER_INT)
+         sms_text = 'Ваш код %s' % code
+         sms = SMSMessage(**dict(text=sms_text, phone=phone))
+         sms.save()
+         print(code)  # Проблема: Логирование кода подтверждения
+
+         hash_code = hashlib.sha256()
+         hash_code.update(unicode(code))  # Проблема 1: unicode() не существует в Python 3
+                                         # Проблема 2: Нет соли для хеширования
+         hash_code = hash_code.hexdigest()
+         print(hash_code)  # Проблема: Логирование хеша кода
+
+         PhoneAuth.delete_by_phone(phone)  # Проблема: Потенциальная race condition с can_send_sms
+
+         phone_auth = PhoneAuth(**dict(phone=phone, code=hash_code, ip_address=ip))
+         phone_auth.save()
+
+         send_sms.delay(sms.id)
+
+         return response(HTTP_200_OK)
+
+ # фоновая задача отправки смс
+ @shared_task
+ def send_sms(object_id):
+     sms = SMSMessage.get_sms(object_id)
+     phone = sms.phone
+     if phone:
+         message = sms.text
+         phone = sms.phone  # Проблема: Дублирование присваивания
+
+         data = {
+             'login': settings.SMSC_LOGIN,  # Проблема: Логин в открытом виде
+             'psw': md5(settings.SMSC_PASSWORD).hexdigest(),  # Проблема: Устаревший MD5
+             'charset': 'utf-8',
+             'mes': message.encode('utf-8'),
+             'phones': phone,
+             'sender': 'hellodoc'  # Проблема: Жестко закодированное значение
+         }
+
+         url = 'https://smsc.ru/sys/send.php'
+         print(data)  # Проблема: Логирование учетных данных
+         if not settings.DEBUG:
+             response = requests.post(url, params=data)
+             sms.error = response  # Проблема: Нет обработки ошибок запроса
+
+         sms.is_delivered = True  # Проблема: Помечаем как доставленное до фактической доставки
+         sms.save()
+________________________________________________________________________________________________________________________
+
+ # компания Молочные Коровки
+
+
+ - Есть три сервиса. Фронт и два бэкэнда.
+ Один бэк это апишка для фронта. Второй бэк это CPU-bound сервис (считает один запрос 5 минут).
+ Как правильно связать все три сервиса (включая фронт), чтобы получить лучший флоу для клиента, который нажимает
+ кнопку "посчитать" и ждёт результат.
+
+ Такую архитектуру используют многие SaaS-платформы для тяжелых вычислений (например, рендеринг видео, ML-предсказания).
+ Отражает best practices для работы с долгими CPU-bound задачами в веб-приложениях
+
+ [Frontend]
+   │ POST /api/calculate
+   ↓
+ [API] → [Queue (RabbitMQ/Kafka)] → [CPU Worker]
+   │ 202 Accepted                     │
+   │ ↑                                ↓
+   └────────────────────────────── [DB/Redis]
+                                       │
+ [Frontend] ← polling/WS ←─────────────┘
+
+
+ 1) Фронт отправляет запрос в API бэкенд
+ Как:
+ - POST-запрос на эндпоинт типа /api/calculate с параметрами задачи (например, { "data": "..." }).
+
+ Зачем:
+ - Клиент инициирует процесс, но не должен зависеть от времени выполнения.
+
+ 2) API бэкенд ставит задачу в очередь (RabbitMQ, Kafka, Redis Queue) и сразу возвращает фронту 202 Accepted + task_id
+
+ Как:
+
+ - API генерирует уникальный task_id (UUID или хеш).
+ - Пишет сообщение в очередь (например, RabbitMQ/Kafka):
+
+ json
+ {
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "data": "..."
+ }
+
+ - Возвращает фронту:
+
+ json
+ {
+   "status": "accepted",
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "check_status_url": "/api/tasks/123e4567-e89b-12d3-a456-426614174000"
+ }
+
+ Зачем:
+
+ - Клиент получает мгновенный ответ (без ожидания 5 минут).
+ - Задача гарантированно попадает в очередь (даже если CPU-сервис перегружен).
+
+ 3) CPU-bound бэкенд забирает задачу из очереди, обрабатывает (5 минут) и сохраняет результат в БД/кеш
+
+ Как:
+
+ - Воркер CPU-сервиса подписан на очередь (например, через channel.basic_consume в RabbitMQ).
+ - Получив задачу, начинает вычисления.
+ - Важно:
+   - Обновляет статус в БД (например, "in_progress").
+   - Сохраняет результат в хранилище (БД/Redis):
+
+     json
+     {
+       "task_id": "123e4567-e89b-12d3-a456-426614174000",
+       "status": "completed",
+       "result": { ... },
+       "timestamp": "2024-02-20T12:00:00Z"
+     }
+
+ Зачем:
+
+ - Очередь развязывает API и CPU-сервис.
+ - Результат сохраняется даже при падении фронта.
+
+
+ 4) Фронт периодически (через polling/WebSocket) запрашивает API бэкенд по task_id
+
+ Polling:
+
+ - Фронт каждые N секунд (например, 5) дергает GET /api/tasks/{task_id}.
+ - API проверяет статус в БД и возвращает:
+
+ json
+ {
+   "status": "in_progress", // или "completed", "failed"
+   "progress": 50, // опционально
+   "result": null // или результат
+ }
+
+ WebSocket:
+
+ - Фронт открывает WS-соединение к API.
+ - API подписывается на события из БД/очереди и推送лет обновления.
+
+ Зачем:
+
+ - Клиент видит прогресс (например, прогресс-бар).
+ - Нет риска таймаутов.
+
+
+
+ 5) Когда результат готов — API бэкенд отдаёт его фронту
+
+ Как:
+
+ - Когда статус становится "completed", API забирает результат из БД/кеша.
+ - Для polling: фронт получает его в следующем запросе.
+ - Для WebSocket: API отправляет сообщение:
+
+ json
+ {
+   "event": "task_completed",
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "result": { ... }
+ }
+
+ Зачем:
+
+ - Клиент получает результат только когда он готов.
+
+ Почему так?
+
+ - Не блокируем HTTP-соединения
+ - CPU-bound сервис масштабируется независимо
+ - Клиент видит статус обработки
+________________________________________________________________________________________________________________________
+
+ # Задачи тестовое задание 16 штук   компания СОГАЗ   (2 Задачи не хватает 12, 13)
+ 
+ 
+ # ЗАДАЧА 1
+ # Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ 
+ # ОТВЕТ Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ # Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ # Решение с регуляркой
+ def sum_numbers_in_string(s: str) -> int:
+     return sum(map(int, re.findall(r'\d+', s)))
+ 
+ # ВАРИАНТ 1: Если нужны только положительные целые числа
+ def sum_numbers_in_string(s):
+     current_number = ''
+     total = 0
+ 
+     for char in s:
+         if char.isdigit():
+             current_number += char
+         else:
+             if current_number:
+                 total += int(current_number)
+                 current_number = ''
+ 
+     # Добавляем последнее число, если строка заканчивается цифрой
+     if current_number:
+         total += int(current_number)
+ 
+     return total
+ 
+ # ВАРИАНТ 2: С обработкой отрицательных чисел
+ def sum_numbers_in_string(s):
+     current_number = ''
+     total = 0
+     sign = 1  # 1 для положительных, -1 для отрицательных
+ 
+     for char in s:
+         if char.isdigit():
+             current_number += char
+         elif char == '-' and not current_number:
+             sign = -1
+         else:
+             if current_number:
+                 total += sign * int(current_number)
+                 current_number = ''
+                 sign = 1
+ 
+     if current_number:
+         total += sign * int(current_number)
+ 
+     return total
+ 
+ # ВАРИАНТ 3: С использованием генератора и isdigit()
+ def sum_numbers_in_string(s):
+     total = 0
+     num_str = ''
+ 
+     for char in s + ' ':  # Добавляем пробел для обработки последнего числа
+         if char.isdigit():
+             num_str += char
+         elif num_str:
+             total += int(num_str)
+             num_str = ''
+ 
+     return total
+ 
+ # ВАРИАНТ 4: С обработкой чисел с плавающей точкой
+ def sum_numbers_in_string(s):
+     total = 0.0
+     num_str = ''
+     has_decimal = False
+ 
+     for char in s + ' ':  # Добавляем пробел для обработки последнего числа
+         if char.isdigit():
+             num_str += char
+         elif char == '.' and not has_decimal and num_str:
+             num_str += char
+             has_decimal = True
+         elif num_str:
+             total += float(num_str)
+             num_str = ''
+             has_decimal = False
+ 
+     return int(total) if total.is_integer() else total
+ 
+ from itertools import groupby
+ 
+ # ВАРИАНТ 5: Функциональный стиль с группировкой цифр
+ def sum_numbers_in_string(s):
+     total = 0
+     for is_digit, group in groupby(s, key=lambda x: x.isdigit()):
+         if is_digit:
+             total += int(''.join(group))
+     return total
+ 
+ 
+ print(sum_numbers_in_string("abc123xyz45"))              # -> 168  # (123 + 45)
+ print(sum_numbers_in_string("7 chocolates, 3 candies"))  # -> 10   # (7 + 3)
+ print(sum_numbers_in_string("1a2b3c"))                   # -> 6    # (1 + 2 + 3)
+ 
+ 
+ 
+ # ЗАДАЧА 2
+ # Что выведет данный код?
+ 
+ m = [[1, 2, 3], [4,5,6], [7,8,9]]
+ t = list(zip(*m))
+ 
+ # print(list(map(list, t)))  # -> ???
+ # print(t)                   # -> ???
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 2 Что выведет данный код?
+ 
+ # Это транспонированная матрица, где строки стали столбцами, а столбцы — строками.
+ m = [[1, 2, 3], [4,5,6], [7,8,9]]
+ t = list(zip(*m))
+ print(list(map(list, t)))  # -> [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+ print(t)                   # -> [(1, 4, 7), (2, 5, 8), (3, 6, 9)]
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 3
+ # Что выведет данный код?
+ 
+ class Y:
+     def __init__(self, x):
+         self.x = x
+ 
+     def caclucate(self):
+         return self.x * 2 + 1  # Формула: 2x + 1
+ 
+ class Z(Y):
+     def __init__(self, x, y):
+         super().__init__(x)
+         self.y = y
+ 
+     def caclucate(self):
+         return super().caclucate() + self.y  # (2x + 1) + y
+ 
+ class X(Z):
+     def __init__(self, x, y, z):
+         super().__init__(x, y)
+         self.z = z
+ 
+     def caclucate(self):
+         return self.z - super().caclucate()  # z - ((2x + 1) + y)
+ 
+ a = Y(3)
+ b = Z(2, 4)
+ c = X(2, 1, 7)
+ 
+ # print(a.caclucate())  # -> ???
+ # print(b.caclucate())  # -> ???
+ # print(c.caclucate())  # -> ???
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 3 Что выведет данный код?
+ 
+ # Каждый класс переопределяет метод caclucate()
+ class Y:
+     def __init__(self, x):
+         self.x = x
+ 
+     def caclucate(self):
+         return self.x * 2 + 1  # Формула: 2x + 1
+ 
+ class Z(Y):
+     def __init__(self, x, y):
+         super().__init__(x)
+         self.y = y
+ 
+     def caclucate(self):
+         return super().caclucate() + self.y  # (2x + 1) + y
+ 
+ class X(Z):
+     def __init__(self, x, y, z):
+         super().__init__(x, y)
+         self.z = z
+ 
+     def caclucate(self):
+         return self.z - super().caclucate()  # z - ((2x + 1) + y)
+ 
+ a = Y(3)
+ b = Z(2, 4)
+ c = X(2, 1, 7)
+ 
+ print(a.caclucate())  # -> 7   # 3 * 2 + 1 = 7
+ print(b.caclucate())  # -> 9   # (2*2 + 1) + 4 = 5 + 4 = 9
+ print(c.caclucate())  # -> 1   # 7 - ((2*2 + 1) + 1) = 7 - 6 = 1
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 4
+ # Какой из принципов в коде нарушен и как его исправить?
+ 
+ class EmailSender:
+     def send(self, message):
+         print(f"Sending email: {message}")
+ 
+ class MessageService:
+     def __init__(self, email_sender):
+         self.email_sender = email_sender
+ 
+     def send_message(self, message):
+         self.email_sender.send(message)
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 4 Какой из принципов в коде нарушен и как его исправить?
+ 
+ # Нарушен принцип Dependency Inversion (DIP).   DIP (Dependency Inversion Principle) – Принцип инверсии зависимостей
+ # Исправить: Зависить от абстракции (интерфейса), а не от конкретного класса EmailSender.
+ from abc import ABC, abstractmethod
+ 
+ class MessageSender(ABC):
+     @abstractmethod
+     def send(self, message):
+         pass
+ 
+ class EmailSender(MessageSender):
+     def send(self, message):
+         print(f"Sending email: {message}")
+ 
+ class MessageService:
+     def __init__(self, sender: MessageSender):
+         self.sender = sender
+ 
+     def send_message(self, message):
+         self.sender.send(message)
+         
+         
+ # Теперь можно легко добавить новые отправители:
+ 
+ class SmsSender(MessageSender):
+     def send(self, message):
+         print(f"Sending SMS: {message}")
+ 
+ sms_sender = SmsSender()
+ service = MessageService(sms_sender)
+ service.send_message("Hi via SMS!")  # -> Sending SMS: Hi via SMS!
+ 
+ # Вывод:
+ # Принцип Dependency Inversion (DIP) соблюдается, так как:
+ # - MessageService зависит от абстракции (MessageSender), а не от конкретного класса.
+ # - Новые реализации (SmsSender, PushSender) можно добавлять без изменения MessageService.
+ # Код стал гибким и соответствует SOLID особенно принципу DIP.
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 5
+ # На фреймворке fastapi  напишите код который будет принимать в запросе json содержащий name weight и будет создавать
+ # товар в базе после чего возвращать {result: true}  с кодом 201 Created
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 5 На фреймворке fastapi  напишите код который будет принимать в запросе json содержащий name weight и
+ # будет создавать товар в базе после чего возвращать {result: true}  с кодом 201 Created
+ 
+ Если нужен минималистичный API           -> FastAPI.
+ Если нужен полноценный бэкенд с админкой -> Django + DRF.
+ 
+ 
+ # FastAPI более лаконичен и не требует ORM (можно использовать SQLAlchemy напрямую).
+ from fastapi import FastAPI, status, Depends
+ from pydantic import BaseModel
+ from sqlalchemy import create_engine, Column, Integer, String
+ from sqlalchemy.ext.declarative import declarative_base
+ from sqlalchemy.orm import sessionmaker, Session
+ 
+ # Настройка базы данных
+ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+ engine = create_engine(SQLALCHEMY_DATABASE_URL)
+ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+ 
+ Base = declarative_base()
+ 
+ # Модель товара в базе данных
+ class ProductDB(Base):
+     __tablename__ = "products"
+     
+     id = Column(Integer, primary_key=True, index=True)
+     name = Column(String, index=True)
+     weight = Column(Integer)
+ 
+ # Создаем таблицы (в реальном проекте лучше использовать миграции)
+ Base.metadata.create_all(bind=engine)
+ 
+ app = FastAPI()
+ 
+ # Pydantic модель для входящих данных
+ class ProductCreate(BaseModel):
+     name: str
+     weight: int
+     
+ # Pydantic модель для ответа
+ class ProductResponse(BaseModel):
+     result: bool
+ 
+ # Зависимость для получения сессии базы данных
+ def get_db():
+     db = SessionLocal()
+     try:
+         yield db
+     finally:
+         db.close()
+ 
+ @app.post("/products/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+     # Создаём товар в базе данных
+     db_product = ProductDB(name=product.name, weight=product.weight)
+     db.add(db_product)
+     db.commit()
+     db.refresh(db_product)
+     
+     return {"result": True}
+ 
+ 
+ 
+ # Django + DRF требует больше кода, но дает больше "из коробки" (админка, миграции, аутентификация).
+ # ТОЖЕ САМОЕ Django+DRF
+ 
+ 1. Сначала определим модель Product в models.py:
+ from django.db import models
+ 
+ class Product(models.Model):
+     name = models.CharField(max_length=255)
+     weight = models.FloatField()
+ 
+     def __str__(self):
+         return self.name
+         
+         
+ # 2. Затем создадим сериализатор (если используем Django REST Framework) в serializers.py:
+ from rest_framework import serializers
+ from .models import Product
+ 
+ class ProductSerializer(serializers.ModelSerializer):
+     class Meta:
+         model = Product
+         fields = ['name', 'weight']
+         
+         
+ # 3. Напишем представление (view) в views.py:
+ # Вариант с Django REST Framework (рекомендуется):
+ 
+ from rest_framework.views import APIView
+ from rest_framework.response import Response
+ from rest_framework import status
+ from .models import Product
+ from .serializers import ProductSerializer
+ 
+ class CreateProductView(APIView):
+     def post(self, request):
+         serializer = ProductSerializer(data=request.data)
+         if serializer.is_valid():
+             serializer.save()
+             return Response({"result": True}, status=status.HTTP_201_CREATED)
+         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
+ # 4. Напишем представление (urls) в urls.py:
+ from django.urls import path
+ from .views import CreateProductView
+ 
+ urlpatterns = [
+     path('products/', CreateProductView.as_view(), name='create_product'),
+ ]
+ 
+ Не забудьте выполнить миграции (python manage.py makemigrations и python manage.py migrate) после создания модели.
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 6
+ # В базе данных имеется visitors с полями id, first_time (первый визит) и count (общее количество запросов).
+ # Напишите к этой таблице три SQL запроса:
+ # 1) Вывод id всех посетилей, количество визитов которых более 5
+ # 2) Вывод всех id посетилей, зашедших на сайт зимой 2022 года
+ # 3) Вывод пяти дней 2023 года, в которые визиты совершались чаще всего, с количеством визитов в каждый такой день
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 6
+ 
+ 1. Вывод id всех посетителей, количество визитов которых более 5
+ 
+ SELECT id
+ FROM visitors
+ WHERE count > 5;
+ 
+ 
+ 2. Вывод всех id посетителей, зашедших на сайт зимой 2022 года (декабрь 2021, январь и февраль 2022)
+ 
+ SELECT DISTINCT id
+ FROM visitors
+ WHERE first_time BETWEEN '2021-12-01' AND '2022-02-28';
+ 
+ 
+ 3. Вывод пяти дней 2023 года с наибольшим количеством визитов (и количеством визитов в каждый такой день)
+ Проблема: В таблице нет данных о каждом визите.  Неточный, но единственно возможный с данными таблицы   
+ 
+ SELECT DATE(first_time) AS day, SUM(count) AS total_visits
+ FROM visitors
+ WHERE first_time BETWEEN '2023-01-01' AND '2023-12-31'
+ GROUP BY DATE(first_time)
+ ORDER BY total_visits DESC
+ LIMIT 5;
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 7
+ # Опишите струтуру реляционной бд в которой будет хранится лекарства и категории этих лекарст. Одно лекарство при
+ # этом может быть привязано к нескольким категориям одновременно. Пропишите только имена таблиц и полей типы полей.
+ # Иную информацию прописывать не нужно
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 7
+ 
+ Таблицы:
+ 
+ # MEDICINES – хранит информацию о лекарствах.
+ 
+ MEDICINES (
+     id INT,
+     name VARCHAR,
+     description TEXT,
+     manufacturer VARCHAR,
+     price DECIMAL,
+     created_at DATETIME,
+     updated_at DATETIME
+ )
+ 
+ # CATEGORIES – содержит категории лекарств.
+ 
+ CATEGORIES (
+     id INT,
+     name VARCHAR,
+     description TEXT,
+     created_at DATETIME,
+     updated_at DATETIME
+ )
+ 
+ # MEDICINE_CATEGORY – связывает лекарства и категории (многие-ко-многим).
+ 
+ MEDICINE_CATEGORY (
+     medicine_id INT NOT NULL,
+     category_id INT NOT NULL,
+     created_at DATETIME,
+     PRIMARY KEY (medicine_id, category_id),
+     FOREIGN KEY (medicine_id) REFERENCES MEDICINES(id),
+     FOREIGN KEY (category_id) REFERENCES CATEGORIES(id)
+ )
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 8
+ # Какие есть NoSQL базы данных?
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 8
+ 
+ Типы NoSQL баз данных
+ 
+ ДОКУМЕНТООРИЕНТИРОВАННЫЕ (хранят данные в формате JSON/BSON, XML):
+ 
+  - MongoDB (наиболее популярная)
+  - CouchDB, Firebase Firestore, RavenDB
+ 
+ КЛЮЧ-ЗНАЧЕНИЕ (простая структура, высокая скорость):
+ 
+  - Redis (также поддерживает сложные структуры)
+  - DynamoDB (AWS), Riak, etcd
+ 
+ КОЛОНОЧНЫЕ (оптимизированы для аналитики и больших данных):
+ 
+  - Cassandra (распределённая, отказоустойчивая)
+  - HBase (на основе Hadoop), ClickHouse (OLAP, аналитика в реальном времени)
+ 
+ ГРАФОВЫЕ (эффективны для работы со связями):
+ 
+ - Neo4j (наиболее известная)
+ - ArangoDB (мультимодельная, поддерживает и документы, и графы)
+ - Amazon Neptune
+ 
+ IN-MEMORY (работают в ОЗУ, очень быстрые):
+ 
+ - Redis (поддерживает персистентность)
+ - Memcached (простой кеш, без персистентности)
+ 
+ 
+ Когда использовать?
+  - Гибкость схемы                        -> MongoDB, CouchDB
+  - Высокая скорость доступа              -> Redis, Memcached
+  - Большие объемы данных + аналитика     -> Cassandra, ClickHouse
+  - Сложные связи (соцсети, рекомендации) -> Neo4j
+  - Масштабируемость и отказоустойчивость -> Cassandra, DynamoDB
+  
+  
+ Когда НЕ выбирать NoSQL?
+  - Нужны транзакции (ACID).
+  - Нужны сложные JOIN-запросы.
+  - Данные жестко структурированы (лучше SQL).
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 9
+ # В каких форматах происходит передача и хранение данных при взаимодействии с NoSQL-хранилищами с которыми вы также
+ # знакомы. Укажите названия хранилищ и соответствующие им форматы данных
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 9
+ 
+ MongoDB       - BSON (бинарный JSON)
+ Redis         - строки, хэши, списки, множества (бинарно-безопасные)
+ Cassandra     - JSON, BSON, строки, бинарные данные (через CQL)
+ Elasticsearch - JSON
+ DynamoDB      - JSON (через SDK), бинарные данные
+ Couchbase     - JSON, бинарные данные
+ RocksDB       - ключ-значение (бинарные данные)
+ Neo4j         - JSON (Cypher-запросы), графовые структуры
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 10
+ # Какие методы REST вы знаете?  Какие из них ИДЕМПОТЕНТНЫЕ а какие нет.
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 10
+ 
+ GET     - получение ресурса.
+ POST    - создание ресурса или выполнение операции.                      НЕ ИДЕМПОТЕНТЕН
+ PUT     - полное обновление ресурса (или создание, если не существует).   
+ PATCH   - частичное обновление ресурса.                                  НЕ ИДЕМПОТЕНТЕН
+ DELETE  - удаление ресурса.
+ HEAD    - аналогичен GET, но возвращает только заголовки (без тела).
+ OPTIONS - получение информации о доступных методах для ресурса.
+ 
+ 
+ PATCH НЕ всегда НЕИДЕМПОТЕНТНЫЙ (зависит от логики), а DELETE считается идемпотентным, даже если ресурс уже удалён. 
+ PATCH Обычно неидемпотентный, но может быть идемпотентным, если логика обновления детерминирована
+ (например, замена поля { "status": "completed" }).
+ Если PATCH применяет операции типа { "increment": 1 }, то он неидемпотентный.
+ 
+ 
+ 
+ Идемпотентность методов
+ Идемпотентный метод – это метод, который при многократном выполнении с одними и теми же данными даёт одинаковый результат
+ (не изменяет состояние сервера после первого вызова).
+ 
+ Метод	 Идемпотентный?	 Безопасный?         Описание
+ GET	     Да	             Да (только чтение)  Получение ресурса. Не изменяет сервер.                   
+ POST     Нет	         Нет                 Создание ресурса. Каждый вызов может создавать новый объект.       
+ PUT	     Да	             Нет                 Полное обновление (или создание). Повторные запросы не меняют результат.       
+ PATCH	 Нет (обычно)    Нет                 Частичное обновление. Зависит от текущего состояния ресурса.       
+ DELETE	 Да	             Нет                 Удаление ресурса. После первого удаления дальнейшие запросы не изменяют состояние.       
+ HEAD	 Да	             Да                  Как GET, но без тела ответа. Только заголовки.   
+ OPTIONS	 Да	             Да                  Информация о доступных методах для ресурса.   
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 11
+ # Исправить структуру RESTful API чтобы соответствовала стандарту REST
+ # get     /item/id
+ # get     /items/list
+ # add     /items/new/id
+ # edit    /item/id
+ # delete  /items/id
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 11
+ 
+ GET    /items/{id}       - получение одного элемента
+ GET    /items            - получение списка элементов
+ POST   /items            - создание нового элемента (id обычно генерируется сервером)
+ PUT    /items/{id}       - полное обновление элемента
+ PATCH  /items/{id}       - частичное обновление элемента
+ DELETE /items/{id}       - удаление элемента
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 14
+ # Что в терминале Linux значит   >>   <<   &&
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 14
+ 
+ >> - добавление вывода в конец файла (без перезаписи).
+ << - передача текста в команду (here-document).
+ && - выполнить следующую команду, только если предыдущая успешна.
+ 
+ Кратко:
+ >> - дописать в файл.
+ << - многострочный ввод.
+ && - "и тогда".
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 15
+ # Почему при помощи git revert может быть невозможно откатить merge?
+ # Каким образом можно откатить merge?
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 15
+ 
+ Проблемы с git revert для merge:
+ 
+  - Конфликты изменений, если последующие коммиты зависят от merge.
+  - Нужно указывать правильный родительский коммит (-m 1 или -m 2).
+ 
+ Как откатить merge:
+ 
+  - git revert -m 1 <merge-commit> — откат к состоянию до merge (выбирает первую ветку).
+  - Или использовать git reset --hard <commit-before-merge> (если merge не опубликован).
+ 
+ Кратко: revert с -m, или reset если можно переписать историю.
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 16
+ # С каким типами ошибок в Git Вам обычно приходилось сталкиватся (точные название не обязательно но можно, важно указать
+ # суть каждого типа ошибок)?
+ # Каким образом каждая из этих ошибок решается?
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 16
+ Краткий список ошибок в Git и их решений
+ 1) Конфликты слияния
+  - Суть: Git не может сам объединить изменения.
+  - Решение: Ручное исправление -> git add -> git commit.
+ 
+ 2) Отмена изменений
+  - Суть: Файлы изменены/удалены, но не закоммичены.
+  - Решение:
+     - Отмена правок: git restore <file> (или git checkout -- <file>).
+     - Восстановление удалённых: git restore <file>.
+ 
+ 3) Ошибочный коммит
+  - Суть: Неправильные изменения/сообщение в коммите.
+  - Решение:
+    - Последний коммит: git commit --amend.
+    - Старые коммиты: git rebase -i.
+ 
+ 4) Потерянные коммиты
+  - Суть: Удаление ветки или reset --hard.
+  - Решение: Найти через git reflog, восстановить (git checkout <hash>).
+ 
+ 5) Пуш не в ту ветку
+  - Суть: Изменения в main вместо feature-ветки.
+  - Решение: Откат (git revert/reset), пуш в нужную ветку.
+ 
+ 6) Неотслеживаемые файлы
+  - Суть: Новые файлы не в индексе.
+  - Решение: git add <file> или git add ..
+ 
+ 7) Игнорируемые файлы в Git
+  - Суть: Git следит за файлами из .gitignore.
+  - Решение: git rm --cached <file>.
+ 
+ 8) Отсоединённая ветка
+  - Суть: Локальная ветка не связана с origin.
+  - Решение: git branch -u origin/<branch>.
+ 
+ 9) Жёсткий reset (потеря изменений)
+ - Суть: reset --hard удаляет незакоммиченное.
+ - Решение: Восстановить через git reflog (если коммит был).
+ 
+ 10) Пустые коммиты
+ - Суть: Коммит без изменений.
+ - Решение: Удалить (git reset) или разрешить (--allow-empty).
+ 
+ 
+ Итог:
+ 
+ Конфликты       - ручное исправление.
+ Отмена          - restore/checkout.
+ Потеря коммитов - reflog.
+ Ошибочный пуш   - revert/reset.
+ 
+ 
+ Главные инструменты для исправления ошибок:
+ 
+ git reflog                      - спасает при потере коммитов.
+ git restore / git reset         - отмена изменений.
+ git commit --amend и rebase -i  - правка истории.
+ git stash                       - временное сохранение правок.
 ________________________________________________________________________________________________________________________
 
 

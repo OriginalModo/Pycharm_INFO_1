@@ -1089,7 +1089,7 @@ ________________________________________________________________________________
  # '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__ne__', '__new__',
  # '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']
 
- # При свранение с другим элементом вызывает NotImplemented
+ # При сравнение с другим элементом вызывает NotImplemented
  print(None.__lt__(1))   # -> NotImplemented
  print(None.__str__())   # -> None
  print(None.__bool__())  # -> False
@@ -6007,6 +6007,14 @@ with open('my_testik.txt', mode='r') as file: # -> режимы:   w, w+, wb, wb
  - Если переменная PYTHONPATH не установлена, вывод будет пустым
  - Если переменная окружения PYTHONPATH установлена, вы увидите путь или несколько путей, разделенных двоеточиями.
    Например: /home/user/my_python_libs
+
+
+ Команды для Unix/Linux/macOS:
+ sudo -v    -  Проверить наличие прав sudo
+ groups     -  Посмотреть группы пользователя
+ sudo -l    -  Проверить доступные команды sudo
+ sudo -s    -  Запустить оболочку с правами root
+
 
  Команды для Unix/Linux/macOS:
 
@@ -11585,6 +11593,36 @@ fact(30)
  print(data)  # {<__main__.Foo object at 0x000001EFEDCF5610>: 1, <__main__.Foo object at 0x000001EFED985410>: 2}
 
 
+ -- Примеры В Python 1, True и 1.0 считаются равными  set, dict, frozenset --
+
+ В множествах остаётся первый встреченный элемент среди дубликатов.
+ В словарях:
+
+ - Ключ определяется первым вхождением.
+ - Значение берётся последнее.
+
+ Операции множеств работают только с ключами
+
+ # 1. Множества (set и frozenset)  В множествах остаётся ПЕРВЫЙ встреченный элемент среди дубликатов
+ print({1, True, 1, 1.0})          # -> {1}
+ print({True, 1, 1, 1.0})          # -> {True}
+ print(frozenset({1, True, 1.0}))  # -> frozenset({1})
+ print(frozenset({True, 1, 1.0}))  # -> frozenset({True})
+
+ # 2. Словари (dict)               В словарях ключ определяется первым вхождением, а значение — последним.
+ print({1: 1, True: 2, 1: 3, 1.0: 4})  # -> {1: 4}
+ print({True: 1, 1: 2, 1: 3, 1.0: 4})  # -> {True: 4}
+
+ # 3. Операции с ключами словарей
+ a = {1: 1, 2: 2}
+ b = {1: 1, 3: 3}
+ # Объединение словарей (|):
+ print(a | b)                # -> {1: 1, 2: 2, 3: 3}
+ # Операции МНОЖЕСТВА  работают только с ключами (если не переопределены)
+ print(a.keys() | b.keys())  # -> {1, 2, 3}
+ print(a.keys() ^ b.keys())  # -> {2, 3}
+ print(a.keys() & b.keys())  # -> {1}
+
 
  --- list (Список) ---
  list (Список) - список, ИЗМЕНЯЕМЫЙ УПОРЯДОЧЕННЫЙ, обычно хранит значения одного типа, О(1) доступ к элементу
@@ -12780,7 +12818,7 @@ fact(30)
  # .pyi
  empty_tuple: tuple[()]       # Кортеж без элементов
  two_tuple: tuple[int, str]   # Кортеж из двух элементов: int и str             # shape (размерность)
- middleware: tuple[str, ...]  # # Кортеж из любого количества строк
+ middleware: tuple[str, ...]  # Кортеж из любого количества строк
 
 
  # У list нету shape (размерность)                                                   <-------
@@ -15143,6 +15181,26 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
  pytest tests/unit/api/v2/query/test_query.py                                     # запустить ОТДЕЛЬНЫЙ МОДУЛЬ С ТЕСТАМИ
  pytest tests/unit/api/v2/query/test_query.py::test_get_query_conditions_by_name  # запустить КОНКРЕТНЫЙ ТЕСТ (ОДИН)
 
+ Чтобы запустить тесты определенное количество раз В ТЕРМИНАЛЕ Git Bash / PyCharm Terminal.
+
+ С плагином pytest-repeat - это лучший вариант, и он будет работать на всех платформах (Linux/macOS/Windows):
+
+ Лучший способ, так как pytest-repeat дает детальную статистику после прогонов.
+ pip install pytest-repeat
+ pytest tests/unit/api/v2/workbook/test_workbook_query.py tests/unit/api/v2/workbook/test_workbook.py --count=5
+
+ Если добавить -x, тесты остановятся при первой ошибке:
+ pytest tests/unit/api/v2/workbook/test_workbook_query.py tests/unit/api/v2/workbook/test_workbook.py --count=5 -x
+
+ Альтернативный способ (без плагина) Git Bash
+
+ ЗАПУСТИТЬ ТЕСТЫ 5 РАЗ
+ Если тест упадет, цикл закончится
+ for i in {1..5}; do pytest tests/unit/api/v2/workbook/test_workbook_query.py tests/unit/api/v2/workbook/test_workbook.py || break; done
+
+ Если тест упадет, цикл продолжится
+ for i in {1..5}; do pytest tests/unit/api/v2/workbook/test_workbook_query.py tests/unit/api/v2/workbook/test_workbook.py; done
+
 
  --- Юнит-тестирование. Использование unittest и coverage в PyCharm ---
  Тесты нужно писать обязательно, это единственное доказательство того, что ваш код работает.
@@ -16656,10 +16714,10 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
 
  Парадигма ООП (объектно-ориентированного программирования) появилась для:
 
-- Упрощения сложных систем через разбиение на объекты.
-- Повторного использования кода (наследование, композиция).
-- Инкапсуляции — сокрытия деталей реализации.
-- Моделирования реального мира (объекты = сущности, классы = их типы).
+ - Упрощения сложных систем через разбиение на объекты.
+ - Повторного использования кода (наследование, композиция).
+ - Инкапсуляции — сокрытия деталей реализации.
+ - Моделирования реального мира (объекты = сущности, классы = их типы).
 
  ООП появилось, чтобы делать код гибким, понятным и переиспользуемым
 
@@ -20379,5 +20437,7 @@ print(f'asizeof   ():         {asizeof.asizeof(())} байт')        # -> asize
  Если подчеркивает серым наводим читаем подсказки - Method 'your_method' may be static   - Значит сделать @staticmethod
 
  Deepseek  Shift + Enter - Перейти на новую строку
+
+ Можно колесиком между вкладками переходить (но не в хроме)
 
 """

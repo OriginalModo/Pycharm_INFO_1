@@ -23,6 +23,70 @@ import more_itertools
 
 
 
+
+# 10 самых частых Linux команд:
+"""
+1) ls – список файлов и папок
+     ls -l – подробный вывод
+     ls -a – показать скрытые файлы
+
+2) cd <dir> – перейти в директорию
+     cd .. – на уровень выше
+     cd ~ – в домашнюю папку
+
+3) pwd – текущий путь
+4) mkdir <dir> – создать папку
+
+5) rm <file> – удалить файл
+     rm -r <dir> – удалить папку рекурсивно
+     rm -f <file> – принудительное удаление
+
+6) cp <source> <dest> – копировать файл/папку
+     cp -r <dir> <dest> – копировать папку
+
+7) mv <source> <dest> – переместить или переименовать
+
+8) cat <file> – вывести содержимое файла
+
+9) grep "text" <file> – поиск текста в файле
+
+10) chmod <permissions> <file> – изменить права доступа
+     chmod +x <file> – сделать файл исполняемым
+"""
+
+
+
+
+# 10 самых частых Docker команд:
+"""
+1) docker ps – список запущенных контейнеров
+     docker ps -a – показать все контейнеры (включая остановленные)
+
+2) docker images – список образов
+
+3) docker run <image> – запустить контейнер из образа
+     docker run -d <image> – запуск в фоновом режиме (демон)
+     docker run -p 8080:80 <image> – проброс портов
+
+4) docker stop <container> – остановить контейнер
+
+5) docker rm <container> – удалить контейнер
+     docker rm -f <container> – принудительное удаление
+
+6) docker rmi <image> – удалить образ
+
+7) docker exec -it <container> bash – войти в контейнер (интерактивный режим)
+
+8) docker logs <container> – просмотр логов контейнера
+
+9) docker build -t <name> . – собрать образ из Dockerfile
+
+10) docker-compose up   – запуск контейнеров через docker-compose.yml
+    docker-compose down – остановить и удалить контейнеры из docker-compose.yml
+"""
+
+
+
 # --- ЗРИ В КОРЕНЬ ПРОСТО ПОСМОТРЕТЬ ---
 
 
@@ -870,6 +934,10 @@ print(a)  # -> [1, [2, 5], [[3, 6]]]
 """
 
 
+
+
+
+
 # -- Примеры В Python 1, True и 1.0 считаются равными  set, dict, frozenset ПРОСТО ПОСМОТРЕТЬ --
 """
 В множествах остаётся первый встреченный элемент среди дубликатов.
@@ -907,10 +975,10 @@ print(a.keys() & b.keys())  # -> {1}
 """
 # Итоговая таблица:
 # Сценарий	        __hash__	__eq__	Результат в словаре/множестве
-# Базовый класс	auto	    is	    Разные ключи (сравнение по id)
+# Базовый класс	    auto	    is	    Разные ключи (сравнение по id)
 # Только __hash__	задан	    is	    Разные ключи (но хеши одинаковые)
-# Только __eq__	None	    задан	    Ошибка (unhashable)
-# Оба метода	    задан	    задан	    Один ключ при равенстве по __eq__
+# Только __eq__	    None	    задан	Ошибка (unhashable)
+# Оба метода	    задан	    задан	Один ключ при равенстве по __eq__
 
 
 # ДЛЯ ЧЕГО ПЕРЕОПРЕДЕЛЯТЬ МЕТОД __hash__ и __eq__
@@ -3156,6 +3224,46 @@ print(dict.fromkeys(my_lst).keys())        # -> dict_keys([10, 2, 3])
 print(list(dict.fromkeys(my_lst).keys()))  # -> [10, 2, 3]
 """
 
+
+
+
+# Операции МНОЖЕСТВА в словаре (.keys(), .items(), .values() НЕ РАБОТАЕТ) ПОВТОРИТЬ
+a = {1: 1, 2: 2}
+b = {1: 1, 3: 3}
+
+
+
+
+
+# ОТВЕТ  Операции МНОЖЕСТВА в словаре (.keys(), .items(), .values() НЕ РАБОТАЕТ) ПОВТОРИТЬ
+"""
+a = {1: 1, 2: 2}
+b = {1: 1, 3: 3}
+# Объединение словарей (|):
+print(a | b)                # -> {1: 1, 2: 2, 3: 3}
+# Операции МНОЖЕСТВА  работают только с ключами (если не переопределены)
+print(a.keys() | b.keys())  # -> {1, 2, 3}
+print(a.keys() ^ b.keys())  # -> {2, 3}
+print(a.keys() & b.keys())  # -> {1}
+
+# Операции с элементами (кортежами ключ-значение)
+print(a.items() & b.items())  # ->  {(1, 1)}
+print(a.items() - b.items())  # ->  {(2, 2)}
+print(a.items() | b.items())  # ->  {(1, 1), (3, 3), (2, 2)}
+print(a.items() ^ b.items())  # ->  {(3, 3), (2, 2)}
+
+# НЕ РАБОТАЕТ С values()  ОПЕРАЦИИ МНОЖЕСТВ ТРЕБУЮТ УНИКАЛЬНЫХ ЭЛЕМЕНТОВ, но values() не гарантирует уникальность.
+print(a.values() & b.values())  # ->  TypeError: unsupported operand type(s) for &: 'dict_values' and 'dict_values'
+print(a.values() - b.values())  # ->  TypeError: unsupported operand type(s) for &: 'dict_values' and 'dict_values'
+print(a.values() | b.values())  # ->  TypeError: unsupported operand type(s) for &: 'dict_values' and 'dict_values'
+print(a.values() ^ b.values())  # ->  TypeError: unsupported operand type(s) for &: 'dict_values' and 'dict_values'
+
+# МОЖНО ПРЕОБРАЗОВАТЬ в set
+print(set(a.values()) & set(b.values()))  # ->  {1}
+print(set(a.values()) - set(b.values()))  # ->  {2}
+print(set(a.values()) | set(b.values()))  # ->  {1, 2, 3}
+print(set(a.values()) ^ set(b.values()))  # ->  {2, 3}
+"""
 
 
 
@@ -8822,6 +8930,244 @@ json
 # --- Задачи с Собеседования Python ---
 
 
+# СБЕР  ЛИГАЛ     2 ЗАДАЧИ
+
+# ЗАДАЧА 1) Разные способы вывести СПИСОК в обратном порядке в Python
+
+
+
+
+
+
+# ОТВЕТ  ЗАДАЧА 1) Разные способы вывести СПИСОК в обратном порядке в Python
+"""
+# Вариант 1) Разворот списка через индексы (вариант с СОБЕСЕДОВАНИЯ)                    - O(n)
+lst = [1, 'a', 'b', 2]
+n = len(lst)
+for i in range(len(lst) // 2):
+    lst[i], lst[n-1-i] = lst[n-1-i], lst[i]
+print(lst)                  # -> [2, 'b', 'a', 1]
+
+# Вариант 2) Разворот списка через отрицательные индексы (вариант с СОБЕСЕДОВАНИЯ)      - O(n)
+lst = [1, 'a', 'b', 2]
+for i in range(len(lst)//2):
+    lst[i], lst[-i-1] = lst[-i-1], lst[i]
+print(lst)                  # -> [2, 'b', 'a', 1]
+
+# Вариант 3) Используя метод reverse()                                                  - O(n)
+lst = [1, 'a', 'b', 2]
+lst.reverse()
+print(lst)                  # -> [2, 'b', 'a', 1]
+
+# Вариант 4) Используя срез [::-1]                                                      - O(n)
+lst = [1, 'a', 'b', 2]
+print(lst[::-1])            # -> [2, 'b', 'a', 1]
+
+# Вариант 5) Используя функцию reversed()                                               - O(n)
+lst = [1, 'a', 'b', 2]
+print(list(reversed(lst)))  # -> [2, 'b', 'a', 1]
+
+# Вариант 6) Через цикл for (итерируясь с конца)                                        - O(n)
+lst = [1, 'a', 'b', 2]
+reversed_lst = []
+for item in lst[::-1]:
+    reversed_lst.append(item)  # append() - O(1), но создание среза lst[::-1]   - O(n)
+print(reversed_lst)         # -> [2, 'b', 'a', 1]
+
+# Вариант 7) Используя insert() с перебором исходного списка                            - O(n²)
+lst = [1, 'a', 'b', 2]
+reversed_lst = []
+for item in lst:
+    reversed_lst.insert(0, item)  # insert(0) - O(n) для каждого элемента → итого O(n²)
+print(reversed_lst)         # -> [2, 'b', 'a', 1]
+"""
+
+
+
+
+# ЗАДАЧА 2) Преобразует список чисел в строку с диапазонами
+
+
+
+
+
+
+# ОТВЕТ  ЗАДАЧА 2) Преобразует список чисел в строку с диапазонами
+"""
+lst = [1, 3, 2, 8, 5, 6, 7, 10]
+
+
+# Вариант 1) сортировка + однопроходный анализ    O(n log n)
+def list_to_ranges(lst: list[int]) -> str:
+    if not lst:
+        return ""
+
+    lst = sorted(set(lst))  # Удаляем дубликаты и сортируем  #  O(n log n) (из-за сортировки)
+    ranges = []
+    start = lst[0]
+    prev = start
+
+    for num in lst[1:]:  # Проход по списку O(n)
+        if num == prev + 1:
+            prev = num
+        else:
+            if start == prev:
+                ranges.append(str(start))
+            else:
+                ranges.append(f"{start}-{prev}")
+            start = num
+            prev = num
+
+    # Добавляем последний диапазон
+    if start == prev:
+        ranges.append(str(start))
+    else:
+        ranges.append(f"{start}-{prev}")
+
+    return ", ".join(ranges)
+
+
+# Вариант 2) C группировкой последовательных чисел (используя itertools.groupby)  O(n log n)
+from itertools import groupby
+
+def list_to_ranges(lst: list[int]) -> str:
+    if not lst:
+        return ""
+
+    lst = sorted(set(lst))
+    ranges = []
+
+    for _, group in groupby(enumerate(lst), key=lambda x: x[1] - x[0]):
+        group = list(group)
+        start = group[0][1]
+        end = group[-1][1]
+        ranges.append(f"{start}-{end}" if start != end else str(start))
+
+    return ", ".join(ranges)
+
+
+# Вариант 3) С двумя указателями  O(n log n)
+def list_to_ranges(lst: list[int]) -> str:
+    if not lst:
+        return ""
+
+    lst = sorted(set(lst))
+    ranges = []
+    i = 0
+    n = len(lst)
+
+    while i < n:
+        start = lst[i]
+        while i < n - 1 and lst[i + 1] == lst[i] + 1:
+            i += 1
+        end = lst[i]
+        ranges.append(f"{start}-{end}" if start != end else str(start))
+        i += 1
+
+    return ", ".join(ranges)
+
+print(list_to_ranges(lst))  # -> "1-3, 5-8, 10"
+"""
+
+
+
+
+
+
+# МТС  компания    3 ЗАДАЧИ посмотреть
+
+
+# Задача 1
+d1 = {1:1, 2:2, 3:3}
+d2 = d1
+d2[1]=0
+# print(d1)  # -> ???
+# print(d2)  # -> ???
+
+
+
+
+# ОТВЕТ Задача 1
+"""
+# Присваивание d2 = d1 не создаёт новый словарь, а копирует ссылку. Изменения в d2 влияют на d1.
+
+d1 = {1:1, 2:2, 3:3}
+d2 = d1                             # d2 — это ссылка на d1, а не копия
+d2[1]=0                             # меняем d1 через d2
+print(d1)  # -> {1: 0, 2: 2, 3: 3}
+print(d2)  # -> {1: 0, 2: 2, 3: 3}
+"""
+
+
+
+# Задача 2
+def f1(my_list):
+    my_list[0] = 123
+def f2(my_list):
+    my_list = [4, 5, 6]
+l1 = [1, 2, 3]
+l2 = [1, 2, 3]
+f1(l1)
+# print(l1)  # -> ???
+f2(l2)
+# print(l2)  # -> ???
+
+
+
+# ОТВЕТ Задача 2
+"""
+# f1 меняет переданный список, т.к. работает с его элементами.
+# f2 не меняет исходный список, т.к. переназначает локальную переменную.
+
+def f1(my_list):
+    my_list[0] = 123            # меняет переданный список
+def f2(my_list):
+    my_list = [4, 5, 6]         # создаёт локальную переменную, не меняя исходный список
+l1 = [1, 2, 3]
+l2 = [1, 2, 3]
+f1(l1)                          # изменяет l1
+print(l1)  # -> [123, 2, 3]
+f2(l2)                          # НЕ изменяет l2
+print(l2)  # -> [1, 2, 3]
+"""
+
+
+
+# Задача 3
+l = [1, 2, 3]
+def f(a, L=[]):
+    L.append(a)
+    return L
+f(4)
+f(5)
+tmp_l = f(6)
+# print(tmp_l)  # -> ???
+f(7, l)
+f(8, l)
+f(9, l)
+# print(l)      # -> ???
+
+
+# ОТВЕТ Задача 3
+"""
+# Если аргумент по умолчанию (L=[]) изменяется, он сохраняет состояние между вызовами.
+# При передаче своего списка (l) изменения применяются к нему.
+
+l = [1, 2, 3]
+def f(a, L=[]):
+    L.append(a)                 # изменяет один и тот же список L при каждом вызове
+    return L
+f(4)
+f(5)
+tmp_l = f(6)
+print(tmp_l)  # -> [4, 5, 6]
+f(7, l)                         # передаём внешний список l  
+f(8, l)
+f(9, l)
+print(l)      # -> [1, 2, 3, 7, 8, 9]
+"""
+
+
 
 # Задачи тестовое задание 16 штук   компания СОГАЗ   (2 Задачи не хватает 12, 13)
 
@@ -12249,6 +12595,21 @@ for f in fun:
 fun = [lambda x, a=a: a for a in range(10)]
 for f in fun:
     print(f(20), end=' ')  # -> 0 1 2 3 4 5 6 7 8 9
+"""
+
+
+
+
+# Ozon младший-разработчик сети
+"""
+Ozon младший-разработчик
+
+1) Сколько бит в ipv4?   IPv4 - 32 бита (4 байта, форма: 192.168.1.1).
+2) Сколько максимум хостов мб в сети с маской /24?  Максимум хостов в /24 - 254 (256 адресов − 2 служебных).
+3) Какой командой посмотреть запущенные процессы в Linux?
+- ps aux     - список процессов.
+- top / htop - мониторинг в реальном времени.
+- pstree     - процессы в виде дерева.
 """
 
 

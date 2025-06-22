@@ -79,6 +79,34 @@ ________________________________________________________________________________
  Volumes в Docker — это механизм для сохранения данных контейнеров.
 
 
+ 10 самых частых Docker команд:                                    <--------
+
+ 1) docker ps – список запущенных контейнеров
+      docker ps -a – показать все контейнеры (включая остановленные)
+
+ 2) docker images – список образов
+
+ 3) docker run <image> – запустить контейнер из образа
+      docker run -d <image> – запуск в фоновом режиме (демон)
+      docker run -p 8080:80 <image> – проброс портов
+
+ 4) docker stop <container> – остановить контейнер
+
+ 5) docker rm <container> – удалить контейнер
+      docker rm -f <container> – принудительное удаление
+
+ 6) docker rmi <image> – удалить образ
+
+ 7) docker exec -it <container> bash – войти в контейнер (интерактивный режим)
+
+ 8) docker logs <container> – просмотр логов контейнера
+
+ 9) docker build -t <name> . – собрать образ из Dockerfile
+
+ 10) docker-compose up   – запуск контейнеров через docker-compose.yml
+     docker-compose down – остановить и удалить контейнеры из docker-compose.yml
+
+
  docker logs — просмотреть логи контейнера
 
 

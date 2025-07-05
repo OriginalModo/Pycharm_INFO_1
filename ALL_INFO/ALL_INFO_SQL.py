@@ -524,6 +524,11 @@
      age INT CHECK (age >= 18)
  );
  Зачем: чтобы данные были корректными и непротиворечивыми.
+
+ Какие CONSTRAINT создают индексы автоматически?
+ - PRIMARY KEY
+ - UNIQUE
+
  -- END Constraint (ограничение) в SQL --
 
 
@@ -934,6 +939,81 @@
  консистентность, изолированность и долговечность (ACID-принципы). Это значит, что либо все операции в транзакции
  выполняются успешно, либо, в случае ошибки, все изменения отменяются.
 
+ ### Пример транзакции:
+
+ Предположим, у нас есть две таблицы: `Accounts` (для учета балансов пользователей) и `Transactions` (для учета сделанных транзакций).
+
+ #### 1. Создание таблиц
+
+ CREATE TABLE Accounts (
+     AccountID INT PRIMARY KEY,
+     Balance DECIMAL(10, 2)
+ );
+
+ CREATE TABLE Transactions (
+     TransactionID INT PRIMARY KEY AUTO_INCREMENT,
+     FromAccount INT,
+     ToAccount INT,
+     Amount DECIMAL(10, 2),
+     TransactionDate DATETIME DEFAULT CURRENT_TIMESTAMP
+ );
+
+
+ #### 2. Пример транзакции
+
+ Предположим, мы хотим перевести 100 единиц денег от одного аккаунта к другому:
+
+ BEGIN;
+
+ UPDATE Accounts
+ SET Balance = Balance - 100
+ WHERE AccountID = 1;
+
+ UPDATE Accounts
+ SET Balance = Balance + 100
+ WHERE AccountID = 2;
+
+ INSERT INTO Transactions (FromAccount, ToAccount, Amount)
+ VALUES (1, 2, 100);
+
+ COMMIT;
+
+
+ ### Объяснение:
+
+ 1. **BEGIN**  - Начинает транзакцию.
+ 2. **UPDATE** - Первое обновление уменьшает баланс первого аккаунта.
+ 3. **UPDATE** - Второе обновление увеличивает баланс второго аккаунта.
+ 4. **INSERT** - Записывает информацию о транзакции в таблицу `Transactions`.
+ 5. **COMMIT** - Подтверждает все изменения, сделанные в рамках транзакции.
+
+ Если на каком-то этапе возникает ошибка (например, недостаточно средств на первом аккаунте), можно выполнить `ROLLBACK`,
+ чтобы отменить все изменения, сделанные в транзакции.
+
+ -- END Что такое Транзакции в SQL Атомарное действие --
+
+
+ -- Грязные операции чтения (dirty reads) в транзакциях --
+
+ Грязные операции чтения (dirty reads) в транзакциях - это чтение незафиксированных изменений из параллельной транзакции,
+ которая может быть откачена.
+
+ Кратко:
+ - Чтение незавершённых данных.
+ - Возникает при низком уровне изоляции (например, READ UNCOMMITTED).
+ - Может привести к некорректным результатам.
+
+ Пример:
+
+ -- Транзакция 1 (не завершена)
+ UPDATE users SET balance = 100 WHERE id = 1;
+
+ -- Транзакция 2 (читает незафиксированные данные)
+ SELECT balance FROM users WHERE id = 1; -- Вернёт 100, даже если Транзакция 1 откатится.
+
+ Итог: Опасны, так как используют потенциально невалидные данные.
+
+
 
  -- ACID-принципы --
  ACID — это набор свойств, которые гарантируют надежность транзакций в системах управления базами данных (СУБД).
@@ -977,60 +1057,99 @@
  учитывать при проектировании распределенных систем.
 
 
- ### Пример транзакции:
 
- Предположим, у нас есть две таблицы: `Accounts` (для учета балансов пользователей) и `Transactions` (для учета сделанных транзакций).
+ -- В ClickHouse НЕТ ACID И ТРАНЗАКЦИЙ ??? --
 
- #### 1. Создание таблиц
+ В ClickHouse действительно нет полноценной поддержки ACID (Atomicity, Consistency, Isolation, Durability)
+ и классических транзакций, как в реляционных СУБД (PostgreSQL, MySQL и т. д.).
 
- sql
- CREATE TABLE Accounts (
-     AccountID INT PRIMARY KEY,
-     Balance DECIMAL(10, 2)
- );
+ В ClickHouse нет полноценной поддержки ACID и транзакций в классическом понимании (как в PostgreSQL или Oracle).
 
- CREATE TABLE Transactions (
-     TransactionID INT PRIMARY KEY AUTO_INCREMENT,
-     FromAccount INT,
-     ToAccount INT,
-     Amount DECIMAL(10, 2),
-     TransactionDate DATETIME DEFAULT CURRENT_TIMESTAMP
- );
+ Коротко:
+
+ Нет транзакций — нельзя откатить группу запросов.
+ Нет атомарности на уровне запросов, изменяющих данные (кроме вставок в одну партицию).
+ Изоляция ограничена (данные видны сразу после вставки).
 
 
- #### 2. Пример транзакции
+ Когда ClickHouse подходит, а когда нет?
+ Подходит:
 
- Предположим, мы хотим перевести 100 единиц денег от одного аккаунта к другому:
+ Аналитика, логгирование, big data (быстрое чтение, агрегация).
+ Данные, которые можно пересчитать или где возможна консистентность в конечном счёте.
 
- sql
+ Не подходит:
+
+ Традиционные OLTP (банковские транзакции, инвентаризация).
+ Системы, требующие строгой согласованности и изоляции.
+
+ Альтернативы для ACID в ClickHouse
+
+ Использовать PostgreSQL + ClickHouse (PostgreSQL для транзакций, ClickHouse для аналитики).
+ ClickHouse + Kafka (буферизация и обработка событий).
+
+ ClickHouse не ACID-совместим в классическом смысле, но предоставляет некоторые гарантии атомарности и durability
+ в рамках своей архитектуры. Если нужны транзакции — лучше выбрать другую СУБД или комбинировать решения.
+
+
+ Пример для альтернатив:
+ -- В PostgreSQL (OLTP):
  BEGIN;
-
- UPDATE Accounts
- SET Balance = Balance - 100
- WHERE AccountID = 1;
-
- UPDATE Accounts
- SET Balance = Balance + 100
- WHERE AccountID = 2;
-
- INSERT INTO Transactions (FromAccount, ToAccount, Amount)
- VALUES (1, 2, 100);
-
+   UPDATE accounts SET balance = balance - 100 WHERE user_id = 1;
+   INSERT INTO transactions VALUES (1, -100, now());
  COMMIT;
 
+ -- В ClickHouse (аналитика):
+ INSERT INTO analytics.events (event_date, user_id, action)
+ VALUES ('2023-10-01', 42, 'click'); -- Атомарно, но без отката
 
- ### Объяснение:
+ -- END В ClickHouse НЕТ ACID И ТРАНЗАКЦИЙ ??? --
 
- 1. **BEGIN**  - Начинает транзакцию.
- 2. **UPDATE** - Первое обновление уменьшает баланс первого аккаунта.
- 3. **UPDATE** - Второе обновление увеличивает баланс второго аккаунта.
- 4. **INSERT** - Записывает информацию о транзакции в таблицу `Transactions`.
- 5. **COMMIT** - Подтверждает все изменения, сделанные в рамках транзакции.
 
- Если на каком-то этапе возникает ошибка (например, недостаточно средств на первом аккаунте), можно выполнить `ROLLBACK`,
- чтобы отменить все изменения, сделанные в транзакции.
 
- -- END Что такое Транзакции в SQL Атомарное действие --
+ -- Many-to-Many НЕТ в PostgreSQL ??? --
+
+ Реализуется через ПРОМЕЖУТОЧНУЮ ТАБЛИЦУ (junction/associative table), которая содержит внешние ключи на обе связанные таблицы.
+
+ M2M в PostgreSQL ЕСТЬ, но требует явного создания связующей таблицы.
+ PostgreSQL (как и другие SQL-СУБД) поддерживает M2M через промежуточные таблицы.
+ Возможно, путаница с NoSQL БД (например, MongoDB), где M2M реализуется иначе (вложенными массивами).
+
+
+ Many-to-Many (M2M) в PostgreSQL
+ Как работает:
+
+ - Связь между двумя таблицами через промежуточную таблицу (junction table).
+ - Например: Студенты ↔ Курсы (студент может быть на многих курсах, курс может иметь многих студентов).
+ - Промежуточная таблица содержит внешние ключи (FK) на обе таблицы.
+
+ M2M существует, но реализуется через промежуточную таблицу (junction/associative table).
+ Эта таблица содержит внешние ключи (FK) на обе связанные таблицы.
+ Это стандартный подход в реляционных БД (PostgreSQL, MySQL, SQL Server и др.).
+
+
+ # Пример: Студенты и Курсы
+
+ -- Основные таблицы
+ CREATE TABLE students (
+     student_id SERIAL PRIMARY KEY,
+     name TEXT
+ );
+
+ CREATE TABLE courses (
+     course_id SERIAL PRIMARY KEY,
+     title TEXT
+ );
+
+ -- Промежуточная таблица для M2M
+ CREATE TABLE student_courses (
+     student_id INT REFERENCES students(student_id),
+     course_id INT REFERENCES courses(course_id),
+     PRIMARY KEY (student_id, course_id)  -- Составной первичный ключ
+ );
+
+ -- END Many-to-Many нет в PostgreSQL ??? --
+
 
 
  -- COALESCE    COALESCE(value1, value2, ..., valueN) --

@@ -31,7 +31,7 @@
 ________________________________________________________________________________________________________________________
 
  --- Задачи с Собеседования ---                                       тех. собеседования 1):  32/4
-                                                                      тех. собеседования 2):  20/0
+                                                                      тех. собеседования 2):  23/0
 ________________________________________________________________________________________________________________________
 
  # Задача на логику    Сбер
@@ -2142,6 +2142,14 @@ ________________________________________________________________________________
  print(res)        # -> Counter({'d': 300, 'a': 250, 'b': 200, 'c': 200})
  print(dict(res))  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
 
+ # Сортировка по ключам
+ res_sort = Counter(d1) + Counter(d2)
+ print(dict(sorted(res_sort.items()))) # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+ # Сортировка по значениям (по возрастанию)
+ sorted_by_value = dict(sorted(res_sort.items(), key=lambda item: item[1]))
+ print(sorted_by_value)                # -> {'b': 200, 'c': 200, 'a': 250, 'd': 300}
+
 
  # Способ 3 (с использованием dict comprehension)  ПОРЯДОК БУДЕТ ВСЕГДА РАЗНЫЙ!
  all_keys = set(d1) | set(d2)
@@ -3602,6 +3610,849 @@ ________________________________________________________________________________
      print(f"Используем {res} внутри контекста")
 ________________________________________________________________________________________________________________________
 
+ 2 ЗАДАЧИ МТС FULLSTACK  1) Правильная скобочная последовательность  2) Палиндром (перевернуть число МАТЕМАТИЧЕСКИ)
+
+
+ # ЗАДАЧА 2) Палиндром.  Реализовать функцию, проверяющую число на полиндромность (слева-направо одинаковое).
+
+
+ # ВАРИАНТ 1) перевернуть число МАТЕМАТИЧЕСКИ
+ def is_palindrome(integer: int) -> bool:
+     if integer < 0:
+         return False  # Отрицательные числа не могут быть палиндромами
+     original = integer
+     reversed_num = 0
+     while integer > 0:
+         reversed_num = reversed_num * 10 + integer % 10
+         integer = integer // 10
+     return original == reversed_num
+
+ print(is_palindrome(12321))  # -> True
+ print(is_palindrome(12345))  # -> False
+
+
+ # ВАРИАНТ 2) ОБЫЧНЫЙ
+ def is_palindrome(integer: int) -> bool:
+     str_num = str(integer)
+     # return str_num == str_num[::-1]
+     return str_num == str_num[slice(None, None, -True)]
+
+ print(is_palindrome(12321))  # -> True
+ print(is_palindrome(12345))  # -> False
+________________________________________________________________________________________________________________________
+
+
+ # ВК HR ВОПРОСЫ  ПРОСТО ПОСМОТРЕТЬ
+
+
+ # ВОПРОСЫ 1)
+
+ Клауд:
+
+ Какие механизмы есть в СУБД для отказоустойчивости?
+
+ - Репликация (синхронная/асинхронная) - копирование данных на несколько узлов.
+ - Транзакции и ACID - гарантируют целостность данных даже при сбоях.
+ - Журналирование (WAL - Write-Ahead Logging) - изменения сначала записываются в лог, что позволяет восстановить данные.
+ - Кластеризация - автоматический переход на резервный узел при отказе основного (например, в PostgreSQL с Patroni).
+ - Шардирование - распределение данных для уменьшения последствий отказа одного узла.
+
+ Что означает буква D в аббревиатуре ACID?
+
+ D - Durability (Долговечность) - гарантия, что после подтверждения транзакции (COMMIT) изменения сохранятся даже
+ при сбое системы (например, благодаря записи на диск).
+
+ Какими инструментами можно найти процесс, активно потребляющий ресурсы в Linux?
+
+ top / htop          - интерактивные мониторы процессов.
+ ps aux --sort=-%cpu - вывод процессов с сортировкой по CPU.
+ vmstat 1            - статистика по CPU, памяти, I/O.
+ iotop               - мониторинг процессов, нагружающих диск.
+ glances             - расширенный мониторинг системы.
+
+ Какими инструментами можно узнать нагрузку на диски в Linux?
+
+ iostat -x 1                  - статистика загрузки дисков (await, %util).
+ dstat                        - комбинированная статистика (CPU, disk, network).
+ sar -d 1 (из пакета sysstat) - история нагрузки на диски.
+ iotop                        - какие процессы активно пишут/читают.
+
+ Какими инструментами можно проверить сетевые настройки linux из cli?
+
+ ip a / ifconfig                  - список интерфейсов и их IP.
+ ip route / route -n              - таблица маршрутизации.
+ ss -tulnp / netstat -tulnp       - открытые порты и процессы.
+ ping, traceroute, mtr            - проверка доступности и маршрута.
+ nslookup / dig                   - DNS-запросы.
+ nmcli (если есть NetworkManager) - управление соединениями.
+
+ Что быстрее: синхронная или асинхронная запись в файл?
+
+ Асинхронная запись быстрее, так как данные сначала попадают в буфер (кеш), а запись на диск происходит позже.
+ Синхронная запись медленнее, потому что ОС ждёт подтверждения записи на диск перед завершением операции (например, fsync()).
+
+ В чём разница между списком и картежом в Python?
+
+  - Список (list) – изменяемый (можно добавлять, удалять элементы), [1, 2, 3].
+  - Кортеж (tuple) – неизменяемый (после создания нельзя изменить), (1, 2, 3). Кортежи занимают меньше памяти и работают быстрее.
+
+ Какова сложность поиска в словаре по значению?
+
+  - Поиск по значению (dict.values()) имеет сложность O(n), так как требует перебора всех элементов.
+  - Поиск по ключу – O(1) (хеш-таблица).
+
+ Почему использование модуля "threading" неэффективно для масштабирования процессорных вычислений?
+
+  - Из-за GIL (Global Interpreter Lock) в CPython: только один поток выполняет Python-код одновременно.
+  - Для CPU-задач лучше использовать multiprocessing (параллелизм) или асинхронность (asyncio для I/O).
+
+ Что такое "MRO" и "name mangling" в Python?
+
+ MRO (Method Resolution Order) – порядок поиска методов при наследовании (алгоритм C3, можно посмотреть через ClassName.__mro__).
+ Name mangling – автоматическое преобразование имён вида __var в _ClassName__var для избежания коллизий в наследовании.
+
+ Работал ли с виртуальными системами? Касался ли вообще?
+ Давненько Virtual Box, Песочницы, WMWareWorkstation.
+
+
+
+ # ВОПРОСЫ 2)
+
+ ArenadataDB:
+
+ 1. Можно ли заменить символ в строке и почему?
+ Нет, строки в Python неизменяемы (immutable). Можно создать новую строку с заменой.
+
+ 2. Чем корутина отличается от генератора?
+ Генератор производит значения (yield), корутина может и потреблять (send()), и выполнять асинхронные операции (await).
+ В Python корутины - это расширение генераторов
+
+ 3. Какие примитивы синхронизации есть в AsyncIO?
+  - asyncio.Lock      - блокировка для критических секций.
+  - asyncio.Event     - уведомление между задачами.
+  - asyncio.Semaphore - ограничение числа одновременных задач.
+  - asyncio.Condition - ожидание изменения состояния.
+  - asyncio.Queue     - потокобезопасная очередь.
+
+ 4. Как написать новый Dunder-метод?
+ Определить метод в классе с двойными подчёркиваниями
+ Их нельзя переопределять произвольно, только те, что поддерживаются Python.
+
+ 5. Что быстрее асинхронная или синхронная запись в файл, почему?
+ Синхронная запись обычно быстрее для одного файла, так как нет накладных расходов на event loop.
+ Асинхронная запись (например, через aiofiles) полезна при множестве одновременных операций (например, веб-сервер)
+ На самом деле, асинхронность не ускоряет сам диск, но позволяет выполнять другие задачи во время ожидания.
+
+ 6. Что делает метод type?
+ Как функция: возвращает тип объекта: type(42)  # <class 'int'>
+ Как метакласс: создаёт новый класс:  MyClass = type('MyClass', (Base,), {'x': 42})
+ type - это метакласс по умолчанию для всех классов в Python.
+
+ 7. В чем разница между мягкой и жесткой ссылкой? soft/hard link
+ Жёсткая ссылка (hard link) - это дополнительное имя для файла в файловой системе (inode). Удаление одной ссылки
+ не удаляет данные, пока есть другие ссылки.
+ Мягкая ссылка (symbolic link, symlink) - это ярлык, указывающий на путь. Если оригинал удалён, symlink становится "битым".
+
+ 8. Зачем в питоне использовать замыкание?
+ Сохраняет состояние между вызовами (альтернатива ООП). Используется в декораторах, callback-ах, фабриках функций.
+________________________________________________________________________________________________________________________
+
+ # ВК  ЗАДАЧИ  МНОГО ЗАДАЧ!!!
+
+
+ # ЗАДАЧА 0 (Разогрев) Написать декоратор с параметрами
+
+ import time
+ from functools import wraps
+
+ def retry(max_retries):
+     def decorator(func):
+         @wraps(func)
+         def wrapper(*args, **kwargs):
+             last_exception = None
+             for attempt in range(max_retries):
+                 try:
+                     return func(*args, **kwargs)
+                 except Exception as e:
+                     last_exception = e
+                     print(f"Attempt {attempt + 1} failed. Retrying...")
+                     time.sleep(1)  # Небольшая задержка перед повторной попыткой
+             print(f"All {max_retries} attempts failed")
+             raise last_exception  # Пробрасываем последнее исключение
+         return wrapper
+     return decorator
+
+ # Пример использования
+ @retry(3)
+ def risky_function():
+     import random
+     if random.random() < 0.7:  # 70% вероятность ошибки
+         raise ValueError("Something went wrong!")
+     return "Success!"
+
+
+ # Запустим 10 раз, чтобы увидеть ошибки
+ for _ in range(10):
+     try:
+         print(risky_function())
+     except ValueError as e:
+         print(f"Error: {e}")
+
+
+
+ # ЗАДАЧА 1 Написать код
+
+ # Требования:
+ # Уведомления высылаются регулярно и приходят из разных источников.
+ # Уведомления отправляются в разные каналы.
+ #
+ #
+ # John,email, name@example.com, some content
+ # {"name":"Alice", “type”: “telegram”, "id":"@alice", “content”:”some content”}
+
+
+ # ОТВЕТ ЗАДАЧА 1 Написать код
+
+ import json
+ from abc import ABC, abstractmethod
+
+ # Абстрактный класс для уведомлений
+ class Notification(ABC):
+     def __init__(self, name, content):
+         self.name = name
+         self.content = content
+
+     @abstractmethod
+     def send(self):
+         pass
+
+ # Email уведомление
+ class EmailNotification(Notification):
+     def __init__(self, name, email, content):
+         super().__init__(name, content)
+         self.email = email
+
+     def send(self):
+         print(f"Sending email to {self.name} ({self.email}): {self.content}")
+         # Здесь должна быть реальная логика отправки email
+         return True
+
+ # Telegram уведомление
+ class TelegramNotification(Notification):
+     def __init__(self, name, chat_id, content):
+         super().__init__(name, content)
+         self.chat_id = chat_id
+
+     def send(self):
+         print(f"Sending Telegram message to {self.name} ({self.chat_id}): {self.content}")
+         # Здесь должна быть реальная логика отправки в Telegram
+         return True
+
+ # Фабрика для создания уведомлений
+ class NotificationFactory:
+     @staticmethod
+     def create_notification(data):
+         if isinstance(data, str):
+             # Обработка CSV-подобной строки "John,email,name@example.com,some content"
+             parts = [part.strip() for part in data.split(',')]
+             if len(parts) >= 4 and parts[1].lower() == 'email':
+                 return EmailNotification(parts[0], parts[2], ','.join(parts[3:]))
+
+         elif isinstance(data, dict):
+             # Обработка JSON-подобного словаря
+             if data.get('type', '').lower() == 'telegram':
+                 return TelegramNotification(
+                     data.get('name', ''),
+                     data.get('id', ''),
+                     data.get('content', '')
+                 )
+             elif data.get('type', '').lower() == 'email':
+                 return EmailNotification(
+                     data.get('name', ''),
+                     data.get('id', ''),
+                     data.get('content', '')
+                 )
+
+         return None
+
+ # Менеджер уведомлений
+ class NotificationManager:
+     def __init__(self):
+         self.notifications = []
+
+     def add_notification(self, data):
+         notification = NotificationFactory.create_notification(data)
+         if notification:
+             self.notifications.append(notification)
+
+     def send_all(self):
+         results = []
+         for notification in self.notifications:
+             results.append(notification.send())
+         self.notifications = []
+         return results
+
+ # Пример использования
+ if __name__ == "__main__":
+     manager = NotificationManager()
+
+     # Добавляем уведомления из разных источников
+     manager.add_notification('John,email, name@example.com, some content')
+     manager.add_notification(json.loads('{"name":"Alice", "type": "telegram", "id":"@alice", "content":"some content"}'))
+
+     # Отправляем все уведомления
+     manager.send_all()
+
+
+
+ # ЗАДАЧА 2 ЧТО НЕ ТАК В КОДЕ ПРОСТО ПОСМОТРЕТЬ
+
+ # Разработчик написал разовый скрипт для отправки уведомлений и уволился.
+ # Этот код качественный? Что тебе в нем не нравится?
+
+ # Jhon,email, name@example.com, some content
+ # Jack,telegram, 12345678, some content
+
+ def send_notifications(params):
+    csv_file = open(os.path.dirname(file) + "/list.csv", newline="")
+    f = csv.reader(csv_file, delimiter=",", quotechar="\")
+    for row in f:
+        if not params["skip_email"] and row[1] == "email":
+            print(f"EMAIL: {row[2]}. Hello, {row[0]}! {row[3]}.")
+        elif not params["skip_telegram"] and row[1] == "telegram":
+            print(f"TELEGRAM: {row[2]}. Hello, {row[0]}! {row[3]}.")
+
+ if name == "main":
+    send_notifications(params)
+
+
+ # ОТВЕТ ЗАДАЧА 2 ЧТО НЕ ТАК В КОДЕ ПРОСТО ПОСМОТРЕТЬ
+
+ 1) Утечка ресурсов: Файл не закрывается (csv_file), лучше использовать with open()
+ 3) Синтаксическая ошибка: quotechar="\" - незакрытая кавычка и неэкранированный обратный слэш
+ 4) Отсутствие проверки существования файла: Нет обработки случая, когда файл не существует
+ 5) Жестко закодированный путь: os.path.dirname(file) + "/list.csv" - проблема с конкатенацией путей
+ 6) Неясные зависимости: Непонятно, откуда берутся переменные file и params
+ 7) Магические числа: Использование индексов (row[0], row[1] и т.д.) вместо именованных констант
+ 8) Отсутствие обработки ошибок: Нет try-except для обработки возможных ошибок
+ 9) Опечатка в __name__: if name == "main" вместо if __name__ == "__main__"
+ 10) Использование print: Для логирования лучше использовать модуль logging
+ 11) Хардкод значений: "email" и "telegram" лучше вынести в Enum или константы
+ 12) Отсутствие валидации данных: Нет проверки формата и полноты данных в CSV
+ 13) Проблемы с пробелами: В данных есть пробелы (, name@example.com,), но нет .strip()
+ 14) Смешение ответственности: Функция и читает файл, и отправляет уведомления
+ 15) Нет тестов: Код не модульный и не тестируемый
+ 16) Плохая расширяемость: Добавление нового типа уведомления требует модификации кода
+ 17) Нет документации: Отсутствуют docstring и комментарии
+ 18) Проблемы с кодировкой: Файл открывается без указания кодировки
+ 19) Уязвимости безопасности: Нет проверки входящих данных (например, email)
+ 20) Отсутствие аннотаций типов. Нет type hints
+
+ # "ЗОЛОТАЯ СЕРЕДИНА" между качеством и простотой для данной задачи. НО ДЛЯ production-системы можно сделать лучше.
+
+ import csv
+ import logging
+ import re
+ from enum import Enum, auto
+ from pathlib import Path
+ from typing import Dict, List, Optional, TypedDict
+
+ # Настройка логирования
+ logging.basicConfig(level=logging.INFO)
+ logger = logging.getLogger(__name__)
+
+
+ class NotificationType(Enum):
+     EMAIL = auto()
+     TELEGRAM = auto()
+
+     @classmethod
+     def from_string(cls, value: str) -> Optional['NotificationType']:
+         normalized = value.strip().upper()
+         for member in cls:
+             if member.name == normalized:
+                 return member
+         return None
+
+
+ class NotificationConfig(TypedDict):
+     skip_email: bool
+     skip_telegram: bool
+
+
+ class MessageTemplates:
+     EMAIL = "EMAIL: {address}. Hello, {name}! {message}."
+     TELEGRAM = "TELEGRAM: {address}. Hello, {name}! {message}."
+
+
+ class InvalidDataError(Exception):
+     pass
+
+
+ def is_valid_email(email: str) -> bool:
+     return bool(re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email.strip()))
+
+
+ def is_valid_telegram_id(tg_id: str) -> bool:
+     return tg_id.strip().isdigit()
+
+
+ def read_recipients(csv_path: Path) -> List[Dict[str, str]]:
+     '''Читает CSV файл и возвращает список получателей.'''
+     recipients = []
+
+     with open(csv_path, newline="", encoding="utf-8") as csv_file:
+         # Проверяем есть ли заголовок
+         sample = csv_file.read(1024)
+         csv_file.seek(0)
+         has_header = csv.Sniffer().has_header(sample)
+
+         reader = csv.DictReader(
+             csv_file,
+             fieldnames=["name", "type", "address", "message"],
+             skipinitialspace=True
+         )
+
+         if has_header:
+             next(reader)  # Пропускаем строку заголовка
+
+         for row in reader:
+             recipients.append({k: v.strip() for k, v in row.items()})
+
+     return recipients
+
+
+ def validate_recipient(recipient: Dict[str, str]) -> None:
+     '''Проверяет валидность данных получателя.'''
+     if not all(recipient.values()):
+         raise InvalidDataError("Missing required fields")
+
+     notification_type = NotificationType.from_string(recipient["type"])
+     if notification_type is None:
+         raise InvalidDataError(f"Invalid notification type '{recipient['type']}'")
+
+     if notification_type == NotificationType.EMAIL and not is_valid_email(recipient["address"]):
+         raise InvalidDataError(f"Invalid email format '{recipient['address']}'")
+
+     if notification_type == NotificationType.TELEGRAM and not is_valid_telegram_id(recipient["address"]):
+         raise InvalidDataError(f"Invalid Telegram ID '{recipient['address']}'")
+
+
+ def send_notification(recipient: Dict[str, str], config: NotificationConfig) -> None:
+     '''Отправляет одно уведомление.'''
+     notification_type = NotificationType.from_string(recipient["type"])
+
+     handlers = {
+         NotificationType.EMAIL: (
+             lambda cfg: not cfg["skip_email"],
+             MessageTemplates.EMAIL
+         ),
+         NotificationType.TELEGRAM: (
+             lambda cfg: not cfg["skip_telegram"],
+             MessageTemplates.TELEGRAM
+         ),
+     }
+
+     if notification_type in handlers:
+         should_send, template = handlers[notification_type]
+         if should_send(config):
+             logger.info(template.format(**recipient))
+
+
+ def send_notifications(config: NotificationConfig, csv_path: str) -> None:
+     '''
+     Send notifications to recipients based on data from CSV file.
+
+     Args:
+         config: Dictionary with notification settings:
+             - skip_email: bool - whether to skip email notifications
+             - skip_telegram: bool - whether to skip telegram notifications
+         csv_path: Path to CSV file with recipient data
+
+     CSV file format:
+         name, type, address, message
+     '''
+     try:
+         csv_path = Path(csv_path).resolve()
+         logger.info(f"Processing notifications from file: {csv_path}")
+
+         if not csv_path.exists():
+             raise FileNotFoundError(f"CSV file not found at {csv_path}")
+
+         recipients = read_recipients(csv_path)
+
+         for row_num, recipient in enumerate(recipients, start=1):
+             try:
+                 validate_recipient(recipient)
+                 send_notification(recipient, config)
+             except InvalidDataError as e:
+                 logger.warning(f"Row {row_num}: {str(e)}, skipping")
+             except Exception as e:
+                 logger.error(f"Row {row_num}: Error processing recipient - {str(e)}")
+                 continue
+
+     except FileNotFoundError as e:
+         logger.error(str(e))
+     except csv.Error as e:
+         logger.error(f"CSV parsing error: {str(e)}")
+     except Exception as e:
+         logger.error(f"Unexpected error: {str(e)}")
+     else:
+         logger.info("Notifications processing completed successfully")
+
+
+ if __name__ == "__main__":
+     config: NotificationConfig = {
+         "skip_email": False,
+         "skip_telegram": False
+     }
+     send_notifications(config, csv_path="list.csv")
+
+
+
+ # ЗАДАЧА 3 ЗА СКОЛЬКО ОРАБОТАЕТ АСИНХРОННЫЙ КОД И КАКИЕ БУДУТ ПРИНТЫ
+
+ import asyncio
+
+ async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")
+     return delay
+
+ async def main():
+     await fetch_data(1)
+     await fetch_data(2)
+     await fetch_data(3)
+
+ asyncio.run(main())
+
+
+ # ОТВЕТ ЗАДАЧА 3 ЗА СКОЛЬКО ОРАБОТАЕТ АСИНХРОННЫЙ КОД И КАКИЕ БУДУТ ПРИНТЫ
+
+ # ВЫПОЛНЕНИЕ БУДЕТ ЗА 6 СЕКУНД   Работает ПОСЛЕДОВАТЕЛЬНО, а НЕ ПАРАЛЛЕЛЬНО(асинхронно).
+
+ # Использование await перед каждой функцией в исходном коде заставляет их выполняться ПОСЛЕДОВАТЕЛЬНО, а НЕ ПАРАЛЛЕЛЬНО.
+ # Коротко: await блокирует текущую корутину, пока операция не завершится → выполнение становится последовательным.
+
+
+ import asyncio
+
+ async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")
+     return delay
+
+ async def main():
+     await fetch_data(1)
+     await fetch_data(2)
+     await fetch_data(3)
+
+ asyncio.run(main())
+
+ # ВЫВОД
+ # Inside function before 1 sleep...
+ # Inside function after 1 sleep...
+ # Inside function before 2 sleep...
+ # Inside function after 2 sleep...
+ # Inside function before 3 sleep...
+ # Inside function after 3 sleep...
+
+
+ # РАБОТАЕТ 3 СЕКУНДЫ  ПАРАЛЛЕЛЬНО(асинхронно), нужно использовать asyncio.gather() или asyncio.create_task().
+
+ import asyncio
+
+ # asyncio.create_task() (КОНТРОЛЬ над задачами)            # asyncio.gather()  (рекомендуется для простых случаев)
+ async def fetch_data(delay):                               async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")          print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)                                 await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")           print(f"Inside function after {delay} sleep...")
+     return delay                                               return delay
+
+ async def main():                                          async def main():
+     # Создаем задачи (они запускаются сразу)                   # Запускаем все корутины параллельно
+     task1 = asyncio.create_task(fetch_data(1))                 await asyncio.gather(
+     task2 = asyncio.create_task(fetch_data(2))                     fetch_data(1),
+     task3 = asyncio.create_task(fetch_data(3))                     fetch_data(2),
+                                                                    fetch_data(3)
+     # Ждем завершения всех задач                               )
+     await task1
+     await task2
+     await task3
+
+ asyncio.run(main())                                        asyncio.run(main())
+
+ # ВЫВОД                                                    # ВЫВОД
+ # Inside function before 1 sleep...                        # Inside function before 1 sleep...
+ # Inside function before 2 sleep...                        # Inside function before 2 sleep...
+ # Inside function before 3 sleep...                        # Inside function before 3 sleep...
+ # Inside function after 1 sleep...                         # Inside function after 1 sleep...
+ # Inside function after 2 sleep...                         # Inside function after 2 sleep...
+ # Inside function after 3 sleep...                         # Inside function after 3 sleep...
+
+
+
+ # ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
+
+ def division(a, b):
+     return a / b
+
+
+ # ОТВЕТ ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
+
+ import pytest
+
+ def test_division_normal_cases():
+     # Тестирование нормальных случаев
+     assert division(10, 2) == 5.0
+     assert division(9, 3) == 3.0
+     assert division(1, 2) == 0.5
+     assert division(0, 5) == 0.0
+     assert division(-10, 2) == -5.0
+     assert division(-9, -3) == 3.0
+
+
+ def test_division_float_result():
+     # Тестирование случаев с дробным результатом
+     assert division(5, 2) == 2.5
+     assert division(1, 3) == pytest.approx(0.333333, rel=1e-6)
+
+
+ def test_division_by_zero():
+     # Тестирование деления на ноль
+     with pytest.raises(ZeroDivisionError):
+         division(10, 0)
+
+     with pytest.raises(ZeroDivisionError):
+         division(0, 0)
+
+
+ def test_division_invalid_input():
+     # Тестирование неверного ввода (не числа)
+     with pytest.raises(TypeError):
+         division("10", 2)
+
+     with pytest.raises(TypeError):
+         division(10, "2")
+
+     with pytest.raises(TypeError):
+         division("a", "b")
+
+
+
+ # ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+
+ class HybridContext:
+     def __init__(self):
+         pass
+
+
+ def __enter__(self):
+     return self
+
+
+ def __exit__(self, exc_type, exc_val, exc_tb):
+
+
+ with HybridContext(127.0.1.1) as e:
+     ...
+
+
+ # ОТВЕТ ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+
+ # ВАРИАНТ 1 Собственная реализация контекстного менеджера
+
+ # Исключения подавляются, так как метод __exit__ возвращает True.
+ class HybridContext:
+     def __init__(self, ip_address):
+         self.ip_address = ip_address
+
+     def __enter__(self):
+         print(f"Подключение к {self.ip_address}")
+         return self
+
+     def __exit__(self, exc_type, exc_val, exc_tb):
+         print(f"Отключение от {self.ip_address}")
+         if exc_type is not None:
+             print(f"Произошла ошибка: {exc_val}")
+         return True  # Подавляем исключения
+
+
+ # Использование
+ with HybridContext("127.0.1.1") as e:
+     print(F"Выполнение кода внутри контекста")
+     # raise Exception("Тестовая ошибка")  # Раскомментируйте для теста обработки ошибок
+
+ # ВЫВОД
+ # Подключение к 127.0.1.1
+ # Выполнение кода внутри контекста
+ # Отключение от 127.0.1.1
+
+
+
+ # ВАРИАНТ 2 Реализация с использованием contextlib
+ from contextlib import contextmanager
+
+ @contextmanager
+ def hybrid_context(ip_address):
+     print(f"Подключение к {ip_address}")
+     try:
+         yield ip_address
+     except Exception as e:
+         print(f"Произошла ошибка: {e}")
+         # return True  # Чтобы было подавление исключений
+     finally:
+         print(f"Отключение от {ip_address}")
+
+ # Использование
+ with hybrid_context("127.0.1.1") as ip:
+     print(f"Выполнение кода внутри контекста с IP {ip}")
+     # raise Exception("Тестовая ошибка")  # Раскомментируйте для теста обработки ошибок
+
+ # ВЫВОД
+ # Подключение к 127.0.1.1
+ # Выполнение кода внутри контекста с IP 127.0.1.1
+ # Отключение от 127.0.1.1
+________________________________________________________________________________________________________________________
+
+ # ЗАДАЧА Integer to Roman (leetcode)    SmartKit  Ритейл-Процессинг
+
+
+ # Все варианты работают за O(1) по времени и O(1) по памяти (так как используют фиксированный объем дополнительной памяти)
+
+ # Вариант 4 (жесткое кодирование) - самый быстрый на реальных данных, так как не содержит циклов и рекурсии.
+ # Остальные варианты чуть медленнее из-за циклов, но разница незначительна для ограниченного диапазона входных чисел.
+
+
+ # ВАРИАНТ ЧЕРЕЗ  библиотеку pip install roman
+ import roman
+
+ def intToRoman(num: int) -> str:
+     try:
+         return roman.toRoman(num)
+     except roman.InvalidRomanNumeralError:
+         return "Invalid number (must be 1-3999)"
+
+ print(intToRoman(3749))  # -> MMMDCCXLIX
+ print(intToRoman(58))    # -> LVIII
+ print(intToRoman(1994))  # -> MCMXCIV
+
+
+ # ВАРИАНТ 1  Жадный алгоритм с фиксированными значениями
+ def intToRoman(num: int) -> str:
+     values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+     symbols = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+     roman = []
+     for i in range(len(values)):
+         while num >= values[i]:
+             roman.append(symbols[i])
+             num -= values[i]
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 2  Использование списка кортежей
+ def intToRoman(num: int) -> str:
+     val_symbols = [
+         (1000, 'M'),
+         (900, 'CM'),
+         (500, 'D'),
+         (400, 'CD'),
+         (100, 'C'),
+         (90, 'XC'),
+         (50, 'L'),
+         (40, 'XL'),
+         (10, 'X'),
+         (9, 'IX'),
+         (5, 'V'),
+         (4, 'IV'),
+         (1, 'I')
+     ]
+     roman = []
+     for val, symbol in val_symbols:
+         while num >= val:
+             roman.append(symbol)
+             num -= val
+         if num == 0:
+             break
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 3  Использование словаря
+ def intToRoman(num: int) -> str:
+     val_to_roman = {
+         1000: 'M',
+         900: 'CM',
+         500: 'D',
+         400: 'CD',
+         100: 'C',
+         90: 'XC',
+         50: 'L',
+         40: 'XL',
+         10: 'X',
+         9: 'IX',
+         5: 'V',
+         4: 'IV',
+         1: 'I'
+     }
+     roman = []
+     for val in sorted(val_to_roman.keys(), reverse=True):
+         while num >= val:
+             roman.append(val_to_roman[val])
+             num -= val
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 4 Жесткое кодирование для каждой цифры  # Очень быстрое решение (O(1) по времени, так как нет циклов).
+ def intToRoman(num: int) -> str:
+     thousands = ["", "M", "MM", "MMM"]
+     hundreds = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]
+     tens = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"]
+     ones = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
+
+     return (
+         thousands[num // 1000] +
+         hundreds[(num % 1000) // 100] +
+         tens[(num % 100) // 10] +
+         ones[num % 10]
+     )
+
+
+ # ВАРИАНТ 5  Рекурсивный подход
+ def intToRoman(num: int) -> str:
+     val_symbols = [
+         (1000, 'M'),
+         (900, 'CM'),
+         (500, 'D'),
+         (400, 'CD'),
+         (100, 'C'),
+         (90, 'XC'),
+         (50, 'L'),
+         (40, 'XL'),
+         (10, 'X'),
+         (9, 'IX'),
+         (5, 'V'),
+         (4, 'IV'),
+         (1, 'I')
+     ]
+     for val, symbol in val_symbols:
+         if num >= val:
+             return symbol + intToRoman(num - val)
+     return ""  # для num = 0
+
+ print(intToRoman(3749))  # -> MMMDCCXLIX
+ print(intToRoman(58))    # -> LVIII
+ print(intToRoman(1994))  # -> MCMXCIV
+________________________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
 
 
 
@@ -3798,6 +4649,53 @@ ________________________________________________________________________________
      FROM t1
  ) AS numbered
  WHERE rn = 1;
+________________________________________________________________________________________________________________________
+
+ ВК  2 задачи в одной (ДВА В ОДНОМ)
+
+ goods (id, title, type, price)
+
+ 1) Нужно получить количество товаров каждого типа с ценой товара больше 15.
+
+ -- Эти запросы подсчитают все товары с price > 15, независимо от того, есть ли NULL в title или нет.
+ SELECT type, COUNT(*) AS goods_count  SELECT type, COUNT(id) AS goods_count  SELECT type, COUNT(1) AS goods_count
+ FROM goods                            FROM goods                             FROM goods
+ WHERE price > 15                      WHERE price > 15                       WHERE price > 15
+ GROUP BY type;                        GROUP BY type;                         GROUP BY type;
+
+ -- Если title НЕ содержит NULL значений    -- Если title содержит NULL значений
+ SELECT type, COUNT(title) AS goods_count   SELECT type, COUNT(title) AS goods_count
+ FROM goods                                 FROM goods
+ WHERE price > 15                           WHERE price > 15 AND title is not NULL
+ GROUP BY type;                             GROUP BY type;
+
+
+ 2) Нужно получить количество товаров каждого типа с ценой товара больше 15. Показать нужно только количество меньше 5.
+
+  -- Эти запросы подсчитают все товары с price > 15, независимо от того, есть ли NULL в title или нет.
+ SELECT type, COUNT(*) AS goods_count  SELECT type, COUNT(id) AS goods_count  SELECT type, COUNT(1) AS goods_count
+ FROM goods                            FROM goods                             FROM goods
+ WHERE price > 15                      WHERE price > 15                       WHERE price > 15
+ GROUP BY type                         GROUP BY type                          GROUP BY type
+ HAVING COUNT(*) < 5;                  HAVING COUNT(id) < 5;                  HAVING COUNT(1) < 5;
+
+ -- Вариант 1 (использование алиаса)        -- Вариант 2 (использование агрегатной функции)
+ SELECT type, COUNT(title) AS goods_count   SELECT type, COUNT(title) AS goods_count
+ FROM goods                                 FROM goods
+ WHERE price > 15                           WHERE price > 15
+ GROUP BY type                              GROUP BY type
+ HAVING goods_count < 5;                    HAVING COUNT(title) < 5;
+
+
+ # Все 4 варианта (COUNT(*), COUNT(1), COUNT(id), COUNT(title)) дадут одинаковый результат, если:
+ id является PRIMARY KEY (значит не может быть NULL)
+ title не содержит NULL значений
+
+ # Разбор вариантов COUNT(*), COUNT(1), COUNT(id), COUNT(title)
+ COUNT(*) - считает все строки в группе, включая NULL.  COUNT(*) будет наиболее предпочтительным вариантом.
+ COUNT(1) - эквивалентен COUNT(*), потому что 1 - это не-NULL константа, и она учитывается для каждой строки.
+ COUNT(id) - считает только строки, где id не NULL (если id - PRIMARY KEY, разницы с COUNT(*) нет).
+ COUNT(title) - считает только не-NULL значения title
 ________________________________________________________________________________________________________________________
 
 
@@ -6287,6 +7185,8 @@ ________________________________________________________________________________
 
  # Для получения всех элементов коллекции
  print([1, 2, 3][:])  # -> [1, 2, 3]
+ # Для кортежа тоже самое
+ print((1, 2, 3)[:])  # -> (1, 2, 3)
  -----------------------------------------------------------------------------------------------------------------------
 
  # Отметьте верные способы создать список (list) с элементами [1, 2, 3, 4]
@@ -7368,6 +8268,15 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(sets)  # -> {0, 1, 2, 3, frozenset({'a', 'b'})}
  sets.remove({'a', 'b'})  # <-----   Можно удалить множество set из set
  print(sets)  # -> {0, 1, 2, 3}
+
+ # ОТВЕТ ПОЧЕМУ В ФИГУРНЫХ   это его стандартное строковое представление (repr).
+ print(frozenset(('a', 'b')))  # -> frozenset({'b', 'a'})
+ print(frozenset(['a', 'b']))  # -> frozenset({'b', 'a'})
+ print(set(('a', 'b')))        # -> {'a', 'b'}
+ print(set(['a', 'b']))        # -> {'a', 'b'}
+
+ # Независимо от того, передан кортеж, список или множество, repr(frozenset(...)) всегда возвращает строку в формате
+ # frozenset({...}). Это сделано для единообразия и удобства отладки.
  -----------------------------------------------------------------------------------------------------------------------
 
  # .keys() и .items() объекта  dict()  Удивительно похожи на frozenset()

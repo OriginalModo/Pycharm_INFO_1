@@ -209,6 +209,81 @@
 
 
 
+ -- FastAPI Lifespan --
+
+ Lifespan в FastAPI - это механизм для выполнения кода при запуске и остановке приложения (например, для подключения/отключения от БД).
+
+ Пример:
+
+ from fastapi import FastAPI
+ from contextlib import asynccontextmanager
+
+ # Функции для запуска/остановки
+ async def startup():
+     print("Сервер запущен!")
+
+ async def shutdown():
+     print("Сервер остановлен!")
+
+ # Используем lifespan
+ @asynccontextmanager
+ async def lifespan(app: FastAPI):
+     await startup()
+     yield  # Здесь работает приложение
+     await shutdown()
+
+ app = FastAPI(lifespan=lifespan)                                                   # lifespan  <-----  <-----
+
+ @app.get("/")
+ async def root():
+     return {"message": "Hello World"}
+
+ Что происходит:
+ При старте FastAPI вызовет startup().
+
+ Во время работы приложения - код между yield и shutdown() не выполняется.
+
+ При остановке - вызывается shutdown().
+
+ Альтернативно можно использовать app.add_event_handler(), но lifespan удобнее для современных версий FastAPI (2.0+).
+
+
+
+ # ЕЩЕ ОТВЕТ
+ В FastAPI lifespan (жизненный цикл) - это механизм для выполнения кода при запуске и остановке приложения.
+
+ Кратко:
+ startup  - код выполняется при старте приложения (например, подключение к БД).
+ shutdown - код выполняется при завершении (например, закрытие соединений).
+
+ # ПРИМЕР 1. Через @app.on_event("startup") и @app.on_event("shutdown") (устаревший, но рабочий способ)
+ from fastapi import FastAPI
+
+ app = FastAPI()
+
+ @app.on_event("startup")
+ async def startup():
+     print("Сервер запущен!")
+
+ @app.on_event("shutdown")
+ async def shutdown():
+     print("Сервер остановлен.")
+
+
+ # Через lifespan (рекомендуемый современный способ):
+
+ from contextlib import asynccontextmanager
+ from fastapi import FastAPI
+
+ @asynccontextmanager
+ async def lifespan(app: FastAPI):
+     print("Старт!")
+     yield
+     print("Завершение.")
+
+ app = FastAPI(lifespan=lifespan)                                                   # lifespan  <-----  <-----
+ Это полезно для управления ресурсами (БД, кэш, внешние API).                       #           <-----  <-----
+
 
 
 

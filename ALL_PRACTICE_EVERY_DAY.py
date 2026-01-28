@@ -11,7 +11,7 @@ import sys
 import time
 import types
 import re
-from collections import namedtuple
+from collections import namedtuple, defaultdict, Counter, deque
 from itertools import count, product, pairwise
 import ctypes
 from dataclasses import dataclass, field
@@ -297,7 +297,7 @@ a_tuple = (a_list, 10)
 
 # + Сработал а на = Падает Исключение
 try:
-    a_tuple[0] += [6]  # += вызывает магический метод у list   Сначала ДОБАВЛЯЕТ элемент а потом ПРИСВАИВАЕТ  2 ЧАСТА
+    a_tuple[0] += [6]  # += вызывает магический метод у list   Сначала ДОБАВЛЯЕТ элемент а потом ПРИСВАИВАЕТ  2 ЧАСТИ
 except TypeError:
     print(a_tuple)
     print(a_list)
@@ -397,7 +397,7 @@ third_word = 'pyt' + 'hon'  # Конкатенация литералов → о
 value = 'hon'
 last_word = 'pyt' + value  # Новая строка (не интернируется)
 
-print(main_word is second_word, main_word is third_word, main_word is last_word)  # True True False
+print(main_word is second_word, main_word is third_word, main_word is last_word)  # True True False    <-----
 
 
 # Числа вычисляются на этапе компиляции, если состоят из константных выражений.
@@ -489,6 +489,39 @@ dis.dis(check)  # LOAD_CONST для 100 берёт значение из кеш�
 
 Ненадёжные методы: 3) sys.getrefcount(), 2) is для чисел вне -5..256 (зависит от реализации).
 """
+
+
+
+# Зри в корень 14
+"""
+a_list = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'
+          '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'
+          '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45'
+          '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '60'
+          '61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '75'
+          '76', '77', '78', '79', '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', '90'
+          '91', '92', '93', '94', '95', '96', '97', '98', '99', '100']
+
+not_in_list_count = 0
+
+for element in range(101):
+    if str(element) not in a_list:
+        not_in_list_count += 1
+
+print(not_in_list_count)  # -> 12
+
+
+### НЕТ ЗАПЯТЫХ В СПИСКЕ a_list    СКЛЕИЛ СТРОКИ!
+string = 'one' 'two'
+print(string)             # -> onetwo
+
+
+### СОВЕТ ЛУЧШЕ ВСЕГДА СТАВИТЬ ЗАПЯТУЮ!
+b_list = [1,]
+
+"""
+
+
 
 
 
@@ -1349,6 +1382,10 @@ a()  # -> 1
 продолжает существовать даже после ее завершения. В данном случае переменная `val` в `b()` 
 НЕ ссылается на `val` из `a()`, поэтому замыкания не происходит. Местный `val = 10` в функции `b()` 
 просто создает новую локальную переменную, не имея доступа к `val` в функции `a()`
+
+
+ChatGPT
+Потому что в b() строка val = 10 создаёт новую локальную переменную val внутри b, а не меняет val из a(). Поэтому в a() остаётся 1.
 """
 
 
@@ -1373,7 +1410,7 @@ for i in res:
 
 
 
-# ЗАДАЧА 2)
+# ЗАДАЧА 2)   Гонка корутин (interleaving) в одном потоке  <----
 
 # Редкий случай гонки данных (race condition)     Это корректный пример гонки данных в асинхронном коде.
 import asyncio
@@ -1431,6 +1468,14 @@ if __name__ == "__main__":
 # Почему так  Результат: Total: 5.:
 # create_task() не гарантирует порядок выполнения, а await foo() не блокирует bar() полностью из-за асинхронности.
 # Если bar() успевают проверить WORK_COUNTER == 0 до изменения foo(), они выполнят свои += 2.
+
+
+ChatGPT
+await прерывает корутину и отдаёт управление циклу событий. Поэтому:
+foo и обе bar успевают проверить WORK_COUNTER == 0 до того, как кто-то его изменит.
+Потом они “просыпаются” и все выполняют свои +=, поэтому получается 0 + 1 + 2 + 2 = 5.
+
+Решение: сделать проверку+изменение под asyncio.Lock() (или без await между ними).
 """
 
 
@@ -1605,7 +1650,7 @@ if __name__ == '__main__':
 
 
 
-# Замеры размеров структур Python  ПРОСТО ПОСМОТРЕТЬ!!!
+# Замеры размеров структур Python  ПРОСТО ПОСМОТРЕТЬ!!!   РАЗМЕР СТАНОВИТСЯ МЕНЬШЕ!
 """
  --- Замеры размеров Python ---
 
@@ -1616,7 +1661,7 @@ print(f'asizeof   list:  {asizeof.asizeof(my_list)} байт')         # -> asiz
 
 from collections import deque
 my_deque = deque([1, 2, 3, 4, 5])
-print(f'getsizeof deque: {sys.getsizeof(my_list)} байт')           # -> getsizeof deque: 104 байт
+print(f'getsizeof deque: {sys.getsizeof(my_deque)} байт')          # -> getsizeof deque: 760 байт
 print(f'asizeof   deque: {asizeof.asizeof(my_deque)} байт')        # -> asizeof   deque: 760 байт
 
 
@@ -1828,8 +1873,8 @@ print(f'asizeof   defaultdict():  {asizeof.asizeof(my_defa)} байт')  # -> as
 from collections import ChainMap
  
 my_chain = ChainMap()
-print(f'getsizeof ChainMap():  {sys.getsizeof(my_chain)} байт')      # -> ggetsizeof ChainMap():  56 байт
-print(f'asizeof   ChainMap():  {asizeof.asizeof(my_chain)} байт')    # -> aasizeof   ChainMap():  536 байт
+print(f'getsizeof ChainMap():  {sys.getsizeof(my_chain)} байт')      # -> ggetsizeof ChainMap():  48 байт
+print(f'asizeof   ChainMap():  {asizeof.asizeof(my_chain)} байт')    # -> aasizeof   ChainMap():  520 байт
 
 
 
@@ -1852,8 +1897,8 @@ print(f'asizeof   WithSlots:  {asizeof.asizeof(with_slots)} байт')  # -> asi
 class NoSlots:pass
 
 no_slots = NoSlots()
-print(f'getsizeof NoSlots:    {sys.getsizeof(no_slots)} байт')      # -> getsizeof NoSlots:    56 байт
-print(f'asizeof   NoSlots:    {asizeof.asizeof(no_slots)} байт')    # -> asizeof   NoSlots:    352 байт
+print(f'getsizeof NoSlots:    {sys.getsizeof(no_slots)} байт')      # -> getsizeof NoSlots:    48 байт
+print(f'asizeof   NoSlots:    {asizeof.asizeof(no_slots)} байт')    # -> asizeof   NoSlots:    344 байт
 
 
 
@@ -1986,6 +2031,9 @@ def test2():                                    def test2():
                                                      
 print(dct.get('test', test2()))   # -> 444      print(dct.get('TTTTT', test2()))  # -> 123
 print(dct)               # -> {'test': 444}     print(dct)               # -> {'test': 444}
+
+ChatGPT
+dict.get(key, default) сначала вычисляет аргументы функции, а уже потом вызывает get
 """
 
 
@@ -2084,8 +2132,8 @@ print(result)  # -> 8                            print(result)  # -> 8
 # Напишите Релизацию своего класса имитируещего словарь  через []    Создание собственного класса для реализации словаря
 
 
-
-
+class MyDict:
+    pass
 
 
 
@@ -2403,34 +2451,13 @@ print(list(zip(matrix)))   # -> [([1, 2, 3, 4],), ([5, 6, 7, 8],), ([9, 10, 11, 
 
 # Повтори примеры  МОРЖА/Walrus  Разные примеры!!!  Моржовый оператор/Walrus
 
+# Пример 1
 # Перепиши с Моржом
 n = 10
 # print(5 <= n < 10 or 101 < n < 201)  # -> False
 
 
 
-
-
-
-s = "Hello"
-# print(f'Если перевернуть слово "{s}", получится "{s[::-1]}".')
-
-
-
-
-
-
-# Напечатайте индекс наименьшего числа в списке.
-a = [5, 8, 3, 2, 7, 4, 9]
-
-
-
-
-
-
-
-
-# Использование МОРЖА/Walrus  Разные примеры!!!  Моржовый оператор/Walrus
 """
 # Пример 1
 
@@ -2442,13 +2469,32 @@ print(5 <= (с := 10) < 10 or 101 < с < 201)  # -> # False
 # Переменная создана
 print(с)  # -> 10
 
+"""
 
+
+
+
+# Пример 2
+s = "Hello"
+# print(f'Если перевернуть слово "{s}", получится "{s[::-1]}".')
+
+
+
+
+"""
 # Пример 2
 print(f'Если перевернуть слово "{(s:="Hello")}", получится "{s[::-1]}".')
 # -> Если перевернуть слово "Hello", получится "olleH".
 print(s)  # -> Hello
+"""
 
 
+# Пример 3
+# Написать match case и Моржик и несколько переменных сразу
+
+
+
+"""
 # Пример 3
 # match case и Моржик и несколько переменных сразу
 match (a := 7), (b := 4):
@@ -2460,9 +2506,22 @@ match (a := 7), (b := 4):
         print(4)
 
 print(a, b)  # -> 7 4
+"""
+
 
 
 # Пример 4
+# Напечатайте индекс наименьшего числа в списке.
+lst = [5, 8, 3, 2, 7, 4, 9]
+
+
+
+
+
+
+"""
+# Пример 4
+
 # Напечатайте индекс наименьшего числа в списке.
 lst = [5, 8, 3, 2, 7, 4, 9]
 
@@ -2474,13 +2533,20 @@ print(min(range(len(lst)), key=lst.__getitem__))       # -> 3
 # Пример 5
 # Моржика в условии нельзя
 print((nn := 10) + 10 if nn % 2 == 0 else nn - 10)  # -> NameError: name 'n' is not defined
-print(nn + 10 if (nn := 10) % 2 == 0 else nn - 10)  # -> 20"""
+print(nn + 10 if (nn := 10) % 2 == 0 else nn - 10)  # -> 20
+"""
+
+
+
+
 
 
 
 
 
 # Морж Примеры ИНТЕРЕСНЫЕ ПОВТОРИТЬ!!!
+
+
 
 
 
@@ -2531,7 +2597,6 @@ json_string = '{"name": "Alice", "age": 30, "city": "New York"}'
 
 
 
-
 # Пример разбора JSON-строки
 # 'json.loads()' для разбора JSON-строки.
 """
@@ -2557,6 +2622,8 @@ print(data['name'])  # -> Alice
     ]
 }
 """
+
+
 
 
 
@@ -2696,10 +2763,11 @@ match cmd:
 
 # Перепиши Ниже    match case Словарь  dict '**'
 
-json_data = {'id': 2, 'access': True, 'data': ['26.05.2023', {'login': '1234', 'email': 'xxx@mail.com'}, 2000, 56.4]}
+json_data = {'id': 2, 'access': False, 'data': ['26.05.2023', {'login': '1234', 'email': 'xxx@mail.com'}, 2000, 56.4]}
 
 def parse_json(data):
     pass
+
 
 
 # print(parse_json(json_data))  # -> ('1234', {'email': 'xxx@mail.com'})
@@ -2735,22 +2803,43 @@ print(parse_json(json_data))  # -> ('1234', {'email': 'xxx@mail.com'})
 
 
 # Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИШИ ВСЕ ВАРИАНТЫ!!!
+# if s: нужен, чтобы не добавлять пустую сумму.
+
 
 head = [0, 3, 1, 0, 4, 5, 2, 0]
+
 
 def mergeNodes(head):
     pass
 
-
-
 # print(mergeNodes(head))  # -> [4, 11]
 
 
-
-
 # Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros
+# if s: нужен, чтобы не добавлять пустую сумму.
 r"""
 head = [0, 3, 1, 0, 4, 5, 2, 0]
+
+
+# Сложность:
+# Время: O(n)
+# Память: O(k) на res, где k — число сегментов; в худшем случае k = O(n) ⇒ память O(n)
+
+# ПРАВИЛЬНОЕ РЕШЕНИЕ!
+def mergeNodes(head):
+    res, s = [], 0
+    for i in head:
+        if i == 0:
+            if s:
+                res.append(s)
+                s = 0
+        else:
+            s += i
+    if s:
+        res.append(s)
+    return res
+
+
 
 def mergeNodes(head):
     res = re.sub(r'[,\s\]\[]', '', str(head))
@@ -2908,18 +2997,53 @@ a = 'aaaabbcaa'
 
 
 
+def rle(s: str) -> str:
+    pass
 
 
 
-
+# print(rle("aaaabbcaa"))  # a4b2c1a2
 
 
 # a = 'aaaabbсaa' преобразуется в 'a4b2с1a2'  Считаем символы которые идут подряд
 r"""
 a = 'aaaabbcaa'
 
+
+# Сложность:
+# Время: O(n), где n = len(s)
+# Память: O(n) на результат (в худшем случае), доп. память O(1)
+
+def rle(s: str) -> str:
+    if not s:
+        return ""
+    res = []
+    prev = s[0]
+    start = 1
+
+    for i in s[1:]:
+        if i == prev:
+            start += 1
+        else:
+            res.append(prev + str(start))
+            prev = i
+            start = 1
+
+    res.append(prev + str(start))
+    return "".join(res)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
+
+
+# Сложность:
+# Время: O(n) — regex проходит по строке и на каждую “группу” вызывает lambda.
+# Память: O(n) — под результат (новая строка) + служебные структуры regex.
+
 # Придумал сам)
-re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', a)  # -> a4b2c1a2
+def rle(s: str) -> str:
+    return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
 """
 
 
@@ -3005,7 +3129,6 @@ print(re.search(r"(?P<name>A)(?(name)BC)", 'ABC').group())    # -> ABC
 # Используйте \b \B
 
 text = 'арка чарка аркан баварка знахарка'
-
 
 
 
@@ -3238,7 +3361,6 @@ text = 'Нужно удалять удалять повторяющиеся сл
 
 
 
-
 # Ответ Замените два повторяющиеся слова на одно.
 r"""
 text = 'Нужно удалять удалять повторяющиеся слова слова.'
@@ -3327,6 +3449,7 @@ print(c)  # -> {'z': 8, 'w': 5, 'x': 6, 'y': 7}
 
 # Устранить дубликаты и оставить Порядок элементов  fromkeys
 
+my_lst = [10, 10, 10, 2, 3]
 
 
 
@@ -3427,6 +3550,9 @@ print(a, b, c)  # -> SyntaxError: multiple starred expressions in assignment
 
 
 
+
+
+
 # Написать решение чтобы каждый раз создавался новый обьект
 # default  Аргументы по умолчанию в функциях:
 """
@@ -3454,6 +3580,13 @@ foo()  # [1, 1, 1]
 
 
 
+def foo(L = []):
+    pass
+
+
+# foo()  # [1]
+# foo()  # [1, 1]
+# foo()  # [1, 1, 1]
 
 
 
@@ -3490,6 +3623,13 @@ foo()  # [1]
 
 
 
+
+def add_numbers(a, b):
+    pass
+
+
+# print(add_numbers.__doc__)   # -> This function takes in two numbers and returns their sum
+# print(add_numbers.__name__)  # -> add_numbers
 
 
 
@@ -3529,6 +3669,7 @@ print([*it])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 # Напишите Функцию-Генератор  range(5) и Обычный генератор
+
 
 
 
@@ -3646,16 +3787,61 @@ print(list(my_generator))            # -> []
 
 
 
-# Cоздайте свой Итератор
+# Cоздайте свой Итератор 2 варианта  ОДНОРАЗОВЫЙ И МНОГОРАЗОВЫЙ
+
+class Iterator:
+    pass
+
+
+
+# s = Iterator(1, 5)
+# print(*s)  # -> 1 2 3 4
+# print(*s)  # ->
 
 
 
 
+### ChatGPT
+"""
+## Вариант 1: __iter__ с yield → возвращает новый генератор-итератор каждый раз, объект можно перебирать МНОГО раз.
+class Iterator:
+    def __init__(self, start, stop):
+        self.start = start
+        self.stop = stop
+
+    def __iter__(self):
+        for i in range(self.start, self.stop):
+            yield i
+
+s = Iterator(1, 5)
+print(*s)  # -> 1 2 3 4
+print(*s)  # -> 1 2 3 4
+
+
+# Вариант 2: __iter__ -> self → объект сам итератор, хранит состояние (start меняется), поэтому ОДНОРАЗОВЫЙ (как генератор).
+class Iterator:
+    def __init__(self, start, stop):
+        self.start = start
+        self.stop = stop
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):  # next in Python 2
+        if self.start >= self.stop:
+            raise StopIteration
+        current = self.start
+        self.start += 1
+        return current
+
+s = Iterator(1, 5)
+print(*s)  # -> 1 2 3 4
+print(*s)  # -> 
+"""
 
 
 
-
-# Пример создания итератора Iterator:
+# Пример создания итератора Iterator:  ПРОСТО ПОСМОТРЕТЬ!
 """
 class SimpleIterator:
     def __iter__(self):
@@ -3782,6 +3968,9 @@ eval(compiled_eval)  # -> Hello
 # Напишите Замыкание или Перепишите
 
 
+def names():
+    pass
+
 
 
 
@@ -3810,8 +3999,8 @@ print(names()((lambda x: x+5)(2)))        # -> [7]
 # Напишите Замыкание lambda или Перепишите
 
 
-
-
+def pow_(base):
+    pass
 
 
 
@@ -3871,6 +4060,7 @@ print(avg.__closure__[0].cell_contents)  # -> [10, 11, 12]            # Теку
 
 
 # Напишите лямбда-функцию с присвоением переменной и без. Сразу вызов
+
 
 
 
@@ -3940,10 +4130,24 @@ ints = list(range(20))
 
 
 
-
 a_dict = {'a': 3, 'b': 2, 'd': 1, 'c': 4}
 
 
+
+
+
+
+### ОТВЕТЫ
+# ints = list(range(20))
+# print(list(map(lambda x: x ** 2, filter(lambda x: x % 2 == 0, ints))))  # [0, 4, 16, 36, 64, 100, 144, 196, 256, 324]
+# print([i ** 2 for i in range(20) if i % 2 == 0])  # [0, 4, 16, 36, 64, 100, 144, 196, 256, 324]
+#
+# a_dict = {'a': 3, 'b': 2, 'd': 1, 'c': 4}
+# print(sorted(a_dict.items(), key=lambda x: x[0]))  # -> [('a', 3), ('b', 2), ('c', 4), ('d', 1)]
+# print(sorted(a_dict.items(), key=itemgetter(1)))  # -> [('d', 1), ('b', 2), ('a', 3), ('c', 4)]
+#
+# # Двойная сортировка в кортеже - Унарный минус работает только с числами!!! Работает как  reverse=True  Но к элементу
+# print(sorted(a_dict.items(), key=lambda x: (-x[1], x[0])))  # -> [('c', 4), ('a', 3), ('b', 2), ('d', 1)]
 
 
 
@@ -3962,6 +4166,19 @@ class Cat:
 
 
 cats = [Cat('Tom', 3), Cat('Angela', 4)]
+
+
+
+
+
+### ОТВЕТЫ
+# print(sorted(cats, key=lambda x: x.age))  # -> [Cat Tom, age is 3, Cat Angela, age is 4]
+# print(sorted(cats, key=attrgetter('age')))  # -> [Cat Tom, age is 3, Cat Angela, age is 4]
+# print(sorted(cats, key=attrgetter('name')))  # -> [Cat Angela, age is 4, Cat Tom, age is 3]
+#
+# greet_method = operator.methodcaller('greet', 'Alice', age=30)  # Тоже самое что и НИЖЕ
+# print(greet_method(cats[1]))  # -> Hello, Alice! Age: 30 Angela
+# print(operator.methodcaller('greet', 'Alice', age=30)(cats[0]))  # -> Hello, Alice! Age: 30 Tom
 
 
 
@@ -4123,7 +4340,7 @@ minheap = [20, 10, 1, 2]
 
 
 
-maxheap = [20, 10, 1, 2]
+maxheap = [1, 2, 10, 20]
 
 
 
@@ -4141,23 +4358,25 @@ print(heapq.heappop(minheap))         # -> 1
 
 
 # MaxHeap  через метод _heapify_max
-maxheap = [20, 10, 1, 2]
-heapq._heapify_max(maxheap)
-print(maxheap[0])                     # -> 20
-print(heapq.heappop(maxheap))         # -> 20
+maxheap_2 = [1, 2, 10, 20]
+heapq._heapify_max(maxheap_2)
+print(maxheap_2)                        # -> [20, 2, 10, 1]  # heapq хранит кучу, а не отсортированный список.
+print(maxheap_2[0])                     # -> 20
+print(heapq.heappop(maxheap_2))         # -> 20
 
 
 # MaxHeap   через добавление минуса
-maxheap_2 = [20, 10, 1, 2]
+maxheap_2 = [1, 2, 10, 20]
 res = [-i for i in maxheap_2]
-print(res)                            # -> [-20, -10, -1, -2]
+print(res)                            # -> [-1, -2, -10, -20]
 heapq.heapify(res)
+print(res)                            # -> [-20, -2, -10, -1]  # heapq хранит кучу, а не отсортированный список.
 print(res[0])                         # -> -20
 print(heapq.heappop(res))             # -> -20
-
-
+ 
+ 
 # MaxHeap   через умножение на -1
-maxheap_3 = [20, 10, 1, 2]
+maxheap_3 = [1, 2, 10, 20]
 res = [i*(-1) for i in maxheap_3]
 heapq.heapify(res)
 print(res[0])                         # -> -20
@@ -4171,7 +4390,8 @@ print(heapq.heappop(res))             # -> -20
 
 
 
-
+def my_sum(a_list: list) -> int:
+    pass
 
 
 
@@ -4213,6 +4433,7 @@ lst = [1, 2, 3]
 
 
 # 3) Через РЕКУРСИЮ max Найдите наибольшее число в списке.
+
 
 
 
@@ -4298,6 +4519,8 @@ print(f"Size of my_list: {size} bytes")                # -> Size of my_list: 202
 
 
 
+
+
 # Ответ Использовать __slots__ Написать класс  no_slots/with_slots  Замерить размер структур  asizeof.asizeof/sys.getsizeof
 """
 import sys
@@ -4336,6 +4559,7 @@ b.name = 'a'                                                b.name = 'a'
 
 
 
+
 # __slots__ в dataclasses
 """
 from dataclasses import dataclass
@@ -4352,9 +4576,6 @@ p.a = 10    # -> AttributeError: 'Point' object has no attribute 'a'
 
 
 # Напишите Singleton
-
-
-
 
 
 
@@ -4401,7 +4622,6 @@ print(id(sing_1))      # -> 1742792644240     # id Разные
 
 
 # Напишите Monostate Обычный class/dataclass
-
 
 
 
@@ -4567,7 +4787,6 @@ class New:
 
 
 
-
 # Использовать setattr/delattr/hasattr/getattr
 
 # getattr(object, name)
@@ -4725,10 +4944,6 @@ second = {4: 4, 5: 5}
 
 
 
-
-
-
-
 # Ответы ChainMap
 """
 from collections import ChainMap
@@ -4755,6 +4970,7 @@ text = 'hello'
 
 
 
+
 # Ответы Counter
 """
 from collections import Counter
@@ -4772,6 +4988,7 @@ print(counter.most_common(3))  # -> [('l', 3), ('o', 2), ('h', 1)]
 
 first = {1: 1, 2: 2, 3: 3}
 second = {2: 2, 1: 1}
+
 
 
 
@@ -4895,6 +5112,7 @@ print(c)  # -> C(a=1, b=3, c=2)
 
 
 
+
 # Ответы deque
 """
 from collections import deque
@@ -4952,7 +5170,6 @@ print(a_deque)  # -> deque([5, 1, 2, 3, 4], maxlen=5)
 
 
 
-
 # Ответы count
 """
 from itertools import count
@@ -4977,7 +5194,6 @@ print(list(islice(count(10), 2, 5)))  # -> [12, 13, 14]
 
 # itertools.cycle(iterable)
 # Использовать cycle
-
 
 
 
@@ -5081,7 +5297,7 @@ print(list(accumulate([1, 2, 3, 4, 5], operator.sub)))  # -> [1, -1, -4, -8, -13
 # Использовать batched
 
 
-
+flattened_data = ['roses', 'red', 'violets', 'blue', 'sugar', 'sweet']
 
 
 
@@ -5171,7 +5387,6 @@ print([*chain(lst)])                    # -> ['foo', ['one', 'two', [1, 2]]]
 
 
 
-
 # Ответы compress
 """
 from itertools import compress
@@ -5185,7 +5400,6 @@ print([*compress('ABCDEF', [1,0,1,0,1,1])])     # -> ['A', 'C', 'E', 'F']
 # Использовать dropwhile
 
 a = [1, 4, 6, 4, 1]
-
 
 
 
@@ -5262,7 +5476,6 @@ print(list(filterfalse(lambda x: x % 2 == 0, [6, 7, 8, 9])))          # -> [7, 9
 # Использовать islice
 
 gen = (i for i in range(5))
-
 
 
 
@@ -5401,8 +5614,6 @@ b = [1, 2, 3]
 
 
 
-
-
 # Ответы zip_longest
 """
 from itertools import zip_longest
@@ -5437,7 +5648,6 @@ print(*itertools.zip_longest(a, b, a))     # -> (1, 1, 1) (2, 2, 2) (None, 3, No
 # Повтори from itertools import groupby
 
 res = 'AAAABBBCCDAABBB'
-
 
 
 
@@ -5515,8 +5725,6 @@ a = 'XYZ'
 
 
 
-
-
 # Ответы permutations
 """
 from itertools import permutations
@@ -5541,7 +5749,6 @@ a = 'XYZ'
 
 
 
-
 # Ответы combinations
 """
 from itertools import combinations
@@ -5556,7 +5763,6 @@ print(list(combinations('XYZ', 3)))  # -> [('X', 'Y', 'Z')]
 # Использовать combinations_with_replacement
 
 a = 'XYZ'
-
 
 
 
@@ -5609,7 +5815,6 @@ print(list(combinations_with_replacement('XY', 2)))   # -> [('X', 'X'), ('X', 'Y
 
 
 iterable = [1, 2, 3, 4, 5, 6]
-
 
 
 
@@ -5789,8 +5994,6 @@ iterable = iter('abcdefgh')
 
 
 
-
-
 # Ответы islice_extended
 """
 from more_itertools import islice_extended
@@ -5861,7 +6064,6 @@ print(eval('+'.join(map(str, lst))))            # -> 10
 
 # @functools.cache(user_function)   Написать функцию  factorial
 # Использовать cache
-
 
 
 
@@ -5977,6 +6179,7 @@ print(partial(multiply, 5)())     # TypeError: multiply() missing 1 required pos
 
 
 
+
 # Ответ 1)
 """
 from functools import wraps
@@ -6006,6 +6209,7 @@ example_function(1000000)  # -> Время выполнения функции '
 
 
 # 1.1) Написать Класс как ДЕКОРАТОР, который выводит на экран время работы произвольной функции:
+
 
 
 
@@ -6069,8 +6273,6 @@ print(plus(2, 2))
 # 1.2) Написать dataclass
 # @dataclasses.dataclass(*, init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False, match_args=True,
 # kw_only=False, slots=False, weakref_slot=False)
-
-
 
 
 
@@ -6226,6 +6428,7 @@ mm1 = MyDate(1)
 
 
 
+
 # 1.5) Ответ Написать  Построители классов данных  dataclass   typing.NamedTuple   namedtuple
 """
 # dataclass                               # typing.NamedTuple                    # namedtuple
@@ -6249,7 +6452,6 @@ print(Point.__annotations__)               print(Point.__annotations__)         
 
 
 # 2) Написать декоратор, который возвращает либо результат, либо экземпляр исключения:
-
 
 
 
@@ -6526,6 +6728,10 @@ print(c.fff())  # -> None
 
 
 
+
+
+
+
 # Ответ Protocol vs ABC
 """
 # С ABC (обязательное наследование)                # С Protocol (без наследования)
@@ -6794,6 +7000,27 @@ def findMaxConsecutiveOnes(nums: list) -> int:
 R"""
 # Максимальное количество подряд идущих единиц  Max Consecutive Ones
 
+# Сложность:
+# Время: O(n)
+# Память: O(1)
+
+# LEETCODE РЕШЕНИЕ!
+def findMaxConsecutiveOnes(nums: List[int]) -> int:
+    cur = 0
+    best = 0
+    for i in nums:
+        if i == 1:
+            cur += 1
+            best = max(best, cur)
+        else:
+            cur = 0
+    return best
+
+
+# print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # -> 3
+# print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
+
+
 # ВАРИАНТ 1
 # Имеет временную сложность O(n), где n - длина массива, так как мы проходим по массиву только один раз.
 # Пространственная сложность O(1), так как используем только константное количество дополнительной памяти.
@@ -6819,6 +7046,7 @@ print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
 # ВАРИАНТ 2
 # Время: O(n) (один проход по массиву).
 # Память: O(k), где k — длина максимальной последовательности (в худшем случае O(n)).
+
 def findMaxConsecutiveOnes(nums: list) -> tuple[int, list]:
     max_seq = []
     current_seq = []
@@ -6862,7 +7090,6 @@ def findMaxConsecutiveOnes(nums: list) -> int:
 
 
 
-
 # print(findMaxConsecutiveOnes([1, 0, 1, 1, 0]))     # 4 (можно перевернуть последний 0)
 # print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # 4 (можно перевернуть предпоследний 0)
 # print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # 6 (уже максимально)
@@ -6872,6 +7099,39 @@ def findMaxConsecutiveOnes(nums: list) -> int:
 
 # ОТВЕТ Максимальное количество последовательных единиц II (с возможностью переворота одного нуля)  Max Consecutive Ones II
 """
+
+# Сложность:
+# Время: O(n)
+# Память: O(1)
+
+# LEETCODE РЕШЕНИЕ!
+def findMaxConsecutiveOnes(nums: list) -> int:
+    k = 1  # можно перевернуть максимум один 0
+    left = 0
+    zeros = 0
+    best = 0
+
+    for right in range(len(nums)):
+        if nums[right] == 0:
+            zeros += 1
+
+        while zeros > k:
+            if nums[left] == 0:
+                zeros -= 1
+            left += 1
+
+        best = max(best, right - left + 1)
+
+    return best
+
+
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0]))     # 4 (можно перевернуть последний 0)
+print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # 4 (можно перевернуть предпоследний 0)
+print(findMaxConsecutiveOnes([1, 1, 0, 1, 1, 1]))  # 6 (уже максимально)
+print(findMaxConsecutiveOnes([0, 0, 1, 1, 0]))     # 3 (переворачиваем один из первых нулей)
+
+
+
 # ВАРИАНТ 1
 # Решение С БИТОВЫМИ ОПЕРАЦИЯМИ  XOR (^) для инвертирования битов
 # Время: O(n) - один проход по массиву
@@ -6987,6 +7247,31 @@ def findMaxConsecutiveOnes(nums: list[int], k: int) -> int:
 
 # ОТВЕТ Максимальное количество последовательных единиц  (разрешено перевернуть не более k нулей)  Max Consecutive Ones III
 """
+# Сложность:
+# Время: O(n) — каждый указатель двигается максимум n раз.
+# Память: O(1) — только счётчик нулей и переменные.
+
+### LEETCODE РЕШЕНИЕ
+# def findMaxConsecutiveOnes(nums: list[int]) -> int:
+    left = 0
+    zeros = 0
+    best = 0
+    for i in range(len(nums)):
+        if nums[i] == 0:
+            zeros += 1
+        while zeros > k:
+            if nums[left] == 0:
+                zeros -= 1
+            left += 1
+        best = max(best, i - left + 1)
+    return best
+
+
+
+print(findMaxConsecutiveOnes([1,1,1,0,0,0,1,1,1,1,0], 2))                  # 6
+print(findMaxConsecutiveOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3))  # 10
+
+
 # ВАРИАНТ 1
 # Оптимальное решение (метод скользящего окна)
 # Временная сложность: O(n), где n - длина массива (каждый элемент обрабатывается дважды в худшем случае)
@@ -7019,11 +7304,10 @@ print(findMaxConsecutiveOnes([0,0,1,1,0,0,1,1,1,0,1,1,0,0,0,1,1,1,1], 3))  # 10
 
 
 
-# Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ + ЕЩЕ 5 СО СТРОКОЙ
+# Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 2  ОБЫЧНЫЙ + ВЫВОД ПОСЛЕДОВАТЕЛЬНОСТИ
 
 def lengthOfLongestSubstring(s: str) -> int:
     pass
-
 
 
 
@@ -7038,8 +7322,68 @@ def lengthOfLongestSubstring(s: str) -> int:
 
 
 
-# Ответ Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ + ЕЩЕ 5 СО СТРОКОЙ
+# Ответ Поиск самой длинной подстроки без повторяющихся символов  НАПИШИ 6 ВАРИАНТОВ + ЕЩЕ 5 СО СТРОКОЙ  LEETCODE + ВЫВОД
 """
+
+# Сложность:
+# Время: O(n)
+# Память: O(k) (k — кол-во уникальных символов в окне, максимум алфавит)
+
+# LEETCODE РЕШЕНИЕ!
+def lengthOfLongestSubstring(s: str) -> int:
+    last = {}
+    l = 0
+    best = 0
+
+    for i, v in enumerate(s):
+        if v in last and last[v] >= l:
+            l = last[v] + 1
+        last[v] = i
+        best = max(best, i - l + 1)
+
+    return best
+
+
+print(lengthOfLongestSubstring("bbbbb"))     # -> 1
+print(lengthOfLongestSubstring("abcabcbb"))  # -> 3
+print(lengthOfLongestSubstring("abcb"))      # -> 3
+print(lengthOfLongestSubstring("pwwkew"))    # -> 3
+print(lengthOfLongestSubstring("ckilbkd"))   # -> 5
+print(lengthOfLongestSubstring("dvdf"))      # -> 3
+
+
+# LEETCODE РЕШЕНИЕ! вернуть саму ПОДСТРОКУ (sliding window + last seen index)
+# Сложность:
+# Время: O(n)
+# Память: O(k) (k — кол-во уникальных символов в окне, максимум алфавит)
+
+def lengthOfLongestSubstring(s: str) -> str:
+    last = {}
+    l = 0
+    best_l = 0
+    best_len = 0
+
+    for i, v in enumerate(s):
+        if v in last and last[v] >= l:
+            l = last[v] + 1
+        last[v] = i
+
+        cur_len = i - l + 1
+        if cur_len > best_len:
+            best_len = cur_len
+            best_l = l
+
+    return s[best_l:best_l + best_len]
+
+
+print(lengthOfLongestSubstring("bbbbb"))     # -> b
+print(lengthOfLongestSubstring("abcabcbb"))  # -> abc
+print(lengthOfLongestSubstring("abcb"))      # -> abc
+print(lengthOfLongestSubstring("pwwkew"))    # -> wke
+print(lengthOfLongestSubstring("ckilbkd"))   # -> ckilb
+print(lengthOfLongestSubstring("dvdf"))      # -> vdf
+
+
 
 # ВАРИАНТ 1: Метод скользящего окна с использованием множества баланс между простотой и эффективностью  (O(n))
 # O(min(m, n)) по памяти (m - размер алфавита)
@@ -7165,7 +7509,6 @@ def longestPalindrome(s: str) -> str:
 
 
 
-
 # print(longestPalindrome("babad"))     # -> bab
 # print(longestPalindrome("cbbd"))      # -> bb
 # print(longestPalindrome("aaaaa"))     # -> aaaaa
@@ -7182,6 +7525,41 @@ def longestPalindrome(s: str) -> str:
 # Расширение вокруг центра	    O(n²)	Лучший баланс (n ≤ 10⁵)
 # Алгоритм Манакера	            O(n)	Максимальная производительность (n > 10⁵)
 """
+
+# Классическое решение Expand Around Center
+# Сложность:
+# Время: O(n^2)
+# Память: O(1)
+
+# LEETCODE РЕШЕНИЕ!  
+def longestPalindrome(s: str) -> str:
+    if not s:
+        return ""
+
+    best_l = best_r = 0
+
+    def expand(l: int, r: int) -> None:
+        nonlocal best_l, best_r
+
+        while l >= 0 and r < len(s) and s[l] == s[r]:
+            l -= 1
+            r += 1
+
+        # откат на последнюю валидную пару
+        l += 1
+        r -= 1
+
+        if (r - l + 1) > (best_r - best_l + 1):
+            best_l, best_r = l, r
+
+    for i in range(len(s)):
+        expand(i, i)       # нечётный центр
+        expand(i, i + 1)   # чётный центр
+
+    return s[best_l:best_r + 1]
+
+
+
 # Очень медленный для больших строк    
 # ВАРИАНТ 1: Перебор всех подстрок (Bute Force) Сложность: O(n³) - два вложенных цикла O(n²) и проверка палиндрома O(n)
 
@@ -7595,6 +7973,7 @@ def binary_search(arr, target):
 
 
 
+
 # print(binary_search(d, target))  # -> 8
 # __import__('sys').stdout.write(str(binary_search(d, target)))  # -> 8   Тоже самое
 
@@ -7792,6 +8171,8 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 
 
+
+
 # 2) Сортировка выбором (Selection Sort)  Время: O(n²) во всех случаях.   Пространство: O(1)
 """
 def selection_sort(arr):
@@ -7815,6 +8196,7 @@ __import__('sys').stdout.write(f'(Selection Sort): {sorted_arr}')  # -> (Selecti
 
 # 3) Написать Сортировку вставками (Insertion Sort)
 # Время: O(n²) в худшем случае, O(n) в лучшем.   Пространство: O(1)
+
 
 
 
@@ -7977,9 +8359,10 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 
 
 
-# 7) Написать Тим-сорт (TimSort)
+# 7) Написать Тим-сорт (TimSort)  УПРОЩЕННЫЙ ВАРИАНТ - это не полный TimSort
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
-
+# Python 3.10 и раньше: TimSort.
+# Python 3.11 и позже: по сути TimSort-подобная сортировка, но с merge policy Powersort (иногда это и называют “Powersort в Python”)
 
 
 
@@ -8233,7 +8616,6 @@ __import__('sys').stdout.write(f'(Bucket Sort): {sorted_arr}')  # -> (Bucket Sor
 
 
 
-
 # Ответ Напишите raw-запрос
 """
 people = Person.objects.raw("SELECT id, name FROM hello_person")
@@ -8242,7 +8624,6 @@ people = Person.objects.raw("SELECT id, name FROM hello_person")
 
 
 # Перепишите lookups
-
 
 
 
@@ -8346,8 +8727,6 @@ class Person(models.Model):
 
 
 
-
-
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -8382,6 +8761,7 @@ for person in people_in_city_n:
 # 3. Вывести 5 городов с наибольшим населением, упорядочив по убыванию.
 # Для этого нам нужно будет добавить поле для хранения количества людей в каждом городе. Однако, чтобы подсчитать
 # это количество динамически, мы можем использовать аннотирование с `Count`.
+
 
 
 
@@ -8532,7 +8912,6 @@ obj = MyModel.objects.get(id=1)
 
 
 
-
 # Ответ 6. Методы get() и filter():
 # Вызов get() возвращает конкретный объект, тогда как filter() возвращает QuerySet, который будет выполнен позже.
 """
@@ -8558,7 +8937,6 @@ last_obj = MyModel.objects.last()
 
 
 
-
 # Ответ 8. exists(): Проверяет наличие объектов и выполняет запрос.
 """
 exists = MyModel.objects.filter(condition).exists()
@@ -8576,6 +8954,7 @@ count = MyModel.objects.all().count()
 """
 
 # 10. aggregate() и annotate(): Эти методы возвращают агрегированные данные и также выполняют запрос.
+
 
 
 
@@ -8619,8 +8998,6 @@ for obj in result:
 
 
 
-
-
 # Ответ 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
 """
 queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями
@@ -8639,7 +9016,6 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 # 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 # Пример использования select_related для один-к-одному и один-ко-многим.
-
 
 
 
@@ -8672,6 +9048,7 @@ for obj in MyModel.objects.all().iterator():
 
 
 
+
 # Ответ 16. bulk_create() и bulk_update(): Позволяют выполнять массовые операции создания и обновления объектов.
 """
 # Пример bulk_create
@@ -8695,14 +9072,6 @@ MyModel.objects.bulk_update(objects_to_update, ['field1', 'field2'])
 
 # Напиши SQL Задачу с собеседования    НАПИСАТЬ 2 ВАРИАНТА ---
 
-
-
-
-
-
-
-# --- SQL Задача с собеседования    НАПИСАТЬ 2 ВАРИАНТА  ---
-
 """
 Таблицы:
 users (пользователи):
@@ -8723,7 +9092,17 @@ orders (заказы):
     product_id (INT, FOREIGN KEY на products.id)
     order_date (DATE)
     quantity (INT)
+"""
 
+
+
+
+
+
+
+# --- SQL Задача с собеседования    НАПИСАТЬ 2 ВАРИАНТА  ---
+
+"""
 
 Первый вариант
 Чтобы получить имена пользователей, которые когда-либо делали заказы на продукты, использовать следующий SQL-запрос:
@@ -8919,7 +9298,6 @@ GROUP BY
 #  -> PK A1 A2 A3 A4  T
 #     1   1  1  1  1  5
 #     2   2  3  4  5  3
-
 
 
 
@@ -9205,12 +9583,13 @@ print(res.pop(0))  # -> 1
 
 
 
-# ЗАДАЧА 3) НАПИСАТЬ ФУНКЦИЮ ПЕРЕМЕСТИТЬ НУЛИ В НАЧАЛО, СОХРАНЯЯ ПОРЯДОК ОСТАЛЬНЫХ ЭЛЕМЕНТОВ    4 ВАРИАНТА
+# ЗАДАЧА 3) НАПИСАТЬ ФУНКЦИЮ ПЕРЕМЕСТИТЬ НУЛИ В НАЧАЛО, СОХРАНЯЯ ПОРЯДОК ОСТАЛЬНЫХ ЭЛЕМЕНТОВ    НАПИСАТЬ 2 ВАРИАНТА
 
 res = [1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 0]
 
 def move_zeros_to_start(lst: list[int]) -> list[int]:
     pass
+
     
 # print(move_zeros_to_start(res))  # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
 
@@ -9220,6 +9599,17 @@ def move_zeros_to_start(lst: list[int]) -> list[int]:
 # ОТВЕТ ЗАДАЧА 3) НАПИСАТЬ ФУНКЦИЮ ПЕРЕМЕСТИТЬ НУЛИ В НАЧАЛО, СОХРАНЯЯ ПОРЯДОК ОСТАЛЬНЫХ ЭЛЕМЕНТОВ    4 ВАРИАНТА
 """
 res = [1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 0]
+
+### LEETCODE РЕШЕНИЕ!  Проход справа налево   Время: O(n)   Память: O(1) in-place
+def move_zeros_to_start(lst: list[int]) -> list[int]:
+    write = len(lst) - 1
+    for i in range(len(lst) - 1, -1, -1):
+        if lst[i] != 0:
+            if write != i:
+                lst[write], lst[i] = lst[i], lst[write]
+            write -= 1
+    return lst
+
 
 # ВАРИАНТ 1) (через фильтрацию и объединение)   требует O(n) дополнительной памяти.     Сложность    O(n)
 def move_zeros_to_start(lst: list[int]) -> list[int]:       
@@ -9265,6 +9655,8 @@ print(res)                       # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
 
 def intToRoman(num: int) -> str:
     pass
+
+
 
 
 # print(intToRoman(3749))  # -> MMMDCCXLIX
@@ -9416,6 +9808,7 @@ print(intToRoman(1994))  # -> MCMXCIV
 
 
 # ЗАДАЧА 0 (Разогрев) Написать декоратор с параметрами
+
 
 
 
@@ -9881,6 +10274,8 @@ def division(a, b):
 
 
 
+
+
 # ОТВЕТ ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
 """
 import pytest
@@ -10131,8 +10526,8 @@ ArenadataDB:
 
 
 # ЗАДАЧА 2) Палиндром.  Реализовать функцию, проверяющую число на полиндромность (слева-направо одинаковое). 2 ВАРИАНТА
-def is_palindrome(integer: int) -> bool:
-    ...
+def is_palindrome(x: int) -> bool:
+    pass
 
 
 # print(is_palindrome(12321))  # True
@@ -10144,6 +10539,27 @@ def is_palindrome(integer: int) -> bool:
 
 
 # ОТВЕТ ЗАДАЧА 2) Палиндром.  Реализовать функцию, проверяющую число на полиндромность (слева-направо одинаковое).
+
+
+# Сложность:
+# Время: O(log n)
+# Память: O(1)
+
+# LEETCODE РЕШЕНИЕ
+"""
+def is_palindrome(x: int) -> bool:
+    if x < 0:
+        return False
+    if x % 10 == 0 and x != 0:
+        return False
+    a = 0
+    while a < x:
+        a = a * 10 + x % 10
+        x //= 10
+    return x == a or x == a // 10
+"""
+
+
 
 # ВАРИАНТ 1) перевернуть число МАТЕМАТИЧЕСКИ
 """
@@ -10205,7 +10621,7 @@ assert some_arr ==
 # ОТВЕТ ЗАДАЧА 1 ДОПОЛНИТЬ КОД
 """
 some_arr = [{"1": 1}]
-some_arr = some_arr*  3
+some_arr = some_arr * 3
 
 assert some_arr == [{"1": 1}, {"1": 1}, {"1": 1}]
 
@@ -10231,6 +10647,8 @@ assert some_arr == None
 
 
 # ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА!!!
+
+
 
 
 
@@ -10440,6 +10858,13 @@ print(reversed_lst)         # -> [2, 'b', 'a', 1]
 lst = [1, 3, 2, 8, 5, 6, 7, 10]
 
 
+def list_to_ranges(lst: list[int]) -> str:
+    pass
+
+
+
+# print(list_to_ranges(lst))  # -> "1-3, 5-8, 10"
+
 
 
 
@@ -10454,7 +10879,7 @@ def list_to_ranges(lst: list[int]) -> str:
         return ""
 
     lst = sorted(set(lst))  # Удаляем дубликаты и сортируем  #  O(n log n) (из-за сортировки)
-    ranges = []
+    res = []
     start = lst[0]
     prev = start
 
@@ -10463,19 +10888,19 @@ def list_to_ranges(lst: list[int]) -> str:
             prev = num
         else:
             if start == prev:
-                ranges.append(str(start))
+                res.append(str(start))
             else:
-                ranges.append(f"{start}-{prev}")
+                res.append(f"{start}-{prev}")
             start = num
             prev = num
 
     # Добавляем последний диапазон
     if start == prev:
-        ranges.append(str(start))
+        res.append(str(start))
     else:
-        ranges.append(f"{start}-{prev}")
+        res.append(f"{start}-{prev}")
 
-    return ", ".join(ranges)
+    return ", ".join(res)
 
 
 # Вариант 2) C группировкой последовательных чисел (используя itertools.groupby)  O(n log n)
@@ -10486,15 +10911,15 @@ def list_to_ranges(lst: list[int]) -> str:
         return ""
 
     lst = sorted(set(lst))
-    ranges = []
+    res = []
 
     for _, group in groupby(enumerate(lst), key=lambda x: x[1] - x[0]):
         group = list(group)
         start = group[0][1]
         end = group[-1][1]
-        ranges.append(f"{start}-{end}" if start != end else str(start))
+        res.append(f"{start}-{end}" if start != end else str(start))
 
-    return ", ".join(ranges)
+    return ", ".join(res)
 
 
 # Вариант 3) С двумя указателями  O(n log n)
@@ -10503,7 +10928,7 @@ def list_to_ranges(lst: list[int]) -> str:
         return ""
 
     lst = sorted(set(lst))
-    ranges = []
+    res = []
     i = 0
     n = len(lst)
 
@@ -10512,10 +10937,10 @@ def list_to_ranges(lst: list[int]) -> str:
         while i < n - 1 and lst[i + 1] == lst[i] + 1:
             i += 1
         end = lst[i]
-        ranges.append(f"{start}-{end}" if start != end else str(start))
+        res.append(f"{start}-{end}" if start != end else str(start))
         i += 1
 
-    return ", ".join(ranges)
+    return ", ".join(res)
 
 print(list_to_ranges(lst))  # -> "1-3, 5-8, 10"
 """
@@ -10565,7 +10990,7 @@ f2(l2)
 
 
 
-# ОТВЕТ Задача 2
+# ОТВЕТ Задача 2  Изменение объекта видно снаружи, переназначение переменной — нет.
 """
 # f1 меняет переданный список, т.к. работает с его элементами.
 # f2 не меняет исходный список, т.к. переназначает локальную переменную.
@@ -10633,16 +11058,23 @@ def sum_numbers_in_string(s: str) -> int:
     pass
 
 
+# print(sum_numbers_in_string("abc123xyz45"))              # -> 168  # (123 + 45)
+# print(sum_numbers_in_string("7 chocolates, 3 candies"))  # -> 10   # (7 + 3)
+# print(sum_numbers_in_string("1a2b3c"))                   # -> 6    # (1 + 2 + 3)
+
+
 
 # ОТВЕТ Напишите функцию на Python без регулярок находим сумму всех чисел
 R"""
 # Напишите функцию на Python без регулярок находим сумму всех чисел
 
-# Решение с регуляркой
-def sum_numbers_in_string(s: str) -> int:
-    return sum(map(int, re.findall(r'\d+', s)))
 
-# ВАРИАНТ 1: Если нужны только положительные целые числа
+# ВАРИАНТ 1: Если нужны только положительные целые числа (current_number += char)
+
+# Сложность:
+# Время: O(n²) в худшем случае (потому что строки неизменяемые и += каждый раз копирует)
+# Память: O(n) (в худшем случае копится длинное число)
+
 def sum_numbers_in_string(s):
     current_number = ''
     total = 0
@@ -10661,7 +11093,69 @@ def sum_numbers_in_string(s):
 
     return total
 
-# ВАРИАНТ 2: С обработкой отрицательных чисел
+
+# Вариант 1b  (digits + join)  САМЫЙ БЫСТРЫЙ
+# Сложность:
+# Время: O(n)  (append O(1) + join/clear суммарно по всем цифрам O(m) ≤ O(n))
+# Память: O(k) (храним цифры текущего числа)
+
+def sum_numbers_in_string(s: str) -> int:
+    digits = []
+    total = 0
+
+    for ch in s:
+        if ch.isdigit():
+            digits.append(ch)
+        else:
+            if digits:
+                total += int(''.join(digits))
+                digits.clear()
+
+    if digits:
+        total += int(''.join(digits))
+
+    return total
+
+
+print(sum_numbers_in_string("abc123xyz45"))              # 168
+print(sum_numbers_in_string("7 chocolates, 3 candies"))  # 10
+print(sum_numbers_in_string("1a2b3c"))                   # 6
+
+
+
+# Функциональный стиль с группировкой цифр (groupby + join)  САМЫЙ КОРОТКИЙ (НЕ СЧИТАЯ РЕГУЛЯРКИ)
+# Сложность:
+# Время: O(n)  (один проход groupby + join по группам цифр суммарно O(m) ≤ O(n))
+# Память: O(k)
+
+from itertools import groupby
+
+def sum_numbers_in_string(s):
+    total = 0
+    for is_digit, group in groupby(s, key=lambda x: x.isdigit()):
+        if is_digit:
+            total += int(''.join(group))
+    return total
+
+
+
+# Решение с регуляркой
+
+# Сложность:
+# Время: O(n)  (регулярка просматривает строку; + преобразование найденных чисел суммарно по цифрам ≤ O(n))
+# Память: O(n) (список совпадений от findall в худшем случае; можно O(1) доп. память с finditer)
+
+def sum_numbers_in_string(s: str) -> int:
+    return sum(map(int, re.findall(r'\d+', s)))
+
+
+
+# ВАРИАНТ 2: С обработкой отрицательных чисел (current_number += char)
+
+# Сложность:
+# Время: O(n²) в худшем случае (потому что строки неизменяемые и += каждый раз копирует)
+# Память: O(n) (в худшем случае копится длинное число)
+
 def sum_numbers_in_string(s):
     current_number = ''
     total = 0
@@ -10683,7 +11177,12 @@ def sum_numbers_in_string(s):
 
     return total
 
-# ВАРИАНТ 3: С использованием генератора и isdigit()
+# ВАРИАНТ 3: С использованием генератора и isdigit() (num_str += char)
+
+# Сложность:
+# Время: O(n²) в худшем случае (потому что строки неизменяемые и += каждый раз копирует)
+# Память: O(n) (в худшем случае копится длинное число)
+
 def sum_numbers_in_string(s):
     total = 0
     num_str = ''
@@ -10697,7 +11196,11 @@ def sum_numbers_in_string(s):
 
     return total
 
-# ВАРИАНТ 4: С обработкой чисел с плавающей точкой
+# ВАРИАНТ 4: С обработкой чисел с плавающей точкой (num_str += char)
+# Сложность:
+# Время: O(n²) в худшем случае (потому что строки неизменяемые и += каждый раз копирует)
+# Память: O(n) (в худшем случае копится длинное число)
+
 def sum_numbers_in_string(s):
     total = 0.0
     num_str = ''
@@ -10715,16 +11218,6 @@ def sum_numbers_in_string(s):
             has_decimal = False
 
     return int(total) if total.is_integer() else total
-
-from itertools import groupby
-
-# ВАРИАНТ 5: Функциональный стиль с группировкой цифр
-def sum_numbers_in_string(s):
-    total = 0
-    for is_digit, group in groupby(s, key=lambda x: x.isdigit()):
-        if is_digit:
-            total += int(''.join(group))
-    return total
 
 
 print(sum_numbers_in_string("abc123xyz45"))              # -> 168  # (123 + 45)
@@ -10895,6 +11388,9 @@ service.send_message("Hi via SMS!")  # -> Sending SMS: Hi via SMS!
 # ЗАДАЧА 5
 # На фреймворке fastapi  напишите код который будет принимать в запросе json содержащий name weight и будет создавать
 # товар в базе после чего возвращать {result: true}  с кодом 201 Created
+
+
+
 
 
 
@@ -11726,7 +12222,7 @@ d2 = {'a': 200, 'b': 100, 'd':300}
 # Задание:
 
 def mult(lst):
-    ...
+    pass
 
 
 a = [1, 2, 3, 4, 5]
@@ -11895,36 +12391,9 @@ def anagramma(s: str, s1: str) -> bool:
 
 
 
-
-
-# ЗАДАЧА 2  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ  НАПИСАТЬ 8 СПОСОБОВ!
-
-def is_service_good(lst: list[tuple]):
-    ...
-
-
-
-
-# a_res = [(123456, "AuthService", "ERROR"), (1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
-# EXPECTED_OUTPUT = [(1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
-#
-# print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'AuthService', 'INFO')]
-
-
-
-
-
-
-# ОТВЕТ 2 Задачи    компания ГК “МТ-Интеграция”
-# ОТВЕТ Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!  АНАГРАММА И ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ   НАПИШИ ВСЕ ВАРИАНТЫ!!!
+# ОТВЕТ ЗАДАЧА 1) АНАГРАММА - это слово или фраза, образованная перестановкой букв другого слова или фразы.
 """
-
-# Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!    АНАГРАММА  И  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ
-
-
-# ЗАДАЧА 1) АНАГРАММА - это слово или фраза, образованная перестановкой букв другого слова или фразы.
 # Примеры АНАГРАММ:  "Кот" → "Ток"    "Апельсин" → "Спаниель"
-
 
 
 # Способ 1: Через сортировку                                                                            O(n log n)
@@ -11987,11 +12456,28 @@ def anagramma(s: str, s1: str) -> bool:
 
 print(anagramma('нора', 'рано'))     # -> True
 print(anagramma('нораар', 'раноо'))  # -> False
+"""
+
+
+
+# ЗАДАЧА 2  ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ  НАПИСАТЬ 8 СПОСОБОВ!
+
+def is_service_good(lst: list[tuple]):
+    ...
 
 
 
 
+# a_res = [(123456, "AuthService", "ERROR"), (1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+# EXPECTED_OUTPUT = [(1234567, "AuthService", "INFO"), (123456, "Compute", "INFO")]
+#
+# print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'AuthService', 'INFO')]
 
+
+
+# ОТВЕТ 2 Задачи    компания ГК “МТ-Интеграция”
+# ОТВЕТ Задачи  OpenStack   ПОСМОТРИ ТУТ 2 ЗАДАЧИ!!!  АНАГРАММА И ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ   НАПИШИ ВСЕ ВАРИАНТЫ!!!
+"""
 # ЗАДАЧА 2)   ФИЛЬТРАЦИИ СПИСКА СЕРВИСОВ
 
 # ЗАДАЧА фильтрации списка сервисов, оставляя только первую запись для каждого уникального сервиса
@@ -12009,7 +12495,7 @@ def is_service_good(lst: list[tuple]):
 
 # Способ 2: Использование set()        O(n log n) - из-за сортировки + O(n) для прохода       Лучший баланс
 import itertools
- 
+
 def is_service_good(lst: list[tuple]):
     seen_services = set()
     res = []
@@ -12035,7 +12521,7 @@ def is_service_good(lst: list[tuple]):
 
 
 # Способ 4: Использование groupby из itertools  O(n log n) - две сортировки + O(n) для groupby
- 
+
 from itertools import groupby
 from operator import itemgetter
 
@@ -12105,7 +12591,7 @@ print(is_service_good(a_res))  # -> [(123456, 'Compute', 'INFO'), (1234567, 'Aut
 # 4 Задачи    компания Медиалогия  НАПИШИ ВСЕ ВАРИАНТЫ!!!
 
 
-# ЗАДАЧА 1  РЮКЗАК   НАПИСАТЬ 4 СПОСОБА!
+# ЗАДАЧА 1  РЮКЗАК   НАПИСАТЬ 2 СПОСОБА!  ЖАДНЫЙ И 0/1 ДП/DP
 
 weights = [10, 20, 30, 40]
 costs = [20, 10, 30, 40]
@@ -12115,6 +12601,8 @@ max_limit = 40
 
 def knapsack(weights, costs, max_limit):
     pass
+
+
 
 
 
@@ -12124,60 +12612,22 @@ def knapsack(weights, costs, max_limit):
 
 
 
-
-# ЗАДАЧА 2  Two Sum тоже самое но НЕ обязательно стоят рядом   НАПИСАТЬ 4 СПОСОБА!
-
-lst = [2, 7, 11, 15, 7]
-target = 9
-
-def find_two_sum(nums, target):
-    ...
-
-
-# print(find_two_sum(lst, target))  # -> [0, 1]
-# print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
-
-
-
-
-
-# ЗАДАЧА 3 заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений  3 СПОСОБА
-from string import ascii_lowercase
-
-s = 'aaaaaaaaaa'
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
-alphabet = ascii_lowercase
-
-
-def replace_odd_chars(s):
-    ...
-
-
-
-
-# print(replace_odd_chars(s))  # -> aacaeagaia
-
-
-
-
-
-# ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.   НАПИСАТЬ 4 СПОСОБА!
-
-json_data = [[], 123, 'aaa', {'a': 1}, [1, 2, 3], {'a': 2}, (1, 2), {'a': 1}]
-
-def count_dict_a_1(data):
-    pass
-
-
-# result = count_dict_a_1(json_data)
-# print(result)  # -> 2
-
-
-
-# ОТВЕТ  4 Задачи    компания Медиалогия  НАПИШИ ВСЕ ВАРИАНТЫ!!!
+# ОТВЕТ ЗАДАЧА 1  РЮКЗАК   НАПИСАТЬ 4 СПОСОБА!
 """
+
 # ЗАДАЧА 1)  Задача о рюкзаке (или задача о ранце)
 # суммарный вес не превышал максимальную грузоподъемность рюкзака, а суммарная стоимость была максимальной.
+
+# ------------------------------------------------------------
+# Способ 1: Жадный алгоритм (НЕ всегда оптимален для 0/1 knapsack)
+#
+# Идея:
+# Сортируем предметы по убыванию "удельной стоимости" = cost/weight
+# и берём пока помещается.
+#
+# Сложность:
+# Время: O(n log n)  (сортировка) + O(n) (проход) = O(n log n)
+# Память: O(n) (список items и selected)
 
 
 weights = [10, 20, 30, 40]
@@ -12185,10 +12635,7 @@ costs = [20, 10, 30, 40]
 max_limit = 40
 
 
-# Способ 1: Жадный алгоритм (не всегда дает оптимальное решение)
-
 def knapsack(weights, costs, max_limit):
-    n = len(weights)
     # Сортируем предметы по убыванию удельной стоимости (стоимость/вес)
     items = sorted(zip(weights, costs), key=lambda x: x[1] / x[0], reverse=True)
 
@@ -12205,31 +12652,39 @@ def knapsack(weights, costs, max_limit):
     return total_cost, selected
 
 
-# Способ 2: Динамическое программирование (точное решение)
+# ------------------------------------------------------------
+# Способ 2: Динамическое программирование (ТОЧНОЕ решение для 0/1 knapsack)
+#
+# dp[i][w] = максимум стоимости, используя первые i предметов при лимите веса w
+#
+# Сложность:
+# Время: O(n * W), где W = max_limit
+# Память: O(n * W) (таблица dp) + O(n) на восстановление
 
 def knapsack(weights, costs, max_limit):
     n = len(weights)
-    # Создаем таблицу для хранения максимальной стоимости для каждого веса
     dp = [[0] * (max_limit + 1) for _ in range(n + 1)]
 
+    # dp[i][w] — макс. стоимость, используя первые i предметов при лимите веса w
     for i in range(1, n + 1):
-        for w in range(1, max_limit + 1):
-            if weights[i - 1] <= w:
-                dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + costs[i - 1])
-            else:
-                dp[i][w] = dp[i - 1][w]
+        wi, ci = weights[i - 1], costs[i - 1]
+        for w in range(max_limit + 1):
+            dp[i][w] = dp[i - 1][w]  # не берем i-й
+            if wi <= w:
+                dp[i][w] = max(dp[i][w], dp[i - 1][w - wi] + ci)  # берем i-й
 
-    # Восстановление выбранных предметов
+    # восстановление ответа (какие предметы взяли)
     w = max_limit
     selected = []
-    total_cost = dp[n][max_limit]
-
     for i in range(n, 0, -1):
         if dp[i][w] != dp[i - 1][w]:
-            selected.append((weights[i - 1], costs[i - 1]))
-            w -= weights[i - 1]
+            wi, ci = weights[i - 1], costs[i - 1]
+            selected.append((wi, ci))
+            w -= wi
 
-    return total_cost, selected[::-1]
+    selected.reverse()
+    return dp[n][max_limit], selected
+
 
 
 # Способ 3: Метод ветвей и границ (точное решение)
@@ -12340,10 +12795,28 @@ def knapsack(weights, costs, max_limit):
 cost, items = knapsack(weights, costs, max_limit)
 print(f"Максимальная стоимость: {cost}")           # ->  Максимальная стоимость: 50
 print(f"Выбранные предметы: {items}")              # ->  Выбранные предметы: [(10, 20), (30, 30)]
+"""
 
 
 
 
+
+# ЗАДАЧА 2  Two Sum тоже самое но НЕ обязательно стоят рядом   НАПИСАТЬ 2 СПОСОБА!
+
+lst = [2, 7, 11, 15, 7]
+target = 9
+
+def find_two_sum(nums, target):
+    pass
+
+
+# print(find_two_sum(lst, target))  # -> [0, 1]
+# print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+
+
+
+# ОТВЕТ ЗАДАЧА 2  Two Sum тоже самое но НЕ обязательно стоят рядом   НАПИСАТЬ 4 СПОСОБА!
+"""
 # ЗАДАЧА 2) Two Sum тоже самое но НЕ обязательно стоят рядом
 
 lst = [2, 7, 11, 15, 7]
@@ -12411,10 +12884,33 @@ def find_two_sum(nums, target):
 
 
 print(find_two_sum(lst, target))  # -> [[0, 1], [0, 4]]
+"""
 
 
 
 
+
+
+# ЗАДАЧА 3 заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений  3 СПОСОБА
+from string import ascii_lowercase
+
+s = 'aaaaaaaaaa'
+alphabet = 'abcdefghijklmnopqrstuvwxyz'
+alphabet = ascii_lowercase
+
+
+def replace_odd_chars(s):
+    pass
+
+
+
+
+# print(replace_odd_chars(s))  # -> aacaeagaia
+
+
+
+# ОТВЕТ ЗАДАЧА 3 заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений  3 СПОСОБА
+"""
 # ЗАДАЧА 3)  заменяет нечетные символы в строке на буквы английского алфавита, а остальные оставляет без изменений
 
 
@@ -12426,7 +12922,10 @@ alphabet = 'abcdefghijklmnopqrstuvwxyz'
 alphabet = ascii_lowercase
 
 
-# Способ 1:  Простой
+# Способ 1: цикл
+# Сложность:
+# Время: O(n)
+# Память: O(n) (строим результат)
 
 def replace_odd_chars(s):
     result = []
@@ -12439,6 +12938,21 @@ def replace_odd_chars(s):
             result.append(s[i])
 
     return ''.join(result)
+
+print(replace_odd_chars(s))  # -> aacaeagaia
+
+
+# ============================================================
+# Способ 2: генератор/компрехеншн
+# Сложность:
+# Время: O(n)
+# Память: O(n)
+def replace_odd_chars(s: str) -> str:
+    return "".join(
+        alphabet[i % 26] if i % 2 == 0 else v
+        for i, v in enumerate(s)
+    )
+
 
 print(replace_odd_chars(s))  # -> aacaeagaia
 
@@ -12465,10 +12979,27 @@ def replace_odd_chars_regex(s):
     )
 
 print(replace_odd_chars_regex(s))  # -> aacaeagaia
+"""
 
 
 
 
+# ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.   НАПИСАТЬ 4 СПОСОБА!
+
+json_data = [[], 123, 'aaa', {'a': 1}, [1, 2, 3], {'a': 2}, (1, 2), {'a': 1}]
+
+def count_dict_a_1(data):
+    pass
+
+
+# result = count_dict_a_1(json_data)
+# print(result)  # -> 2
+
+
+
+# ОТВЕТ  ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.   НАПИСАТЬ 4 СПОСОБА!
+
+"""
 # ЗАДАЧА 4)  большой JSON-объект без необходимости загружать его полностью в память.
 
 import json
@@ -12730,7 +13261,11 @@ def is_correct_brackets(text):
 
 # Ответ Задача "Правильная скобочная последовательность"    Valid Braces  Codewars    Мир Танков/World of Tanks
 """
-# Первый Вариант            Квадратичная сложность O(n^2)       Вариант требует создания новых строк и перебора их.                                  
+# Первый Вариант            Квадратичная сложность O(n^2)       Вариант требует создания новых строк и перебора их.   
+# Вариант "простая идея, но хуже по эффективности": replace в цикле (O(n^2) худший случай)
+# Сложность:
+# Время: O(n^2) в худшем
+# Память: O(n) (создание новых строк)                               
 def is_correct_brackets(text):                          
     while '()' in text or '[]' in text or '{}' in text:                                         
         text = text.replace('()', '')                                                            
@@ -12748,6 +13283,26 @@ print(is_correct_brackets('())))'))  # False
 print(is_correct_brackets('((((){}[]{}[])))'))  # True
 print(is_correct_brackets('(){}[]{}[])))'))  # False
 print(is_correct_brackets('(){}[]{}[]'))  # True
+
+
+# Второй Вариант   ЛУЧШЕ!!! Stack + close->open (O(n) время, O(n) память)   ### <-----------
+def validBraces(s):
+    res = {')':'(', ']':'[', '}':'{'}
+     stack = []
+     for i in s:
+         if i in res:
+             if not stack or stack.pop() != res[i]:
+                 return False
+         else:
+             stack.append(i)
+     return not stack
+
+print(validBraces('(((())))'))          # True
+print(validBraces('(((())'))            # False
+print(validBraces('())))'))             # False
+print(validBraces('((((){}[]{}[])))'))  # True
+print(validBraces('(){}[]{}[])))'))     # False
+print(validBraces('(){}[]{}[]'))        # True
 
 
 
@@ -12828,7 +13383,7 @@ ________________________________________________________________________________
 
 
 # Написать 3 варианта
-def clean_duplicates(lst):
+def clean_duplicates(lst: list) -> list:
     pass
 
 
@@ -12843,7 +13398,14 @@ def clean_duplicates(lst):
 
 # Ответ Создать функцию которая убирает дубликаты           Задача с Live Coding Собеседования
 """
-# Первый вариант
+
+# ============================================================
+# 1) Вариант: res + проверка "if i not in res"
+#
+# Сложность:
+# Время: O(n^2)  (каждый раз "i in res" — линейный поиск по res)
+# Память: O(n)   (результат)
+
 def clean_duplicates(lst: list[dict]) -> list[dict]:
     res = []
     for i in lst:
@@ -12854,7 +13416,13 @@ def clean_duplicates(lst: list[dict]) -> list[dict]:
 print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
-# Второй вариант
+# ============================================================
+# 2) Вариант: list comprehension с append (антипаттерн)
+#
+# Сложность:
+# Время: O(n^2)  (по той же причине: "i in res" — O(n))
+# Память: O(n)   (результат)
+
 def clean_duplicates(lst: list[dict]) -> list[dict]:
     res = []
     [res.append(i) for i in lst if i not in res]
@@ -12863,13 +13431,33 @@ def clean_duplicates(lst: list[dict]) -> list[dict]:
 print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
-# Третий вариант
+# ============================================================
+# 3) Вариант: str -> set -> eval (ОПАСНО)
+#
+# Сложность:
+# Время: O(n * k)   (str(i) и eval(i) по размеру словаря ~k, set вставки амортизированно O(1))
+# Память: O(n * k)  (храним строки/множество)
+#
+# Примечание:
+# eval — небезопасно (можно выполнить произвольный код), в нормальном коде так делать нельзя.
+
 def clean_duplicates(lst: list[dict]) -> list[dict]:
-    return list([eval(i) for i in set(tuple([str(i) for i in lst]))])
+    return list([eval(i) for i in set([str(j) for j in lst])])
 
 print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
 
 
+# ============================================================
+# ЛУЧШИЙ практический вариант (без eval), сохраняет порядок:
+# делаем "ключ" как hashable-представление словаря.
+#
+# Сложность:
+# Время: O(n * k log k)  (на каждый dict делаем sorted(items) -> log k)
+# Память: O(n * k)
+                                  # Сложность:                       # Сложность:   
+                                  # Время: O(n * k)                  # Время: O(n * k)       
+                                  # Память: O(n * k)                 # Память: O(n * k)       
+     
 # Интересный вариант              # Тоже самое                       # Тоже самое 
 def clean_duplicates(lst):        def clean_duplicates(lst):         def clean_duplicates(lst):            
     res = set()                       res = {str(i) for i in lst}        return [eval(i) for i in {str(j) for j in lst}]    
@@ -12892,7 +13480,6 @@ xs = [
     '3_d.txt',
     '1_e.txt',
 ]
-
 
 
 
@@ -13019,6 +13606,16 @@ def twoSum(nums, target):
 """
 lst = [2, 7, 9, 10, 11]
 target = 9
+
+### LEETCODE РЕШЕНИЕ
+def twoSum(nums, target):
+    seen = {}
+    for i, v in enumerate(nums):
+        need = target - v
+        if need in seen:
+            return [seen[need], i]
+        seen[v] = i
+
 
 # Хороший вариант                                     # Тоже самое с МОРЖОМ      
 def twoSum(nums, target):                             def twoSum(nums, target):                                  
@@ -13292,6 +13889,42 @@ def sort_array(arr):
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
 
+# ОТВЕТ Есть список чисел. Нужно отсортировать нечетные числа по возрастанию, оставив четные на месте
+"""
+# Задача 1
+
+# Есть список чисел. Нужно отсортировать нечетные числа по возрастанию, оставив четные на месте
+
+# Сложность:
+# Время: O(n log n) (в худшем случае)
+# Память: O(n)
+
+def sort_array(arr):
+    odds = sorted([i for i in arr if i % 2])
+    odd_index = 0
+    res = []
+    for i in arr:
+        if i % 2:
+        # if i in odds:  # Тоже самое(для вывода)   будет хуже: in по списку odds это O(o) на проверку.
+            res.append(odds[odd_index])
+            odd_index += 1
+        else:
+            res.append(i)
+    return res
+
+numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
+
+
+# Ответ ChatGPT
+def sort_array(source_array):
+    odds = sorted(filter(lambda i: i % 2 != 0, source_array))
+    odds_iter = iter(odds)
+    return [next(odds_iter) if i % 2 != 0 else i for i in source_array]
+
+numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
+"""
 
 
 
@@ -13315,10 +13948,8 @@ def flatten(*args):
 
 
 # 2 Варианта
-def flatten(items):
+def flatten(*items):
     pass
-
-
 
 
 
@@ -13333,37 +13964,6 @@ def flatten(items):
 # Ответ Задачи с собеседования  X5
 
 r"""
-# Задача 1
-
-# Есть список чисел. Нужно отсортировать нечетные числа по возрастанию, оставив четные на месте
-
-def sort_array(arr):
-    odds = sorted([i for i in arr if i % 2])
-    odd_index = 0
-    res = []
-    for i in arr:
-        if i % 2:
-        # if i in odds:  # Тоже самое
-            res.append(odds[odd_index])
-            odd_index += 1
-        else:
-            res.append(i)
-    return res
-
-numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
-
-
-# Ответ ChatGPT
-def sort_array(source_array):
-    odds = sorted(filter(lambda i: i % 2 != 0, source_array))
-    odds_iter = iter(odds)
-    return [next(odds_iter) if i % 2 != 0 else i for i in source_array]
-
-numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
-
-
 # Задача 2
 
 '''Напишите функцию flatten, которая принимает любое кол-во аргументов
@@ -13373,7 +13973,7 @@ print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
 # Вариант который НЕ подвержен ограничению рекурсии Python  (Книга Python. Исчерпывающее руководство Дэвид Бизли)
 #  1) Избежание переполнения стека  2) Глубокая рекурсия  3) Циклические ссылки      # БУДЕТ РАБОТАТЬ В ЭТИХ СЛУЧАЯХ!
-def flatten(items):
+def flatten(items):      ### БЕЗ РАЗНИЦЫ * -> *items
     stack = [ iter(items) ]
     while stack:
         try:
@@ -13393,7 +13993,7 @@ print(list(flatten(res)))   # -> [1, 2, 2, 3, 4, 4]
 
 # Классный вариант  из Книги: Python Книга рецептов   Дэвид Бизли
 
-from collections.abc import Iterable
+from collections.abc import Iterable                ### ЕСЛИ БУДЕТ ПРИХОДИТ *items    делаем * -> yield from flatten(*i)
 def flatten(items, ignore_types=(str, bytes)):
     for i in items:
         if isinstance(i, Iterable) and not isinstance(i, ignore_types):                                         
@@ -13474,11 +14074,10 @@ ________________________________________________________________________________
 # Задача максимальная последовательность чисел  СБЕР
 
 
-# Написать 2 варианта
+# Написать 2 варианта  НАПИСАТЬ ТОЛЬКО ПРАВИЛЬНЫЙ ВАРИАНТ!
 
-def longest_sequence(lst):
-   pass
-
+def longest_sequence(nums):
+    pass
 
 
 
@@ -13489,6 +14088,42 @@ def longest_sequence(lst):
 
 # Ответ Задача максимальная последовательность чисел  СБЕР
 """
+# Сложность:
+# Время: O(n)
+# Память: O(n)
+
+### ПРАВИЛЬНЫЙ ВАРИАНТ!!!
+def longest_sequence(nums):
+    if not nums:
+        return []
+
+    s = set(nums)
+    best_len = 0
+    best_start = None
+
+    for i in s:
+        # i — начало последовательности
+        if i - 1 not in s:
+            y = i
+            while y in s:
+                y += 1
+            length = y - i
+
+            if length > best_len:
+                best_len = length
+                best_start = i
+
+    if best_start is None:
+        return []
+
+    return [best_start + i for i in range(best_len)]
+
+
+arr = [111, 22, 533, 61, 655, 7333, 911, 11, 211, 1, 2, 3, 4, 5]
+print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
+
+
+
 # НОВЫЙ ВАРИАНТ
 def longest_sequence(arr):
     if not arr:
@@ -13835,7 +14470,7 @@ def to_digit(val):
 
 
 
-def string_to_int(value: str) -> int:
+def string_to_int(s: str) -> int:
     pass
 
 
@@ -13844,9 +14479,68 @@ def string_to_int(value: str) -> int:
 
 
 
+
 # Ответ Реализовать функцию, которая будет преобразовывать строку (с целочисленным числом)
 # в число, не используя стандартные методы преобразования python.
 """
+
+# Сложность:
+# Время: O(n)   (один проход по строке длины n)
+# Память: O(1)  (используем несколько переменных)
+
+def string_to_int(s: str) -> int:
+    if not s:
+        raise ValueError("empty string")
+
+    res = 0
+    for i in s:
+        if i < "0" or i > "9":
+            raise ValueError(f"invalid char: {i}")
+        res = res * 10 + (ord(i) - ord("0"))
+    return res
+
+
+
+# LEETCODE РЕШЕНИЕ!  8. String to Integer (atoi)
+
+# Сложность:
+# Время: O(n)
+# Память: O(1)
+
+def string_to_int(s: str) -> int:
+    i = 0
+    n = len(s)
+
+    # 1) пропускаем ведущие пробелы
+    while i < n and s[i] == " ":
+        i += 1
+
+    # 2) знак
+    sign = 1
+    if i < n and s[i] in "+-":
+        if s[i] == "-":
+            sign = -1
+        i += 1
+
+    # 3) читаем цифры + 4) clamp к 32-bit
+    INT_MIN = -2**31
+    INT_MAX = 2**31 - 1
+    res = 0
+
+    while i < n and "0" <= s[i] <= "9":
+        digit = ord(s[i]) - ord("0")
+
+        # проверка переполнения ДО умножения на 10
+        if res > (INT_MAX - digit) // 10:
+            return INT_MAX if sign == 1 else INT_MIN
+
+        res = res * 10 + digit
+        i += 1
+
+    return sign * res
+
+
+
 # Мой ответ                                       # Еще один вариант Мой          
 def to_digit(val):                                def to_digit(val):                  
     res = {}                                          res = dict(zip(map(str, range(10)), range(10)))              
@@ -13911,10 +14605,16 @@ print(string_to_integer(" +789 "))  # -> 789
 #  на консоль первую анаграмму из каждой группы.
 
 
+from collections import defaultdict
+def is_anagramm(lst: list[str]):
+    pass
 
 
-
-
+# words = ['aba', 'bac', 'abb', 'bab', 'bba', 'aab', 'abca']
+# res = is_anagramm(words)
+#
+# print(res)   # -> ['aba', 'aab', 'bac', 'abb', 'bab', 'bba', 'abca']
+# print(*res)  # -> aba bac abb abca
 
 
 
@@ -13926,6 +14626,36 @@ print(string_to_integer(" +789 "))  # -> 789
 # порядке. В приведенном примере группы анаграмм: (aba, aab), (abb, bab, bba). Напишите такой код, который выведет
 # на консоль первую анаграмму из каждой группы.
 """
+
+
+# Сложность:
+# Пусть n = кол-во строк, k = средняя длина строки.
+# Время: O(n * k log k) (сортировка каждой строки)
+# Память: O(n * k) на хранение групп
+
+
+### LEETCODE
+from collections import defaultdict
+def is_anagramm(lst: list[str]):
+        groups = defaultdict(list)
+        for w in lst:
+            key = "".join(sorted(w))
+            groups[key].append(w)
+        # return list(groups.values())  # -> [['aba', 'aab'], ['bac'], ['abb', 'bab', 'bba'], ['abca']]
+        res = []
+        for i in list(groups.values()):
+            for j in i:
+                res.append(j)
+        return res
+
+
+words = ['aba', 'bac', 'abb', 'bab', 'bba', 'aab', 'abca']
+res = is_anagramm(words)
+
+print(res)   # -> ['aba', 'aab', 'bac', 'abb', 'bab', 'bba', 'abca']
+print(*res)  # -> aba bac abb abca
+
+
 # Мой Ответ
 from collections import defaultdict
 
@@ -13981,6 +14711,7 @@ print(*is_anagramm(words))  # -> aba abb abca
 
 # Замерить сколько раз вызывается функция       ivi  Иви
 # 2 Варианта через функцию  и 1 Вариант через класс
+
 
 
 
@@ -14060,6 +14791,16 @@ for f in fun:
 fun = [lambda x, a=a: a for a in range(10)]
 for f in fun:
     print(f(20), end=' ')  # -> 0 1 2 3 4 5 6 7 8 9
+    
+    
+### Вызвать прямо в генераторе списка (получить значения)
+res = [(lambda x, i=i: i)(20) for i in range(10)]
+print(res)  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+### Разницы НЕТ - потому что лямбда вообще не использует x
+print([(lambda x, i=i: i)(1) for i in range(10)])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+print([(lambda x, i=i: i)(222222) for i in range(10)])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 """
 
 

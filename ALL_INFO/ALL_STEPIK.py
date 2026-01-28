@@ -109,6 +109,15 @@ ________________________________________________________________________________
  fun = [lambda x, a=a: a for a in range(10)]
  for f in fun:
      print(f(20), end=' ')  # -> 0 1 2 3 4 5 6 7 8 9
+
+
+ ### Вызвать прямо в генераторе списка (получить значения)
+ res = [(lambda x, i=i: i)(20) for i in range(10)]
+ print(res)  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+ ### Разницы НЕТ - потому что лямбда вообще не использует x
+ print([(lambda x, i=i: i)(1) for i in range(10)])       # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+ print([(lambda x, i=i: i)(222222) for i in range(10)])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 ________________________________________________________________________________________________________________________
 
  Задача Заказчик Открытые Решения   Посмотри все варианты! Особенно 2 последних!!!
@@ -1301,6 +1310,11 @@ ________________________________________________________________________________
 
 
  # Первый Вариант            Квадратичная сложность O(n^2)       Вариант требует создания новых строк и перебора их.
+ # Вариант "простая идея, но хуже по эффективности": replace в цикле (O(n^2) худший случай)
+ # Сложность:
+ # Время: O(n^2) в худшем
+ # Память: O(n) (создание новых строк)
+
  def is_correct_brackets(text):
      while '()' in text or '[]' in text or '{}' in text:
          text = text.replace('()', '')
@@ -1317,6 +1331,26 @@ ________________________________________________________________________________
  print(is_correct_brackets('((((){}[]{}[])))'))  # True
  print(is_correct_brackets('(){}[]{}[])))'))     # False
  print(is_correct_brackets('(){}[]{}[]'))        # True
+
+
+ # Второй Вариант   ЛУЧШЕ!!! Stack + close->open (O(n) время, O(n) память)
+ def validBraces(s):
+     res = {')':'(', ']':'[', '}':'{'}
+      stack = []
+      for i in s:
+          if i in res:
+              if not stack or stack.pop() != res[i]:
+                  return False
+          else:
+              stack.append(i)
+      return not stack
+
+ print(validBraces('(((())))'))          # True
+ print(validBraces('(((())'))            # False
+ print(validBraces('())))'))             # False
+ print(validBraces('((((){}[]{}[])))'))  # True
+ print(validBraces('(){}[]{}[])))'))     # False
+ print(validBraces('(){}[]{}[]'))        # True
 
 
 
@@ -1750,27 +1784,27 @@ ________________________________________________________________________________
 
  def knapsack(weights, costs, max_limit):
      n = len(weights)
-     # Создаем таблицу для хранения максимальной стоимости для каждого веса
      dp = [[0] * (max_limit + 1) for _ in range(n + 1)]
 
+     # dp[i][w] — макс. стоимость, используя первые i предметов при лимите веса w
      for i in range(1, n + 1):
-         for w in range(1, max_limit + 1):
-             if weights[i - 1] <= w:
-                 dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + costs[i - 1])
-             else:
-                 dp[i][w] = dp[i - 1][w]
+         wi, ci = weights[i - 1], costs[i - 1]
+         for w in range(max_limit + 1):
+             dp[i][w] = dp[i - 1][w]  # не берем i-й
+             if wi <= w:
+                 dp[i][w] = max(dp[i][w], dp[i - 1][w - wi] + ci)  # берем i-й
 
-     # Восстановление выбранных предметов
+     # восстановление ответа (какие предметы взяли)
      w = max_limit
      selected = []
-     total_cost = dp[n][max_limit]
-
      for i in range(n, 0, -1):
          if dp[i][w] != dp[i - 1][w]:
-             selected.append((weights[i - 1], costs[i - 1]))
-             w -= weights[i - 1]
+             wi, ci = weights[i - 1], costs[i - 1]
+             selected.append((wi, ci))
+             w -= wi
 
-     return total_cost, selected[::-1]
+     selected.reverse()
+     return dp[n][max_limit], selected
 
 
  # Способ 3: Метод ветвей и границ (точное решение)
@@ -9681,7 +9715,15 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(dict(b_counter))   # -> {1: 1, 2: 1, 3: 1}
  -----------------------------------------------------------------------------------------------------------------------
 
-
+ ### Это распаковка: в цикле пара ["a","b"] сразу раскладывается в a и b, а второе значение из zip попадает в val.
+ equations = [["a", "b"], ["b", "c"]]
+ values = [2.0, 3.0]
+                                               # ТОЖЕ САМОЕ
+ for (a, b), val in zip(equations, values):    for eq, val in zip(equations, values):
+     print(a, b, val)                              a, b = eq
+                                                   print(a, b, val)
+ # -> a b 2.0
+ # -> b c 3.0
  -----------------------------------------------------------------------------------------------------------------------
 
 

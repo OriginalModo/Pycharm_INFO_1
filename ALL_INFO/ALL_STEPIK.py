@@ -373,7 +373,7 @@ ________________________________________________________________________________
  from typing import Callable
  from functools import wraps
 
- # Ответ через функцию                # Ответ ChatGPT через функцию    Интересный пример   <-----  wrapper.my_count += 1
+ # 1) Ответ через функцию             # 2) Ответ ChatGPT через функцию    Интересный пример   <-----  wrapper.my_count += 1
 
  def my_count(func):                  def my_count(func):
      c = 0                                @wraps(func)
@@ -395,14 +395,14 @@ ________________________________________________________________________________
 
 
 
- # Ответ через класс
+ # 3) Ответ через класс                         # 4) ОЧЕНЬ КОРОТКИЙ ВАРИАНТ  unittest.mock (для тестов)
 
- @dataclass
+ @dataclass                                     from unittest.mock import Mock
  class MyClass:
-     f: Callable
+     f: Callable                                plus = Mock()
      c: int = 0
-
-     def __call__(self, *args, **kwargs):
+                                                plus(); plus(); plus()
+     def __call__(self, *args, **kwargs):       print(plus.call_count)  # -> 3
          self.c += 1
          print(self.c)
          return self.f(*args, **kwargs)
@@ -414,6 +414,27 @@ ________________________________________________________________________________
  print(plus())  # -> 1 None
  print(plus())  # -> 2 None
  print(plus())  # -> 3 None
+
+
+ # 5) collections.Counter (удобно, если нужно считать МНОГО функций)
+ from functools import wraps
+ from collections import Counter
+
+ calls = Counter()
+
+ def count_calls(func):
+     @wraps(func)
+     def wrapper(*args, **kwargs):
+         calls[func.__name__] += 1
+         return func(*args, **kwargs)
+     return wrapper
+
+ @count_calls
+ def plus():
+     pass
+
+ plus(); plus(); plus()
+ print(calls["plus"])  # 3
 ________________________________________________________________________________________________________________________
 
  Есть список                                            Грузовая компания
@@ -746,7 +767,14 @@ ________________________________________________________________________________
 
  # Создать функцию которая убирает дубликаты           Задача с Live Coding Собеседования
 
- # Первый вариант
+
+ # 1) Вариант: res + проверка "if i not in res"
+ #
+ # Сложность:
+ # Время: O(n^2)  (каждый раз "i in res" — линейный поиск по res)
+ # Память: O(n)   (результат)
+
+ ### ДЛЯ ЛЮБЫХ ЭЛЕМЕНТОВ
  def clean_duplicates(lst: list[dict]) -> list[dict]:
      res = []
      for i in lst:
@@ -755,6 +783,33 @@ ________________________________________________________________________________
      return res
 
  print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
+
+
+ ## Вариант 1A только “соседние” дубликаты, то есть работает корректно только для отсортированного списка
+
+ # Вариант 1A (только для отсортированного / соседние дубликаты)        # Вариант 1B (работает в любом порядке, для хэшируемых элементов)
+
+ # Сложность:                                                           # Сложность:
+                                                                        # Время: O(n) в среднем
+ # Время: O(n)  (один проход по списку)                                 # (проверка/добавление в set ~ O(1) на элемент)
+ # Память: O(n) (возвращаем срез lst[:write] — создаётся новый список)  # Память: O(n) (set seen + список результата)
+ ### ЕСЛИ МАССИВ ОТСОРТИРОВАН!!                                         ### РАБОТАЕТ В ЛЮБОМ СЛУЧАЕ!
+ def clean_duplicates(lst: list) -> list:                               def clean_duplicates(lst: list) -> list:
+     write = 0                                                              seen = set()
+     for i in lst:                                                          res = []
+         if write == 0 or i != lst[write-1]:                                for i in lst:
+             lst[write] = i                                                     if i not in seen:
+             write += 1                                                             seen.add(i)
+     # del lst[write:]   # ЧТОБЫ IN-PLACE это тот же объект(список)                 res.append(i)
+     return lst[:write]  # создаётся НОВЫЙ список                           return res
+
+
+
+ ### (НЕ работает для неотсортированного)
+ print(clean_duplicates([1, 2, 1]))        # -> [1, 2, 1]               ### НЕ работает для нехэшируемых: dict, list, set
+ print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 1, 2, 3]         print(clean_duplicates([1, 2, 1]))        # -> [1, 2]
+ ### (РАБОТАЕТ, потому что дубликаты подряд)                            print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 3]
+ print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]               print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]
 
 
  # Второй вариант
@@ -788,6 +843,27 @@ ________________________________________________________________________________
  lst = [2, 7, 9, 10, 11]
  target = 9
 
+ # Сложность:
+ # Время: O(n) в среднем (один проход + операции dict ~ O(1))
+ # Худший случай: O(n^2) теоретически (редкие коллизии в dict)
+ # Память: O(n) (словарь seen хранит до n элементов)
+
+ ### LEETCODE РЕШЕНИЕ
+ def twoSum(nums, target):
+     seen = {}
+     for i, v in enumerate(nums):
+         need = target - v
+         if need in seen:
+             return [seen[need], i]
+         seen[v] = i
+
+
+ # Сложность:
+ # Время: O(n^2) (цикл O(n) + внутри index() O(n))
+ # Память: O(1) доп. (кроме результата res)
+
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Хороший вариант                                   # Тоже самое с МОРЖОМ
  def twoSum(nums, target):                           def twoSum(nums, target):
@@ -800,6 +876,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [0, 1]
 
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Пример 1
  from itertools import pairwise
@@ -814,6 +892,8 @@ ________________________________________________________________________________
  print(twoSum(lst, target))  # -> [[0, 1]]                        print(twoSum(lst, target))  # -> [0, 1]
 
 
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
+
  # Тоже самое slice(1, None, 2) - Принимает только 3 аргумента      Тут создает такие пары  [(2, 7), (9, 10)]
  def twoSum(nums, target):                                          lst = [2, 7, 9, 10, 11]
      res = []
@@ -824,6 +904,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [[0, 1]]
 
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Тут создает такие пары  [(2, 7), (9, 10)]     lst = [2, 7, 9, 10, 11]
  # Пример 2                                                # Тоже самое
@@ -837,6 +919,8 @@ ________________________________________________________________________________
  print(twoSum(lst, target))  # -> [[0, 1]]                   print(twoSum(lst, target))  # -> [[0, 1]]
 
 
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
+
  # Пример 3
  from itertools import combinations
 
@@ -846,6 +930,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [0, 1]
 
+
+ # Двойной цикл по индексам — общий, ПРАВИЛЬНЫЙ (но медленный O(n^2)).
 
  # Ответ ChatGPT
  def twoSum(lst, target):
@@ -1048,6 +1134,13 @@ ________________________________________________________________________________
 
  numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
  print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
+
+
+ ### ИНТЕРЕСНЫЙ ВАРИАНТ
+ def sort_array(arr):
+     odds = iter(sorted(i for i in arr if i % 2))
+     return [next(odds) if i % 2 else i for i in arr]
+     # return [next(iter(sorted(i for i in arr if i % 2))) if i % 2 else i for i in arr]  # ОДНОСТРОЧНИК!
 
 
  # Ответ ChatGPT
@@ -1762,6 +1855,7 @@ ________________________________________________________________________________
 
  # Способ 1: Жадный алгоритм (не всегда дает оптимальное решение)
 
+ # x[1]/x[0] чтобы сначала брать те, которые дают максимальную “выгоду” на 1 кг. Это жадный подход (часто используют для дробного рюкзака).
  def knapsack(weights, costs, max_limit):
      n = len(weights)
      # Сортируем предметы по убыванию удельной стоимости (стоимость/вес)
@@ -2003,19 +2097,28 @@ ________________________________________________________________________________
 
  # Способ 1:  Простой
 
+ # Сложность:
+ # Время: O(n)
+ # Память: O(n) (строим результат)
+
+ # ТОЖЕ САМОЕ ОДНОСТРОЧНИК
  def replace_odd_chars(s):
-     result = []
-     for i in range(len(s)):
-         if i % 2 == 0:  # нечетные позиции (индексация с 0)
-             # берем соответствующую букву из алфавита
-             char = alphabet[i % 26]
-             result.append(char)
-         else:
-             result.append(s[i])
+     return ''.join(alphabet[i%26] if i % 2 == 0 else v for i, v in enumerate(s))
 
-     return ''.join(result)
+ def replace_odd_chars(s):                                    def replace_odd_chars(s):
+     result = []                                                  result = []
+     for i in range(len(s)):                                      for i, v in enumerate(s):
+         if i % 2 == 0:  # ЧЕТНЫЕ позиции (индексация с 0)            if i % 2 == 0:  # ЧЕТНЫЕ позиции (индексация с 0)
+             # берем соответствующую букву из алфавита                    # берем соответствующую букву из алфавита
+             char = alphabet[i % 26]                                      char = alphabet[i % 26]
+             result.append(char)                                          result.append(char)
+         else:                                                        else:
+             # result.append(s[i])                                        # result.append(s[i])
+             result.append(v)                                             result.append(v)
 
- print(replace_odd_chars(s))  # -> aacaeagaia
+     return ''.join(result)                                       return ''.join(result)
+
+ print(replace_odd_chars(s))  # -> aacaeagaia                 print(replace_odd_chars(s))  # -> aacaeagaia
 
 
  # Способ 2:  Через РЕГУЛЯРКУ  (сложный)
@@ -2235,6 +2338,10 @@ ________________________________________________________________________________
  # Способ 4 Использование math.prod (Python 3.8+)
  def mult(lst):
      return math.prod(lst)                    # 1*2*3*4*5 = 120
+
+ # Способ 5 Использование eval()
+ def mult(lst):
+    return eval('*'.join(map(str, lst)))
 
  a = [1, 2, 3, 4, 5]
  print(mult(a))  # -> 120

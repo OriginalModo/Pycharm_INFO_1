@@ -1,3 +1,5 @@
+import itertools
+
 from pympler import asizeof
 from typing import List, Optional
 import re, sys
@@ -14,6 +16,150 @@ from dataclasses import dataclass
 
 
 # ### TODO БОНУС ЗАДАЧИ
+
+
+
+
+# НАПИСАТЬ 4 ВАРИАНТА     ОБЫЧНЫЙ+РЕГУЛЯРКА+itertools.groupby *2
+# # ### TODO  Интересный пример Повтори кстати сам его придумал  a = 'aaaabbсaa' преобразуется в 'a4b2с1a2'
+
+a = 'aaaabbcaa'
+
+
+
+def rle(s: str) -> str:
+    pass
+
+
+
+# print(rle("aaaabbcaa"))  # a4b2c1a2
+
+
+### EASY - РЕШЕНИЕ itertools.groupby
+# print(  ) # a4b2c1a2
+# print(  ) # a4b2c1a2
+
+
+
+# a = 'aaaabbсaa' преобразуется в 'a4b2с1a2'  Считаем символы которые идут подряд
+r"""
+a = 'aaaabbcaa'
+
+### ВАРИАНТ 1,2 
+# Сложность:
+# Время: O(n), где n = len(a)
+# Память: O(n) на результат, доп. память O(k) из-за list(j), где k — размер текущей группы (в худшем O(n))
+
+
+### EASY - РЕШЕНИЕ
+print(''.join([f'{i}{len(list(j))}' for i, j in groupby(a)]))      # -> a4b2c1a2
+
+# Сложность:
+# Время: O(n), где n = len(a)
+# Память: O(n) на результат, доп. память O(1)
+
+
+### EASY - РЕШЕНИЕ
+print(''.join([f'{i}{sum(1 for _ in j)}' for i, j in groupby(a)]))  # -> a4b2c1a2
+
+
+
+### ВАРИАНТ 3
+# Сложность:
+# Время: O(n), где n = len(s)
+# Память: O(n) на результат (в худшем случае), доп. память O(1)
+
+def rle(s: str) -> str:
+    if not s:
+        return ""
+    res = []
+    prev = s[0]
+    start = 1
+
+    for i in s[1:]:
+        if i == prev:
+            start += 1
+        else:
+            res.append(prev + str(start))
+            prev = i
+            start = 1
+
+    res.append(prev + str(start))
+    return "".join(res)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
+
+
+### ВАРИАНТ 4
+# Сложность:
+# Время: O(n) — regex проходит по строке и на каждую “группу” вызывает lambda.
+# Память: O(n) — под результат (новая строка) + служебные структуры regex.
+
+# Придумал сам)
+def rle(s: str) -> str:
+    return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
+"""
+
+
+
+
+
+
+
+# # ### TODO Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИСАТЬ 2 ВАРИАНТА   СУММА+ГРУППА
+# if s: нужен, чтобы не добавлять пустую сумму.
+
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+
+
+def mergeNodes(head):
+    pass
+
+
+
+
+# ### СУММА
+# print(mergeNodes(head))  # -> [4, 11]
+# ### ГРУППА ЧИСЕЛ
+# print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+
+
+# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros
+# if s: нужен, чтобы не добавлять пустую сумму.
+r"""
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+
+
+# Сложность:
+# Время: O(n)
+# Память: O(k) на res, где k — число сегментов; в худшем случае k = O(n) ⇒ память O(n)   <---- ВАРИАНТ 1
+# Память: O(n), т.к. сохраняем все элементы в группах (плюс O(k) на списки-группы).      <---- ВАРИАНТ 2
+
+
+# ВАРИАНТ 1                                       # ВАРИАНТ 2 
+# ПРАВИЛЬНОЕ РЕШЕНИЕ!                             # ГРУППЫ ЧИСЕЛ МЕЖДУ НУЛЯМИ
+def mergeNodes(head):                             def mergeNodes(head):                
+    res, cur = [], 0                                  res, cur = [], []            
+    for i in head:                                    for i in head:         
+        if i == 0:                                        if i == 0:         
+            if cur:                                           if cur:          
+                res.append(cur)                                   res.append(cur)                                  
+                cur = 0                                           cur = []                   
+        else:                                             else:
+            cur += i                                          cur.append(i)
+
+    if cur:                                           if cur:
+        res.append(cur)                                   res.append(cur)
+    return res                                        return res
+
+
+print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+"""
+
+
 
 
 
@@ -82,7 +228,8 @@ from dataclasses import dataclass
 
 
 
-# ### TODO 5. Longest Palindromic Substring
+
+# ### TODO 5. Longest Palindromic Substring  СУЩЕСТВУЕТ - Самый быстрый известный алгоритм  O(n) времени и O(n) памяти - Алгоритм МАНАКЕРА
 # Задача: дана строка s. Нужно вернуть самую длинную палиндромную ПОДСТРОКУ
 # (непрерывный фрагмент исходной строки).
 #
@@ -137,7 +284,11 @@ from dataclasses import dataclass
 
 
 # # # ### TODO РЕШИТЬ!               l -= 1  r += 1      if (r - l + 1) > (best_r - best_l + 1):
+### Самый быстрый известный алгоритм  O(n) времени и O(n) памяти - Алгоритм МАНАКЕРА - ЗЕРКАЛЬНОЕ ПЕРЕИСПОЛЬЗОВАНИЕ РАДИУСОВ
 # def longestPalindrome(self, s: str) -> str:
+
+
+
 
 
 
@@ -197,7 +348,6 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!   ВЫВОД ДЛИНЫ
 # def longestPalindrome(self, s: str) -> int:
-
 
 
 
@@ -314,6 +464,8 @@ from dataclasses import dataclass
 
 # # # # ### TODO РЕШИТЬ!
 # def canPartition(self, nums: List[int]) -> bool:
+
+
 
 
 
@@ -467,6 +619,8 @@ from dataclasses import dataclass
 
 
 
+
+
 # ============================================================
 # 2) Вариант "итеративный": стек (node, remaining_sum) (O(n) время, O(n) память)
 #
@@ -550,6 +704,7 @@ from dataclasses import dataclass
 #             return mirror(p.left, q.right) and mirror(p.right, q.left)
 #
 #         return mirror(root.left, root.right) if root else True
+
 
 
 # # # ### TODO РЕШИТЬ!   def mirror(p, q)   return mirror(p.left, q.right) and mirror(p.right, q.left)
@@ -744,6 +899,8 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!       p.left, q.left     p.right, q.right
 # def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
+
+
 
 
 # ============================================================
@@ -1069,6 +1226,8 @@ from dataclasses import dataclass
 
 
 
+
+
 # ============================================================
 # 1) Вариант "лучший для собеседования": стек операндов (O(n) время, O(n) память)
 #
@@ -1258,22 +1417,23 @@ from dataclasses import dataclass
 # class Solution:
 #     def simplifyPath(self, path: str) -> str:
 #         parts = path.split('/')
-#         res = []
+#         stack = []
 #
 #         for i in parts:
 #             if i == "" or i == ".":
 #                 continue
 #             if i == "..":
-#                 if res:
-#                     res.pop()
+#                 if stack:
+#                     stack.pop()
 #             else:
-#                 res.append(i)
+#                 stack.append(i)
 #
-#         return "/" + "/".join(res) if res else "/"
+#         return "/" + "/".join(stack) if stack else "/"
 
 
 # # ### TODO РЕШИТЬ!   if i == "" or i == ".":   if i == "..":
 # def simplifyPath(self, path: str) -> str:
+
 
 
 
@@ -1323,6 +1483,8 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!
 # def isValid(self, s: str) -> bool:
+
+
 
 
 
@@ -1410,8 +1572,9 @@ from dataclasses import dataclass
 
 
 
-# # # ### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!   key=lambda x: x[1]   points[0][1]   if s > arrow_x
 # def findMinArrowShots(self, points: List[List[int]]) -> int:
+
 
 
 
@@ -1447,7 +1610,7 @@ from dataclasses import dataclass
 #
 # Сложность:
 # Время: O(n)
-# Память: O(1) дополнительная (кроме ответа)
+# Память: O(1) дополнительная (кроме ответа),   O(n) с учётом ответа
 
 # from typing import List
 #
@@ -1482,6 +1645,9 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!
 # def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:
+
+
+
 
 
 
@@ -1566,14 +1732,15 @@ from dataclasses import dataclass
 #         return merged
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!    if s <= last_e
 # def merge(self, intervals: List[List[int]]) -> List[List[int]]:
 
 
 
 
+
 # ### TODO 228. Summary Ranges  + ВАРИАНТ С СОБЕСЕДОВАНИЯ   nums = sorted(set(nums))  return ", ".join(res)
-# Задача: дан отсортированный массив уникальных целых nums.
+# Задача: дан НЕ отсортированный массив уникальных целых nums.
 # Нужно вернуть список диапазонов, которые покрывают все числа ровно один раз.
 #
 # Диапазон [a,b]:
@@ -1600,7 +1767,10 @@ from dataclasses import dataclass
 #
 # Сложность:
 # Время: O(n)
-# Память: O(1) дополнительная (кроме ответа)
+# Память: O(1) дополнительная (кроме ответа). С учётом результата res - O(k), в худшем O(n).
+# k — это количество диапазонов (элементов) в результате res.
+# Пример:
+# nums = [0, 1, 2, 4, 5, 7] → res = ["0->2", "4->5", "7"] → тут k = 3.
 
 # from typing import List
 #
@@ -1753,8 +1923,9 @@ from dataclasses import dataclass
 
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!  + ВЫВОД ПОСЛЕДОВАТЕЛЬНОСТИ
 # def longestConsecutive(self, nums: List[int]) -> int:
+
 
 
 
@@ -1882,6 +2053,9 @@ from dataclasses import dataclass
 
 
 
+
+
+
 # ============================================================
 # 2) Вариант "простой": sliding window set размера k (O(n) время, O(k) память)
 #
@@ -1966,7 +2140,6 @@ from dataclasses import dataclass
 
 
 
-
 # ============================================================
 # 2) Вариант "простой": set для посещённых значений (O(k) память)
 #
@@ -2035,12 +2208,14 @@ from dataclasses import dataclass
 #         for i, v in enumerate(nums):
 #             need = target - v
 #             if need in seen:
-#                 return [seen[need], i]
+#                 return [seen[need], i]   # <-- ИНДЕКСЫ
+#                 # return [need, v]       # <-- САМИ ЗНАЧЕНИЯ
 #             seen[v] = i
 
 
 # # # ### TODO РЕШИТЬ!
 # def twoSum(self, nums: list[int], target: int) -> list[int]:
+
 
 
 
@@ -2118,6 +2293,8 @@ from dataclasses import dataclass
 
 
 
+
+
 # ============================================================
 # 2) Вариант "быстрее для a-z": ключ = частоты 26 букв (O(n * k))
 #
@@ -2173,15 +2350,16 @@ from dataclasses import dataclass
 
 # from collections import Counter
 #
-# class Solution:
-#     def isAnagram(self, s: str, t: str) -> bool:
-#         if len(s) != len(t):
+# class Solution:                                       ### ТОЖЕ САМОЕ
+#     def isAnagram(self, s: str, t: str) -> bool:      def isAnagram(self, s: str, t: str) -> bool:
+#         if len(s) != len(t):                              return len(s) == len(t) and Counter(s) == Counter(t)
 #             return False
 #         return Counter(s) == Counter(t)
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!  2 ВАРИАНТА!
 # def isAnagram(self, s: str, t: str) -> bool:
+
 
 
 
@@ -2337,7 +2515,6 @@ from dataclasses import dataclass
 
 
 
-
 # ### TODO 383. Ransom Note
 # Задача: даны строки ransomNote и magazine.
 # Нужно вернуть True, если ransomNote можно составить из букв magazine,
@@ -2378,6 +2555,7 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!
 # def canConstruct(self, ransomNote: str, magazine: str) -> bool:
+
 
 
 
@@ -2472,6 +2650,8 @@ from dataclasses import dataclass
 
 
 
+
+
 # ============================================================
 # 1b) Вариант: вернуть саму подстроку (sliding window + last seen index)
 #
@@ -2557,40 +2737,160 @@ from dataclasses import dataclass
 #         return 0 if best == float("inf") else best
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!   + ВЫВОД ПОДМАССИВА
 # def minSubArrayLen(self, target: int, nums: list[int]) -> int:
 
 
 
+
+
+
+
+### ВЫВОД ПОДМАССИВА
 # ============================================================
-# 2) Вариант "альтернатива": префикс-суммы + бинарный поиск (O(n log n), O(n) память)
+# 2) Вариант "тот же Sliding Window", но ещё вернуть сам подмассив (O(n) время, O(1) доп.память)
 #
 # Идея:
-# Строим prefix, где prefix[i] = сумма nums[0..i-1], prefix[0]=0.
-# Для каждого i ищем минимальный j, что prefix[j] - prefix[i] >= target,
-# то есть prefix[j] >= prefix[i] + target. Это lower_bound по prefix.
+# Алгоритм тот же, но когда находим более короткое окно — запоминаем его границы (best_l, best_r).
+# В конце можем вернуть длину и срез nums[best_l:best_r+1].
 #
 # Сложность:
-# Время: O(n log n)
+# Время: O(n)
+# Память: O(1) доп.память (не считаем память под возвращаемый срез)
+
+# class Solution:
+#     def minSubArrayLenWithArray(self, target: int, nums: list[int]) -> tuple[int, list[int]]:
+#         l = 0
+#         cur_sum = 0
+#         best = float("inf")
+#         best_l = best_r = -1
+#
+#         for i, v in enumerate(nums):
+#             cur_sum += v
+#             while cur_sum >= target:
+#                 if i - l + 1 < best:
+#                     best = i - l + 1
+#                     best_l = l
+#                     best_r = i
+#
+#                 cur_sum -= nums[l]
+#                 l += 1
+#
+#         if best == float("inf"):
+#             return 0, []
+#
+#         return best, nums[best_l:best_r + 1]
+
+
+
+
+
+
+### TODO БОНУС
+# ### TODO 325. Maximum Size Subarray Sum Equals k  🔒
+# Задача: дан целочисленный массив nums (могут быть отрицательные) и число k.
+# Нужно вернуть максимальную длину подмассива, сумма которого ровно равна k.
+# Если такого подмассива нет — вернуть 0.
+#
+# Example 1:
+# Input:  nums = [1, -1, 5, -2, 3], k = 3
+# Output: 4
+# Explanation: подмассив [1, -1, 5, -2] суммируется в 3 и самый длинный.
+#
+# Example 2:
+# Input:  nums = [-2, -1, 2, 1], k = 1
+# Output: 2
+# Explanation: подмассив [-1, 2] суммируется в 1 и самый длинный.
+#
+# Паттерн: Prefix Sum + Hash Map (earliest index)
+
+
+# ============================================================
+# 1) Вариант "лучший для собеседования": Prefix Sum + Hash Map (O(n) время, O(n) память)
+#
+# Идея:
+# Заводим префиксную сумму prefix = сумма nums[0..i].
+# Сумма подмассива (j+1 .. i) равна k, если:
+#     prefix[i] - prefix[j] = k  =>  prefix[j] = prefix[i] - k
+#
+# Поэтому на каждом шаге i:
+# - считаем need = prefix - k
+# - если need уже встречался раньше на индексе j, то длина = i - j
+# Чтобы длина была максимальной, для каждой prefix-суммы храним САМЫЙ РАННИЙ индекс.
+#
+# Почему не Sliding Window:
+# В nums могут быть отрицательные числа, из-за этого сумма окна не монотонна
+# и "сжимать/расширять" окно по условию суммы нельзя корректно.
+#
+# Сложность:
+# Время: O(n)
 # Память: O(n)
 
-# import bisect
-#
+
 # class Solution:
-#     def minSubArrayLen(self, target: int, nums: list[int]) -> int:
-#         n = len(nums)
-#         prefix = [0] * (n + 1)
-#         for i in range(n):
-#             prefix[i + 1] = prefix[i] + nums[i]
+#     def maxSubArrayLen(self, nums: list[int], k: int) -> int:
+#         first_index = {0: -1}  # prefix_sum -> earliest index
+#         prefix = 0
+#         best = 0
 #
-#         best = float("inf")
-#         for i in range(n):
-#             need = prefix[i] + target
-#             j = bisect.bisect_left(prefix, need, i + 1)
-#             if j <= n:
-#                 best = min(best, j - i)
+#         for i, v in enumerate(nums):
+#             prefix += v
 #
-#         return 0 if best == float("inf") else best
+#             need = prefix - k
+#             if need in first_index:
+#                 best = max(best, i - first_index[need])
+#
+#             # сохраняем только самый ранний индекс
+#             if prefix not in first_index:
+#                 first_index[prefix] = i
+#
+#         return best
+
+
+
+# # # ### TODO РЕШИТЬ!  БОНУС  + ВЫВОД ПОДМАССИВА
+# def maxSubArrayLen(self, nums: list[int], k: int) -> int:
+
+
+
+
+# ============================================================
+# 2) Вариант "тот же Prefix Sum + Hash Map", но ещё вернуть сам подмассив (O(n) время, O(n) память)
+#
+# Идея:
+# Всё то же самое, но когда находим более длинный ответ — запоминаем границы (best_l, best_r).
+# Если prefix - k встречался на индексе j, то подмассив (j+1 .. i) суммируется в k.
+#
+# Сложность:
+# Время: O(n)
+# Память: O(n)
+
+# class Solution:
+#     def maxSubArrayLenWithArray(self, nums: list[int], k: int) -> tuple[int, list[int]]:
+#         first_index = {0: -1}  # prefix_sum -> earliest index
+#         prefix = 0
+#         best = 0
+#         best_l = best_r = -1
+#
+#         for i, v in enumerate(nums):
+#             prefix += v
+#
+#             need = prefix - k
+#             if need in first_index:
+#                 j = first_index[need]
+#                 length = i - j
+#                 if length > best:
+#                     best = length
+#                     best_l, best_r = j + 1, i
+#
+#             # сохраняем только самый ранний индекс
+#             if prefix not in first_index:
+#                 first_index[prefix] = i
+#
+#         if best == 0:
+#             return 0, []
+#
+#         return best, nums[best_l:best_r + 1]
 
 
 
@@ -2674,8 +2974,10 @@ from dataclasses import dataclass
 #         return res
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!    range(n - 2)    nums[i] > 0 break   i > 0 and nums[i] == nums[i - 1] continue    l, r = i+1, n-1
 # def threeSum(self, nums: list[int]) -> list[list[int]]:
+
+
 
 
 
@@ -2765,6 +3067,8 @@ from dataclasses import dataclass
 
 
 
+
+
 # ### TODO 167. Two Sum II - Input Array Is Sorted
 # Задача: дан отсортированный (неубывающий) массив numbers (1-indexed) и target.
 # Нужно найти два числа numbers[index1] и numbers[index2], которые в сумме дают target,
@@ -2816,8 +3120,9 @@ from dataclasses import dataclass
 #         return []  # по условию не понадобится
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!                                            s = numbers[l] + numbers[r]       [l + 1, r + 1]
 # def twoSum(self, numbers: list[int], target: int) -> list[int]:
+
 
 
 
@@ -2889,6 +3194,8 @@ from dataclasses import dataclass
 
 # # # ### TODO РЕШИТЬ!
 # def isSubsequence(self, s: str, t: str) -> bool:
+
+
 
 
 
@@ -2970,8 +3277,11 @@ from dataclasses import dataclass
 #         return True
 
 
-# # ### TODO РЕШИТЬ!
+# # ### TODO РЕШИТЬ!    while l < r
 # def isPalindrome(self, s: str) -> bool:
+
+
+
 
 
 
@@ -3132,7 +3442,7 @@ from dataclasses import dataclass
 #         return " ".join(s.split()[::-1])
 
 
-# # # ### TODO РЕШИТЬ!
+# # # ### TODO РЕШИТЬ!                      i = len(s) - 1      while i >= 0:   i -= 1    j -= 1
 # def reverseWords(self, s: str) -> str:
 
 
@@ -3226,7 +3536,7 @@ from dataclasses import dataclass
 #         return prefix
 
 
-# # ### TODO РЕШИТЬ!
+# # ### TODO РЕШИТЬ!   3 ВАРИАНТА   2 ХОРОШИХ + 1 ПЛОХОЙ!       [:-1] == с начала до элемента с индексом -1, но не включая его
 # def longestCommonPrefix(self, strs: List[str]) -> str:
 
 
@@ -3297,6 +3607,7 @@ from dataclasses import dataclass
 
 
 
+
 # ### TODO 58. Length of Last Word
 # Задача: дана строка s из слов и пробелов.
 # Нужно вернуть длину последнего слова.
@@ -3328,25 +3639,27 @@ from dataclasses import dataclass
 # Время: O(n)
 # Память: O(1)
 
-# class Solution:
-#     def lengthOfLastWord(self, s: str) -> int:
-#         i = len(s) - 1
+# class Solution:                                              ### ЧТОБЫ ВЫВЕСТИ ПОСЛЕДНЕЕ СЛОВО!
+#     def lengthOfLastWord(self, s: str) -> int:               def lengthOfLastWord(s: str) -> int:
+#         i = len(s) - 1                                           i = len(s) - 1
 #
-#         # пропускаем хвостовые пробелы
-#         while i >= 0 and s[i] == ' ':
-#             i -= 1
-#
-#         # считаем длину последнего слова
+#         # пропускаем хвостовые пробелы                           # пропускаем хвостовые пробелы
+#         while i >= 0 and s[i] == ' ':                            while i >= 0 and s[i] == ' ':
+#             i -= 1                                                   i -= 1
+#                                                                  # if i < 0:              ###  если строка " " или ""
+#         # считаем длину последнего слова                         #     return ""
 #         length = 0
-#         while i >= 0 and s[i] != ' ':
-#             length += 1
-#             i -= 1
-#
-#         return length
+#         while i >= 0 and s[i] != ' ':                            end = i  # конец последнего слова
+#             length += 1                                          # идём влево до пробела (начало слова)
+#             i -= 1                                               while i >= 0 and s[i] != ' ':
+#                                                                      i -= 1
+#         return length                                            return s[i + 1:end + 1]
+#                                                                  print(lengthOfLastWord('Hello World'))  # -> World
 
-
-# ### TODO РЕШИТЬ!
+# ### TODO РЕШИТЬ!                          i = len(s) - 1
 # def lengthOfLastWord(self, s: str) -> int:
+
+
 
 
 
@@ -3425,7 +3738,7 @@ from dataclasses import dataclass
 #
 # Сложность:
 # Время: O(1)
-# Память: O(1)
+# Память: O(1)  для num в диапазоне 1..3999
 
 # class Solution:
 #     def intToRoman(self, num: int) -> str:
@@ -3514,8 +3827,8 @@ from dataclasses import dataclass
 # - иначе -> прибавляем и обновляем previous
 #
 # Сложность:
-# Время: O(n)
-# Память: O(1)
+# Время: O(n), где n = len(s)
+# Память: O(1) (словарь константный)
 
 # class Solution:
 #     def romanToInt(self, s: str) -> int:
@@ -3536,8 +3849,13 @@ from dataclasses import dataclass
 #         return total
 
 
-# ### TODO РЕШИТЬ!
+
+# # # ### TODO РЕШИТЬ!    res - НЕ УБИРАТЬ!     val < prev
 # def romanToInt(self, s: str) -> int:
+#     res = {
+#         'I': 1, 'V': 5, 'X': 10, 'L': 50,
+#         'C': 100, 'D': 500, 'M': 1000
+#     }
 
 
 
@@ -3646,7 +3964,7 @@ from dataclasses import dataclass
 #         return water
 
 
-# ### TODO РЕШИТЬ!
+# ### TODO РЕШИТЬ!    <   <=  >=
 # def trap(self, height: list[int]) -> int:
 
 
@@ -3747,6 +4065,10 @@ from dataclasses import dataclass
 
 # ### TODO РЕШИТЬ!
 # def candy(self, ratings: list[int]) -> int:
+
+
+
+
 
 
 
@@ -4036,7 +4358,7 @@ from dataclasses import dataclass
 #         return h
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!                                    start=1      if v >= i
 # def hIndex(self, citations: List[int]) -> int:
 
 
@@ -4134,6 +4456,7 @@ from dataclasses import dataclass
 
 ### TODO РЕШИТЬ!
 # def jump(self, nums: List[int]) -> int:
+
 
 
 
@@ -4281,8 +4604,9 @@ from dataclasses import dataclass
 
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!    float('inf') == math.inf
 # def maxProfit(self, prices: List[int]) -> int:
+
 
 
 
@@ -4321,6 +4645,7 @@ from dataclasses import dataclass
 #         if n == 0:
 #             return
 #         k %= n
+#         k = n - k      # теперь это эквивалент поворота ВПРАВО  <----
 #         if k == 0:
 #             return
 #
@@ -4336,8 +4661,9 @@ from dataclasses import dataclass
 
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!  deque.rotate поворот ВЛЕВО !   Написить поворот ВПРАВО!   k = n - k
 # def rotate(self, nums: List[int], k: int) -> None:
+
 
 
 
@@ -4416,6 +4742,9 @@ from dataclasses import dataclass
 
 ### TODO РЕШИТЬ!
 # def majorityElement(self, nums: List[int]) -> int:
+
+
+
 
 
 
@@ -4576,8 +4905,9 @@ from dataclasses import dataclass
 
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!  РАБОТАЕТ только если массив ОТСОРТИРОВАН!
 # def removeDuplicates(self, nums: List[int]) -> int:
+
 
 
 
@@ -4617,14 +4947,74 @@ from dataclasses import dataclass
 # Не рекомендуется для интервью, т.к. нужно in-place и без доп. памяти.
 #
 # Сложность:
-# Время: O(n)
-# Память: O(n)
+# Время: O(n log n) (set: O(n) + сортировка уникальных: O(u log u), в худшем u = n)
+# Память: O(n) (set + список uniq)
+
+# O(n log n) — оценка через размер входа: считаем, будто сортируем/обрабатываем n элементов.       # <--------
+# O(u log u) — точнее здесь: сортируем только u уникальных элементов после set(nums) (u ≤ n).      # <--------
+
 
 # class Solution:
 #     def removeDuplicates(self, nums: List[int]) -> int:
 #         uniq = sorted(set(nums))
 #         nums[:len(uniq)] = uniq
 #         return len(uniq)
+
+
+
+
+# ### TODO БОНУС  Написать 3 варианта  # 1) ДЛЯ ЛЮБЫХ ЭЛЕМЕНТОВ  2) для ОТСОРТИРОВАННОГО/СОСЕДНИЕ дубликаты  3) для ХЭШИРУЕМЫХ элементов
+### TODO РЕШИТЬ! УДАЛИТЬ ДУБЛИКАТЫ!
+
+# def clean_duplicates(lst: list):
+
+
+
+
+
+# # ============================================================
+# # 1) Вариант: res + проверка "if i not in res"
+# #
+# # Сложность:
+# # Время: O(n^2)  (каждый раз "i in res" — линейный поиск по res)
+# # Память: O(n)   (результат)
+#
+# ### ДЛЯ ЛЮБЫХ ЭЛЕМЕНТОВ
+# def clean_duplicates(lst: list[dict]) -> list[dict]:
+#     res = []
+#     for i in lst:
+#         if i not in res:
+#             res.append(i)
+#     return res
+#
+# print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
+#
+#
+# ## Вариант 1A только “соседние” дубликаты, то есть работает корректно только для отсортированного списка
+#
+# # Вариант 1A (только для отсортированного / соседние дубликаты)        # Вариант 1B (работает в любом порядке, для хэшируемых элементов)
+#
+# # Сложность:                                                           # Сложность:
+#                                                                        # Время: O(n) в среднем
+# # Время: O(n)  (один проход по списку)                                 # (проверка/добавление в set ~ O(1) на элемент)
+# # Память: O(n) (возвращаем срез lst[:write] — создаётся новый список)  # Память: O(n) (set seen + список результата)
+# ### ЕСЛИ МАССИВ ОТСОРТИРОВАН!!                                         ### РАБОТАЕТ В ЛЮБОМ СЛУЧАЕ!
+# def clean_duplicates(lst: list) -> list:                               def clean_duplicates(lst: list) -> list:
+#     write = 0                                                              seen = set()
+#     for i in lst:                                                          res = []
+#         if write == 0 or i != lst[write-1]:                                for i in lst:
+#             lst[write] = i                                                     if i not in seen:
+#             write += 1                                                             seen.add(i)
+#     # del lst[write:]   # ЧТОБЫ IN-PLACE это тот же объект(список)                 res.append(i)
+#     return lst[:write]  # создаётся НОВЫЙ список                           return res
+#
+#
+#
+# ### (НЕ работает для неотсортированного)
+# print(clean_duplicates([1, 2, 1]))        # -> [1, 2, 1]               ### НЕ работает для нехэшируемых: dict, list, set
+# print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 1, 2, 3]         print(clean_duplicates([1, 2, 1]))        # -> [1, 2]
+# ### (РАБОТАЕТ, потому что дубликаты подряд)                            print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 3]
+# print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]               print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]
 
 
 
@@ -4644,10 +5034,6 @@ from dataclasses import dataclass
 # Output: 5, nums = [0,1,4,0,3,_,_,_]
 #
 # Паттерн: Two Pointers / In-place
-
-
-
-
 
 
 # ============================================================
@@ -4673,6 +5059,8 @@ from dataclasses import dataclass
 
 ### TODO РЕШИТЬ!
 # def removeElement(nums, val):
+
+
 
 
 
@@ -4789,6 +5177,7 @@ from dataclasses import dataclass
 
 
 
+
 # ### TODO Math
 
 
@@ -4837,6 +5226,7 @@ from dataclasses import dataclass
 
 ### TODO РЕШИТЬ!
 # def plusOne(self, digits: List[int]) -> List[int]:
+
 
 
 

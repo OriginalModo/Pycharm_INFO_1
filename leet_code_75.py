@@ -20,6 +20,149 @@ from collections import deque
 
 
 
+# ### TODO БОНУС ЗАДАЧИ
+
+
+
+# НАПИСАТЬ 4 ВАРИАНТА     ОБЫЧНЫЙ+РЕГУЛЯРКА+itertools.groupby *2
+# # ### TODO  Интересный пример Повтори кстати сам его придумал  a = 'aaaabbсaa' преобразуется в 'a4b2с1a2'
+
+a = 'aaaabbcaa'
+
+
+from itertools import groupby
+def rle(s: str) -> str:
+    pass
+
+
+
+# print(rle("aaaabbcaa"))  # a4b2c1a2
+
+
+### EASY - РЕШЕНИЕ itertools.groupby
+# print(  ) # a4b2c1a2
+# print(  ) # a4b2c1a2
+
+
+
+# a = 'aaaabbсaa' преобразуется в 'a4b2с1a2'  Считаем символы которые идут подряд
+r"""
+a = 'aaaabbcaa'
+
+### ВАРИАНТ 1,2 
+# Сложность:
+# Время: O(n), где n = len(a)
+# Память: O(n) на результат, доп. память O(k) из-за list(j), где k — размер текущей группы (в худшем O(n))
+
+
+### EASY - РЕШЕНИЕ
+print(''.join([f'{i}{len(list(j))}' for i, j in groupby(a)]))      # -> a4b2c1a2
+
+# Сложность:
+# Время: O(n), где n = len(a)
+# Память: O(n) на результат, доп. память O(1)
+
+
+### EASY - РЕШЕНИЕ
+print(''.join([f'{i}{sum(1 for _ in j)}' for i, j in groupby(a)]))  # -> a4b2c1a2
+
+
+
+### ВАРИАНТ 3
+# Сложность:
+# Время: O(n), где n = len(s)
+# Память: O(n) на результат (в худшем случае), доп. память O(1)
+
+def rle(s: str) -> str:
+    if not s:
+        return ""
+    res = []
+    prev = s[0]
+    start = 1
+
+    for i in s[1:]:
+        if i == prev:
+            start += 1
+        else:
+            res.append(prev + str(start))
+            prev = i
+            start = 1
+
+    res.append(prev + str(start))
+    return "".join(res)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
+
+
+### ВАРИАНТ 4
+# Сложность:
+# Время: O(n) — regex проходит по строке и на каждую “группу” вызывает lambda.
+# Память: O(n) — под результат (новая строка) + служебные структуры regex.
+
+# Придумал сам)
+def rle(s: str) -> str:
+    return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+
+print(rle("aaaabbcaa"))  # a4b2c1a2
+"""
+
+
+
+
+
+# # ### TODO Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИСАТЬ 2 ВАРИАНТА   СУММА+ГРУППА
+# if s: нужен, чтобы не добавлять пустую сумму.
+
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+
+
+def mergeNodes(head):
+    pass
+
+
+
+
+# ### СУММА
+# print(mergeNodes(head))  # -> [4, 11]
+# ### ГРУППА ЧИСЕЛ
+# print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+
+
+# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros
+# if s: нужен, чтобы не добавлять пустую сумму.
+r"""
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+
+
+# Сложность:
+# Время: O(n)
+# Память: O(k) на res, где k — число сегментов; в худшем случае k = O(n) ⇒ память O(n)   <---- ВАРИАНТ 1
+# Память: O(n), т.к. сохраняем все элементы в группах (плюс O(k) на списки-группы).      <---- ВАРИАНТ 2
+
+
+# ВАРИАНТ 1                                       # ВАРИАНТ 2 
+# ПРАВИЛЬНОЕ РЕШЕНИЕ!                             # ГРУППЫ ЧИСЕЛ МЕЖДУ НУЛЯМИ
+def mergeNodes(head):                             def mergeNodes(head):                
+    res, cur = [], 0                                  res, cur = [], []            
+    for i in head:                                    for i in head:         
+        if i == 0:                                        if i == 0:         
+            if cur:                                           if cur:          
+                res.append(cur)                                   res.append(cur)                                  
+                cur = 0                                           cur = []                   
+        else:                                             else:
+            cur += i                                          cur.append(i)
+
+    if cur:                                           if cur:
+        res.append(cur)                                   res.append(cur)
+    return res                                        return res
+
+
+print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+"""
+
+
+
 
 # ### TODO Intervals
 
@@ -76,7 +219,7 @@ from collections import deque
 #         return arrows
 
 
-### TODO РЕШИТЬ!   key=lambda x: x[1]   points[0][1]   if s >
+### TODO РЕШИТЬ!   key=lambda x: x[1]   points[0][1]   if s > arrow_x
 # def findMinArrowShots(self, points: List[List[int]]) -> int:
 
 
@@ -146,7 +289,7 @@ from collections import deque
 #         return removals
 
 
-### TODO РЕШИТЬ!  key=lambda x: x[1]   intervals[0][1]   if s <
+### TODO РЕШИТЬ!  key=lambda x: x[1]   intervals[0][1]   if s < last_end
 # def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
 
 
@@ -275,6 +418,7 @@ from collections import deque
 
 
 
+
 # ============================================================
 # 2) Вариант "чуть более явный": выделяем helper для поиска минимума
 #
@@ -362,6 +506,7 @@ from collections import deque
 
 
 
+
 # ============================================================
 # 2) Вариант "короткий": рекурсивный
 #
@@ -436,8 +581,10 @@ from collections import deque
 #         return best_idx + 1  # уровни считаются с 1
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!     left   right
 # def maxLevelSum(self, root: Optional[TreeNode]) -> int:
+
+
 
 
 
@@ -649,6 +796,7 @@ from collections import deque
 
 
 
+
 # ### TODO 1372. Longest ZigZag Path in a Binary Tree
 # Задача: дано бинарное дерево root.
 # ZigZag-путь:
@@ -732,8 +880,9 @@ from collections import deque
 #         return self.pathLength
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!     False, steps + 1  True, 1         True, steps + 1   False, 1
 # def longestZigZag(self, root: Optional[TreeNode]) -> int:
+
 
 
 
@@ -769,17 +918,17 @@ from collections import deque
 
 # class Solution:
 #     def pathSum(self, root: Optional[TreeNode], targetSum: int) -> int:
-#         def from_node(node, need):
+#         def dfs(node, need):
 #             if not node:
 #                 return 0
 #             cnt = 1 if node.val == need else 0
-#             cnt += from_node(node.left, need - node.val)
-#             cnt += from_node(node.right, need - node.val)
+#             cnt += dfs(node.left, need - node.val)
+#             cnt += dfs(node.right, need - node.val)
 #             return cnt
 #
 #         if not root:
 #             return 0
-#         return (from_node(root, targetSum) +
+#         return (dfs(root, targetSum) +
 #                 self.pathSum(root.left, targetSum) +
 #                 self.pathSum(root.right, targetSum))
 
@@ -905,6 +1054,8 @@ from collections import deque
 
 
 
+
+
 # ============================================================
 # 2) Вариант "лучше для собеседования в Python" (итеративный DFS без рекурсии)
 #
@@ -996,6 +1147,9 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def leafSimilar(self, root1, root2):
+
+
+
 
 
 
@@ -1147,6 +1301,8 @@ from collections import deque
 
 
 
+
+
 # 2) Альтернатива: Итеративно (BFS по уровням)
 # BFS = Breadth-First Search — поиск в ширину (по уровням).
 
@@ -1218,6 +1374,8 @@ from collections import deque
 
 ### TODO РЕШИТЬ!       DFS -> root.right  root.left      BFS ->  q = deque([(root, 1)])
 # def minDepth(self, root: Optional[TreeNode]) -> int:
+
+
 
 
 
@@ -1329,6 +1487,7 @@ from collections import deque
 
 
 
+
 # ### TODO 206. Reverse Linked List
 # Задача: дан head односвязного списка. Нужно развернуть список и вернуть новый head.
 #
@@ -1387,6 +1546,7 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+
 
 
 
@@ -1510,6 +1670,7 @@ from collections import deque
 
 
 
+
 # ### TODO Queue
 
 
@@ -1576,6 +1737,7 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def predictPartyVictory(senate: str) -> str:
+
 
 
 
@@ -1730,6 +1892,10 @@ from collections import deque
 
 
 
+
+
+
+
 # 2) Альтернатива: regex (Python-only трюк)
 # Важно: regex не умеет нормально парсить вложенные скобки напрямую,
 # поэтому делаем повторные замены “самых внутренних” блоков вида k[letters],
@@ -1834,6 +2000,7 @@ from collections import deque
 
 
 
+
 # ### TODO 2390. Removing Stars From a String
 # Задача: для каждой '*' удалить саму звёздочку и ближайший НЕ-звёздный символ слева.
 # Гарантируется, что операция всегда возможна, и итоговая строка уникальна.
@@ -1875,6 +2042,8 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def removeStars(s: str) -> str:
+
+
 
 
 
@@ -1929,6 +2098,10 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def equalPairs(grid: list[list[int]]) -> int:
+
+
+
+
 
 
 
@@ -2026,6 +2199,8 @@ from collections import deque
 
 
 
+
+
 # 2) Без Counter (ручной словарь частот)
 # Паттерн: Hash Table / Counting
 
@@ -2089,13 +2264,13 @@ from collections import deque
 # Время: O(n) — считаем частоты + проверяем уникальность.
 # Память: O(n) — словарь частот + set частот.
 
-
-# from collections import Counter
-
-# def uniqueOccurrences(arr: list[int]) -> bool:
-#     freq = Counter(arr)
-#     counts = list(freq.values())
-#     return len(counts) == len(set(counts))
+# ТОЖЕ САМОЕ                                                   # ТОЖЕ САМОЕ
+# from collections import Counter                              def uniqueOccurrences(arr: list[int]) -> bool:
+#                                                                   freq = {}
+# def uniqueOccurrences(arr: list[int]) -> bool:                   for i in arr:
+#     freq = Counter(arr)                                              freq[i] = freq.get(i, 0) + 1
+#     counts = list(freq.values())                                 counts = list(freq.values())
+#     return len(counts) == len(set(counts))                       return len(set(counts)) == len(counts)
 #
 #
 # print(uniqueOccurrences([1, 2, 2, 1, 1, 3]))                  # -> True
@@ -2264,15 +2439,15 @@ from collections import deque
 # Время: O(n) — один проход по массиву gain.
 # Память: O(1) — только две переменные (cur, best).
 
-
-# def largestAltitude(gain: list[int]) -> int:
-#     cur = 0
-#     best = 0
-#     for g in gain:
-#         cur += g
-#         if cur > best:
-#             best = cur
-#     return best
+                                                     ### ТОЖЕ САМОЕ
+# def largestAltitude(gain: list[int]) -> int:       # def largestAltitude(gain: list[int]) -> int:
+#     cur = 0                                        #     cur = 0
+#     best = 0                                       #     best = 0
+#     for g in gain:                                 #     for g in gain:
+#         cur += g                                   #         cur += g
+#         if cur > best:                             #         best = max(best, cur)
+#             best = cur                             #
+#     return best                                    #     return best
 #
 #
 # print(largestAltitude([-5, 1, 5, 0, -7]))           # -> 1
@@ -2284,6 +2459,7 @@ from collections import deque
 
 ### TODO РЕШИТЬ!
 # def largestAltitude(gain: list[int]) -> int:
+
 
 
 
@@ -2347,6 +2523,7 @@ from collections import deque
 
 ### TODO РЕШИТЬ!    best = max(best, i - left)
 # def longestSubarray(nums: list[int]) -> int:
+
 
 
 
@@ -2455,7 +2632,7 @@ from collections import deque
 #         return best
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!  БОНУС  ЕДИНИЦЫ ПОДРЯД!  перевернуть только 1
 # def findMaxConsecutiveOnes(self, nums: List[int]) -> int:
 
 
@@ -2503,9 +2680,8 @@ from collections import deque
 #         return best
 
 
-### TODO РЕШИТЬ!
+### TODO РЕШИТЬ!  БОНУС  ЕДИНИЦЫ ПОДРЯД!
 # def findMaxConsecutiveOnes(self, nums: List[int]) -> int:
-
 
 
 
@@ -2545,36 +2721,40 @@ from collections import deque
 # переменные cur, best, i — тоже константное число.
 # Значит дополнительная память не зависит от n → O(1).
 
-
-# def maxVowels(s: str, k: int) -> int:
-#     vowels = set("aeiou")
-#
-#     # гласные в первом окне
-#     cur = sum(1 for ch in s[:k] if ch in vowels)
-#     best = cur
-#
-#     # двигаем окно
-#     for i in range(k, len(s)):
-#         if s[i] in vowels:
-#             cur += 1
-#         if s[i - k] in vowels:
-#             cur -= 1
-#         if cur > best:
-#             best = cur
-#             if best == k:   # максимум возможный, дальше не улучшить
-#                 return k
-#
-#     return best
-#
-#
-# print(maxVowels("abciiidef", 3))  # -> 3
-# print(maxVowels("aeiou", 2))      # -> 2
-# print(maxVowels("leetcode", 3))   # -> 2
+                                                                             ### ТОЖЕ САМОЕ НО С best = max(best, cur) ПРОЩЕ!!!  <---
+# def maxVowels(s: str, k: int) -> int:                                      # def maxVowels(s: str, k: int) -> int:
+#     vowels = set("aeiou")                                                  #     vowels = set("aeiou")
+#                                                                            #
+#     # гласные в первом окне                                                #     # гласные в первом окне
+#     cur = sum(1 for ch in s[:k] if ch in vowels)                           #     cur = sum(1 for ch in s[:k] if ch in vowels)
+#     best = cur                                                             #     best = cur
+#                                                                            #
+#     # двигаем окно                                                         #     # двигаем окно
+#     for i in range(k, len(s)):                                             #     for i in range(k, len(s)):
+#         if s[i] in vowels:                                                 #         if s[i] in vowels:
+#             cur += 1                                                       #             cur += 1
+#         if s[i - k] in vowels:                                             #         if s[i - k] in vowels:
+#             cur -= 1                                                       #             cur -= 1
+#         if cur > best:                                                     #         best = max(best, cur)
+#             best = cur                                                     #
+#             if best == k:   # максимум возможный, дальше не улучшить       #             if best == k:
+#                 return k                                                   #                 return k
+#                                                                            #
+#     return best                                                            #     return best
+#                                                                            #
+#                                                                            #
+# print(maxVowels("abciiidef", 3))  # -> 3                                   # print(maxVowels("abciiidef", 3))  # -> 3
+# print(maxVowels("aeiou", 2))      # -> 2                                   # print(maxVowels("aeiou", 2))      # -> 2
+# print(maxVowels("leetcode", 3))   # -> 2                                   # print(maxVowels("leetcode", 3))   # -> 2
 
 
 
 # # # ### TODO РЕШИТЬ!   for i in range(k, len(s)):
 # def maxVowels(s: str, k: int) -> int:
+
+
+
+
 
 
 
@@ -2599,6 +2779,10 @@ from collections import deque
 
 # # # ### TODO РЕШИТЬ!   + ВЫВОД ПОДСТРОКИ   for i in range(k, len(s)):  window = s[best_start:best_start + k]
 # def maxVowels(s: str, k: int) -> str:
+
+
+
+
 
 
 
@@ -2675,8 +2859,12 @@ from collections import deque
 # print(findMaxAverage([5], 1))                      # -> 5.0
 
 
-# # # ### TODO РЕШИТЬ!    for i in range(k, len(nums))    window_sum += nums[i] - nums[i - k]
+# # # ### TODO РЕШИТЬ!   window_sum = sum(nums[:k])  for i in range(k, len(nums))    window_sum += nums[i] - nums[i - k]
 # def findMaxAverage(nums: list[int], k: int) -> float:
+
+
+
+
 
 
 
@@ -2737,6 +2925,8 @@ from collections import deque
 
 
 
+
+
 # ### TODO 11. Container With Most Water
 # Задача: по массиву height найти две линии (i и j), которые дают максимальную площадь воды.
 # Площадь = (j - i) * min(height[i], height[j]).
@@ -2781,6 +2971,8 @@ from collections import deque
 
 # # # ### TODO РЕШИТЬ!
 # def maxArea(height: list[int]) -> int:
+
+
 
 
 
@@ -2912,7 +3104,7 @@ from collections import deque
 # Время: O(n)
 # Память: O(1)
 
-
+### НУЛИ в НАЧАЛО  ### БЕЗ ОПТИМИЗАЦИИ
 # def moveZeroes_swap(nums: list[int]) -> None:                     # def moveZeroes_swap(nums: list[int]) -> None:
 #     write = 0                                                     #     write = 0
 #     for read in range(len(nums)):                                 #     for i, v in enumerate(nums):
@@ -2924,6 +3116,16 @@ from collections import deque
 # c = [0, 1, 0, 3, 12]
 # moveZeroes_swap(c)
 # print(c)  # -> [1, 3, 12, 0, 0]
+
+
+### Это микро-ОПТИМИЗАЦИЯ чтобы не делать self-swap, когда write == i.
+# def moveZeroes_swap(nums: list[int]) -> None:
+#     write = 0
+#     for read in range(len(nums)):
+#         if nums[read] != 0:
+#             if write != i:
+#                nums[write], nums[read] = nums[read], nums[write]
+#             write += 1
 
 
 
@@ -2943,6 +3145,17 @@ from collections import deque
 # Время: O(n) — один проход по списку
 # Память: O(1) — дополнительные структуры не создаются (работаем в исходном списке)
 # Примечание: порядок ненулевых может НЕ сохраняться из-за swap'ов.
+
+### НУЛИ в НАЧАЛО  ### БЕЗ ОПТИМИЗАЦИИ
+# def move_zeros_to_start(nums: list[int]) -> list[int]:
+#     write = len(nums) - 1
+#     for i in range(len(nums) - 1, -1, -1):
+#         if lst[i] != 0:
+#             nums[write], nums[i] = nums[i], nums[write]
+#             write -= 1
+#     return nums
+
+### Это микро-ОПТИМИЗАЦИЯ чтобы не делать self-swap, когда write == i.
 # def move_zeros_to_start(nums: list[int]) -> list[int]:
 #     write = len(nums) - 1
 #     for i in range(len(nums) - 1, -1, -1):
@@ -3049,6 +3262,7 @@ from collections import deque
 
 
 
+
 # ### TODO 334. Increasing Triplet Subsequence
 # Задача: проверить, существует ли тройка индексов i < j < k такая, что
 # nums[i] < nums[j] < nums[k]. Если да — True, иначе False.
@@ -3103,8 +3317,11 @@ from collections import deque
 # print(increasingTriplet([2, 1, 5, 0, 4, 6]))  # -> True
 
 
+
 # # # ### TODO РЕШИТЬ!
 # def increasingTriplet(nums: list[int]) -> bool:
+
+
 
 
 
@@ -3295,6 +3512,7 @@ from collections import deque
 
 # # # ### TODO РЕШИТЬ!
 # def reverseVowels(s: str) -> str:
+
 
 
 

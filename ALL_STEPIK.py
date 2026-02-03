@@ -31,7 +31,7 @@
 ________________________________________________________________________________________________________________________
 
  --- Задачи с Собеседования ---                                       тех. собеседования 1):  32/4
-                                                                      тех. собеседования 2):  10/0
+                                                                      тех. собеседования 2):  25/1
 ________________________________________________________________________________________________________________________
 
  # Задача на логику    Сбер
@@ -109,6 +109,15 @@ ________________________________________________________________________________
  fun = [lambda x, a=a: a for a in range(10)]
  for f in fun:
      print(f(20), end=' ')  # -> 0 1 2 3 4 5 6 7 8 9
+
+
+ ### Вызвать прямо в генераторе списка (получить значения)
+ res = [(lambda x, i=i: i)(20) for i in range(10)]
+ print(res)  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+ ### Разницы НЕТ - потому что лямбда вообще не использует x
+ print([(lambda x, i=i: i)(1) for i in range(10)])       # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+ print([(lambda x, i=i: i)(222222) for i in range(10)])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 ________________________________________________________________________________________________________________________
 
  Задача Заказчик Открытые Решения   Посмотри все варианты! Особенно 2 последних!!!
@@ -364,7 +373,7 @@ ________________________________________________________________________________
  from typing import Callable
  from functools import wraps
 
- # Ответ через функцию                # Ответ ChatGPT через функцию    Интересный пример   <-----  wrapper.my_count += 1
+ # 1) Ответ через функцию             # 2) Ответ ChatGPT через функцию    Интересный пример   <-----  wrapper.my_count += 1
 
  def my_count(func):                  def my_count(func):
      c = 0                                @wraps(func)
@@ -386,14 +395,14 @@ ________________________________________________________________________________
 
 
 
- # Ответ через класс
+ # 3) Ответ через класс                         # 4) ОЧЕНЬ КОРОТКИЙ ВАРИАНТ  unittest.mock (для тестов)
 
- @dataclass
+ @dataclass                                     from unittest.mock import Mock
  class MyClass:
-     f: Callable
+     f: Callable                                plus = Mock()
      c: int = 0
-
-     def __call__(self, *args, **kwargs):
+                                                plus(); plus(); plus()
+     def __call__(self, *args, **kwargs):       print(plus.call_count)  # -> 3
          self.c += 1
          print(self.c)
          return self.f(*args, **kwargs)
@@ -405,9 +414,30 @@ ________________________________________________________________________________
  print(plus())  # -> 1 None
  print(plus())  # -> 2 None
  print(plus())  # -> 3 None
+
+
+ # 5) collections.Counter (удобно, если нужно считать МНОГО функций)
+ from functools import wraps
+ from collections import Counter
+
+ calls = Counter()
+
+ def count_calls(func):
+     @wraps(func)
+     def wrapper(*args, **kwargs):
+         calls[func.__name__] += 1
+         return func(*args, **kwargs)
+     return wrapper
+
+ @count_calls
+ def plus():
+     pass
+
+ plus(); plus(); plus()
+ print(calls["plus"])  # 3
 ________________________________________________________________________________________________________________________
 
- Есть список                                            Грузовая кампания
+ Есть список                                            Грузовая компания
  words = ['aba', 'bac', 'abb', 'bab', 'bba',
  'aab', 'abca']
  Анаграммы - это такие пары слов, в которых одинаковые буквы и одинаковое количество букв, расположенных в разном
@@ -737,7 +767,14 @@ ________________________________________________________________________________
 
  # Создать функцию которая убирает дубликаты           Задача с Live Coding Собеседования
 
- # Первый вариант
+
+ # 1) Вариант: res + проверка "if i not in res"
+ #
+ # Сложность:
+ # Время: O(n^2)  (каждый раз "i in res" — линейный поиск по res)
+ # Память: O(n)   (результат)
+
+ ### ДЛЯ ЛЮБЫХ ЭЛЕМЕНТОВ
  def clean_duplicates(lst: list[dict]) -> list[dict]:
      res = []
      for i in lst:
@@ -746,6 +783,33 @@ ________________________________________________________________________________
      return res
 
  print(clean_duplicates([{1: 2}, {1: 2}, {1: 2}]))  # -> [{1: 2}]
+
+
+ ## Вариант 1A только “соседние” дубликаты, то есть работает корректно только для отсортированного списка
+
+ # Вариант 1A (только для отсортированного / соседние дубликаты)        # Вариант 1B (работает в любом порядке, для хэшируемых элементов)
+
+ # Сложность:                                                           # Сложность:
+                                                                        # Время: O(n) в среднем
+ # Время: O(n)  (один проход по списку)                                 # (проверка/добавление в set ~ O(1) на элемент)
+ # Память: O(n) (возвращаем срез lst[:write] — создаётся новый список)  # Память: O(n) (set seen + список результата)
+ ### ЕСЛИ МАССИВ ОТСОРТИРОВАН!!                                         ### РАБОТАЕТ В ЛЮБОМ СЛУЧАЕ!
+ def clean_duplicates(lst: list) -> list:                               def clean_duplicates(lst: list) -> list:
+     write = 0                                                              seen = set()
+     for i in lst:                                                          res = []
+         if write == 0 or i != lst[write-1]:                                for i in lst:
+             lst[write] = i                                                     if i not in seen:
+             write += 1                                                             seen.add(i)
+     # del lst[write:]   # ЧТОБЫ IN-PLACE это тот же объект(список)                 res.append(i)
+     return lst[:write]  # создаётся НОВЫЙ список                           return res
+
+
+
+ ### (НЕ работает для неотсортированного)
+ print(clean_duplicates([1, 2, 1]))        # -> [1, 2, 1]               ### НЕ работает для нехэшируемых: dict, list, set
+ print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 1, 2, 3]         print(clean_duplicates([1, 2, 1]))        # -> [1, 2]
+ ### (РАБОТАЕТ, потому что дубликаты подряд)                            print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 3]
+ print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]               print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]
 
 
  # Второй вариант
@@ -779,6 +843,27 @@ ________________________________________________________________________________
  lst = [2, 7, 9, 10, 11]
  target = 9
 
+ # Сложность:
+ # Время: O(n) в среднем (один проход + операции dict ~ O(1))
+ # Худший случай: O(n^2) теоретически (редкие коллизии в dict)
+ # Память: O(n) (словарь seen хранит до n элементов)
+
+ ### LEETCODE РЕШЕНИЕ
+ def twoSum(nums, target):
+     seen = {}
+     for i, v in enumerate(nums):
+         need = target - v
+         if need in seen:
+             return [seen[need], i]
+         seen[v] = i
+
+
+ # Сложность:
+ # Время: O(n^2) (цикл O(n) + внутри index() O(n))
+ # Память: O(1) доп. (кроме результата res)
+
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Хороший вариант                                   # Тоже самое с МОРЖОМ
  def twoSum(nums, target):                           def twoSum(nums, target):
@@ -791,6 +876,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [0, 1]
 
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Пример 1
  from itertools import pairwise
@@ -805,6 +892,8 @@ ________________________________________________________________________________
  print(twoSum(lst, target))  # -> [[0, 1]]                        print(twoSum(lst, target))  # -> [0, 1]
 
 
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
+
  # Тоже самое slice(1, None, 2) - Принимает только 3 аргумента      Тут создает такие пары  [(2, 7), (9, 10)]
  def twoSum(nums, target):                                          lst = [2, 7, 9, 10, 11]
      res = []
@@ -815,6 +904,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [[0, 1]]
 
+
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
 
  # Тут создает такие пары  [(2, 7), (9, 10)]     lst = [2, 7, 9, 10, 11]
  # Пример 2                                                # Тоже самое
@@ -828,6 +919,8 @@ ________________________________________________________________________________
  print(twoSum(lst, target))  # -> [[0, 1]]                   print(twoSum(lst, target))  # -> [[0, 1]]
 
 
+ ### Это не общий Two Sum. Только какие-то частные случаи (обычно соседние)
+
  # Пример 3
  from itertools import combinations
 
@@ -837,6 +930,8 @@ ________________________________________________________________________________
 
  print(twoSum(lst, target))  # -> [0, 1]
 
+
+ # Двойной цикл по индексам — общий, ПРАВИЛЬНЫЙ (но медленный O(n^2)).
 
  # Ответ ChatGPT
  def twoSum(lst, target):
@@ -1039,6 +1134,13 @@ ________________________________________________________________________________
 
  numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
  print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
+
+
+ ### ИНТЕРЕСНЫЙ ВАРИАНТ
+ def sort_array(arr):
+     odds = iter(sorted(i for i in arr if i % 2))
+     return [next(odds) if i % 2 else i for i in arr]
+     # return [next(iter(sorted(i for i in arr if i % 2))) if i % 2 else i for i in arr]  # ОДНОСТРОЧНИК!
 
 
  # Ответ ChatGPT
@@ -1301,6 +1403,11 @@ ________________________________________________________________________________
 
 
  # Первый Вариант            Квадратичная сложность O(n^2)       Вариант требует создания новых строк и перебора их.
+ # Вариант "простая идея, но хуже по эффективности": replace в цикле (O(n^2) худший случай)
+ # Сложность:
+ # Время: O(n^2) в худшем
+ # Память: O(n) (создание новых строк)
+
  def is_correct_brackets(text):
      while '()' in text or '[]' in text or '{}' in text:
          text = text.replace('()', '')
@@ -1317,6 +1424,26 @@ ________________________________________________________________________________
  print(is_correct_brackets('((((){}[]{}[])))'))  # True
  print(is_correct_brackets('(){}[]{}[])))'))     # False
  print(is_correct_brackets('(){}[]{}[]'))        # True
+
+
+ # Второй Вариант   ЛУЧШЕ!!! Stack + close->open (O(n) время, O(n) память)
+ def validBraces(s):
+     res = {')':'(', ']':'[', '}':'{'}
+      stack = []
+      for i in s:
+          if i in res:
+              if not stack or stack.pop() != res[i]:
+                  return False
+          else:
+              stack.append(i)
+      return not stack
+
+ print(validBraces('(((())))'))          # True
+ print(validBraces('(((())'))            # False
+ print(validBraces('())))'))             # False
+ print(validBraces('((((){}[]{}[])))'))  # True
+ print(validBraces('(){}[]{}[])))'))     # False
+ print(validBraces('(){}[]{}[]'))        # True
 
 
 
@@ -1728,6 +1855,7 @@ ________________________________________________________________________________
 
  # Способ 1: Жадный алгоритм (не всегда дает оптимальное решение)
 
+ # x[1]/x[0] чтобы сначала брать те, которые дают максимальную “выгоду” на 1 кг. Это жадный подход (часто используют для дробного рюкзака).
  def knapsack(weights, costs, max_limit):
      n = len(weights)
      # Сортируем предметы по убыванию удельной стоимости (стоимость/вес)
@@ -1750,27 +1878,27 @@ ________________________________________________________________________________
 
  def knapsack(weights, costs, max_limit):
      n = len(weights)
-     # Создаем таблицу для хранения максимальной стоимости для каждого веса
      dp = [[0] * (max_limit + 1) for _ in range(n + 1)]
 
+     # dp[i][w] — макс. стоимость, используя первые i предметов при лимите веса w
      for i in range(1, n + 1):
-         for w in range(1, max_limit + 1):
-             if weights[i - 1] <= w:
-                 dp[i][w] = max(dp[i - 1][w], dp[i - 1][w - weights[i - 1]] + costs[i - 1])
-             else:
-                 dp[i][w] = dp[i - 1][w]
+         wi, ci = weights[i - 1], costs[i - 1]
+         for w in range(max_limit + 1):
+             dp[i][w] = dp[i - 1][w]  # не берем i-й
+             if wi <= w:
+                 dp[i][w] = max(dp[i][w], dp[i - 1][w - wi] + ci)  # берем i-й
 
-     # Восстановление выбранных предметов
+     # восстановление ответа (какие предметы взяли)
      w = max_limit
      selected = []
-     total_cost = dp[n][max_limit]
-
      for i in range(n, 0, -1):
          if dp[i][w] != dp[i - 1][w]:
-             selected.append((weights[i - 1], costs[i - 1]))
-             w -= weights[i - 1]
+             wi, ci = weights[i - 1], costs[i - 1]
+             selected.append((wi, ci))
+             w -= wi
 
-     return total_cost, selected[::-1]
+     selected.reverse()
+     return dp[n][max_limit], selected
 
 
  # Способ 3: Метод ветвей и границ (точное решение)
@@ -1969,19 +2097,28 @@ ________________________________________________________________________________
 
  # Способ 1:  Простой
 
+ # Сложность:
+ # Время: O(n)
+ # Память: O(n) (строим результат)
+
+ # ТОЖЕ САМОЕ ОДНОСТРОЧНИК
  def replace_odd_chars(s):
-     result = []
-     for i in range(len(s)):
-         if i % 2 == 0:  # нечетные позиции (индексация с 0)
-             # берем соответствующую букву из алфавита
-             char = alphabet[i % 26]
-             result.append(char)
-         else:
-             result.append(s[i])
+     return ''.join(alphabet[i%26] if i % 2 == 0 else v for i, v in enumerate(s))
 
-     return ''.join(result)
+ def replace_odd_chars(s):                                    def replace_odd_chars(s):
+     result = []                                                  result = []
+     for i in range(len(s)):                                      for i, v in enumerate(s):
+         if i % 2 == 0:  # ЧЕТНЫЕ позиции (индексация с 0)            if i % 2 == 0:  # ЧЕТНЫЕ позиции (индексация с 0)
+             # берем соответствующую букву из алфавита                    # берем соответствующую букву из алфавита
+             char = alphabet[i % 26]                                      char = alphabet[i % 26]
+             result.append(char)                                          result.append(char)
+         else:                                                        else:
+             # result.append(s[i])                                        # result.append(s[i])
+             result.append(v)                                             result.append(v)
 
- print(replace_odd_chars(s))  # -> aacaeagaia
+     return ''.join(result)                                       return ''.join(result)
+
+ print(replace_odd_chars(s))  # -> aacaeagaia                 print(replace_odd_chars(s))  # -> aacaeagaia
 
 
  # Способ 2:  Через РЕГУЛЯРКУ  (сложный)
@@ -2101,6 +2238,2441 @@ ________________________________________________________________________________
  result = count_dict_a_1(json_data)
  print(result)  # -> 2
 ________________________________________________________________________________________________________________________
+
+ # VERME Биржа Смен   ИЧАР С ПРОСТЫМИ ЗАДАЧКАМИ  3 Задачи
+
+ # Какие значения вернет функция print?
+ a = [1,2,3]
+ b = a
+ c = [1,2,3]
+ print(a == b)  # -> True
+ print(a == c)  # -> True
+ print(a is b)  # -> True
+ print(a is c)  # -> False
+
+ # Простые задания
+
+ # Задача №1
+ # Напишите программу для объединения двух разных словарей. При объединении, если вы
+ # найдете одинаковые ключи, вы должны сложить значения этих ключей. Выведите новый словарь
+ # Задание:  РЕЗУЛЬТАТ ДОЛЖЕН БЫТЬ ВОТ ТАКОЙ:  {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+ d1 = {'a': 50, 'b': 100, 'c':200}
+ d2 = {'a': 200, 'b': 100, 'd':300}
+
+ # Способ 1
+ res = d1.copy()
+
+ for k, v in d2.items():
+     if k in res:
+         res[k] += v
+     else:
+         res[k] = v
+
+ print(res)  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+ # Способ 2   ОЧЕНЬ ИНЕТЕРЕСНЫЙ ПРИМЕР!!!  <-----     (с использованием Counter)
+ from collections import Counter
+
+ res = Counter(d1)+Counter(d2)
+ print(res)        # -> Counter({'d': 300, 'a': 250, 'b': 200, 'c': 200})
+ print(dict(res))  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+ # Сортировка по ключам
+ res_sort = Counter(d1) + Counter(d2)
+ print(dict(sorted(res_sort.items()))) # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+ # Сортировка по значениям (по возрастанию)
+ sorted_by_value = dict(sorted(res_sort.items(), key=lambda item: item[1]))
+ print(sorted_by_value)                # -> {'b': 200, 'c': 200, 'a': 250, 'd': 300}
+
+
+ # Способ 3 (с использованием dict comprehension)  ПОРЯДОК БУДЕТ ВСЕГДА РАЗНЫЙ!
+ all_keys = set(d1) | set(d2)
+ res = {k: d1.get(k, 0) + d2.get(k, 0) for k in all_keys}
+ print(res)  # -> {'b': 200, 'd': 300, 'c': 200, 'a': 250}
+
+
+ # Способ 4 (с использованием defaultdict)
+ from collections import defaultdict
+ res = defaultdict(int)
+ for d in (d1, d2):          # d БУДЕТ СЛОВАРЕМ!!!  d - это переменная, которая поочерёдно становится d1, затем d2
+     for k, v in d.items():
+         res[k] += v
+ print(dict(res))  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+ # Способ 5: Через dict.get() с циклом
+ res = {}
+ for d in (d1, d2):          # d БУДЕТ СЛОВАРЕМ!!!  d - это переменная, которая поочерёдно становится d1, затем d2
+     for k, v in d.items():
+         res[k] = res.get(k, 0) + v
+ print(res)  # -> {'a': 250, 'b': 200, 'c': 200, 'd': 300}
+
+
+
+ # Задача №2
+ # Есть произвольный массив чисел, необходимо вывести произведение всех значений, то есть умножить первое значение
+ # на второе, затем полученный результат на третье значение и тд
+ # Задание:
+
+ from functools import reduce
+ import operator, math
+
+ # Способ 1  Использование цикла for
+ def mult(lst):
+     result = 1
+     for num in lst:
+         result *= num
+     return result
+
+ # Способ 2  Использование встроенной функции reduce и operator.mul
+ def mult(lst):
+     return reduce(operator.mul, lst, 1)      # ((((1*1)*2)*3)*4)*5) = 120
+
+ # Способ 3  reduce и lambda
+ def mult(lst):
+     return reduce(lambda x, y: x*y, lst, 1)  # ((((1*1)*2)*3)*4)*5) = 120
+
+ # Способ 4 Использование math.prod (Python 3.8+)
+ def mult(lst):
+     return math.prod(lst)                    # 1*2*3*4*5 = 120
+
+ # Способ 5 Использование eval()
+ def mult(lst):
+    return eval('*'.join(map(str, lst)))
+
+ a = [1, 2, 3, 4, 5]
+ print(mult(a))  # -> 120
+________________________________________________________________________________________________________________________
+
+ # ЗАДАЧА ИЗ ПЛОХОГО СОБЕСА  СУММА В СЕКУНДАХ В ЛОГАХ
+ from datetime import datetime
+
+ res = [
+     '2022-05-20Z logs',
+     '2022-05-21Z logs',
+     '2022-05-22Z logs',
+ ]
+
+ # Извлекаем и парсим даты
+ dates = [datetime.fromisoformat(item[:10]) for item in res]
+ print(dates)
+ # [datetime.datetime(2022, 5, 20, 0, 0), datetime.datetime(2022, 5, 21, 0, 0), datetime.datetime(2022, 5, 22, 0, 0)]
+
+ # Сортируем даты на случай, если они не в хронологическом порядке
+ sorted_dates = sorted(dates)
+
+ # Вычисляем разницу между всеми последовательными датами
+ total_seconds = 0.0
+ for i in range(1, len(sorted_dates)):
+     delta = sorted_dates[i] - sorted_dates[i-1]
+     total_seconds += delta.total_seconds()
+
+ # Вычисляем общую разницу между первой и последней датой
+ full_delta = sorted_dates[-1] - sorted_dates[0]
+ full_seconds = full_delta.total_seconds()
+
+ print(f"\nОбщая сумма всех интервалов: {total_seconds} секунд")
+ # Общая сумма всех интервалов: 172800.0 секунд
+
+ print(f"Прямая разница от первой до последней даты: {full_seconds} секунд")
+ # Прямая разница от первой до последней даты: 172800.0 секунд
+
+ print(f"Это соответствует {full_seconds/86400:.1f} дням")
+ # Это соответствует 2.0 дням
+________________________________________________________________________________________________________________________
+
+ # компания вроде DOG  2 задачи  FizzBuzz  и Code review  Django
+
+ # Задание 1) FizzBuzz  компания вроде DOG
+
+ n => [1...n]
+ i % 3 => Fizz
+ i % 5 => Buzz
+ i % 3,5 => FizzBuzz
+
+
+ # i % 15 == 0 действительно эквивалентно i % 3 == 0 and i % 5 == 0
+
+
+ # Моя версия садо-мазо
+ def fizzbuzz(n: int) -> None:
+     for i in range(True, n + True):
+         if i % 3 == 0 and i % 5 == 0:  # Тоже самое  i % 15 == 0
+             # __import__('sys').stdout.write(f'FizzBuzz ')
+             print('FizzBuzz', end=' ')
+         elif i % 3 == 0:
+             # __import__('sys').stdout.write(f'Fizz ')
+             print('Fizz', end=' ')
+         elif i % 5 == 0:
+             # __import__('sys').stdout.write(f'Buzz ')
+             print('Buzz', end=' ')
+         else:
+             # __import__('sys').stdout.write(f'{i} ')
+             print(str(i), end=' ')
+
+ fizzbuzz(15)
+ # 1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz
+ print()
+
+ # Короткая версия (для любителей однострочников):
+ fizzbuzz = lambda n: ['FizzBuzz' if i % 15 == 0 else 'Fizz' if i % 3 == 0 else 'Buzz' if i % 5 == 0 else str(i) for i in range(1, n + 1)]
+ # i % 15 == 0 действительно эквивалентно i % 3 == 0 and i % 5 == 0
+ fizzbuzz = lambda n: ['FizzBuzz' if i % 3 == 0 and i % 5 == 0 else 'Fizz' if i % 3 == 0 else 'Buzz' if i % 5 == 0 else str(i) for i in range(1, n + 1)]
+ print(*fizzbuzz(15))
+ # 1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz
+
+
+
+ # Задание 2 Code review  Django  ПРОСТО ПОСМОТРЕТЬ
+
+ Вот основные проблемы в этом коде:
+
+ Уязвимость безопасности:
+  - Хеш кода SHA256 не использует соль, что делает его уязвимым к атакам по радужным таблицам.
+  - Соль - случайные данные, добавляемые перед хешированием. Соль в криптографии
+
+ Проблемы с кодом:
+  - Синтаксическая ошибка в методе isActive() (лишнее двоеточие в условии)
+  - Неправильное сравнение времени в isActive() (используется tz_created() без определения)
+
+ Логирование чувствительных данных:
+  - Вывод кода и его хеша в консоль (print)
+
+ Проблемы с производительностью:
+  - Нет ограничения на количество запросов кода для одного IP/номера
+
+ Нет обработки ошибок:
+  - Нет обработки ошибок при отправке SMS
+
+ Хрупкость:
+  - Жестко закодированный отправитель SMS ('hellodoc')
+
+ Потенциальная race condition:
+ - Между проверкой can_send_sms и сохранением кода
+
+ Нет очистки:
+  - Старых/неактивных кодов в базе данных
+
+ # модель с одноразовыми кодами
+ class PhoneAuth(Base):
+     phone = models.TextField()  # Проблема: Лучше использовать CharField с max_length
+     code = models.TextField()   # Проблема: Хранение хеша без соли, уязвимость безопасности
+     ip_address = models.TextField(null=True)  # Проблема: Лучше GenericIPAddressField
+     is_active = models.BooleanField(default=True)
+
+     objects: Manager()  # Проблема: Отсутствует импорт Manager
+
+     @staticmethod
+     def get_phone_auth_for_number(phone, code) -> PhoneAuth:
+         return PhoneAuth.objects.filter(phone=phone, code=code, is_active=True).first()
+
+     @staticmethod
+     def get_last_auth_for_number(phone, ip):
+         date = datetime.now() - timedelta(hours=constants.IP_ADDRESS_BAN_HOURS)
+         result = PhoneAuth.objects.filter(phone=phone, ip_address=ip).order_by('-created').first()
+         count_from_ip = PhoneAuth.objects.filter(ip_address=ip, created__gte=date).count()
+
+         return result, count_from_ip
+
+     @staticmethod
+     def delete_by_phone(phone):
+         PhoneAuth.objects.filter(phone=phone, is_active=True).update(is_active=False)
+
+     def deactivate(self):
+         self.is_active = False
+         self.save()
+
+     def isActive(self):
+         return to_timestamp(datetime.utcnow()) - to_timestamp(
+             self.tz_created()) <= constants.PHONE_CONF_CODE_LIFE_SECONDS and self.is_active:
+             # Проблема 1: Лишнее двоеточие в конце
+             # Проблема 2: Метод tz_created() не определен
+             # Проблема 3: Нет обработки случая, когда tz_created() = None
+
+ # апи отправки кода по смс
+ class Phone(views.APIView):
+     authentication_classes = (BaseAppAuthentication, UserNotRequiredAuthentication)
+
+     class PhoneRegisterParams(serializers.Serializer):
+         phone = serializers.CharField(max_length=12, min_length=10)
+
+         def validate_phone(self, phone):
+             success, result = validate_phone(phone)
+             if success:
+                 return result
+             else:
+                 raise serializers.ValidationError(result)
+
+     def post(self, request):
+         data = Phone.PhoneRegisterParams(data=request.data)
+
+         if not data.is_valid():
+             return response_error(BadRequestParams.init_dev_err(data.errors))
+
+         phone = data.validated_data['phone']
+         print(phone)  # Проблема: Логирование конфиденциальных данных
+         ip = get_client_ip(request)
+         err = can_send_sms(phone, ip)
+         if err:
+             return response_error(err)
+
+         code = random.randrange(MIN_VER_INT, MAX_VER_INT)
+         sms_text = 'Ваш код %s' % code
+         sms = SMSMessage(**dict(text=sms_text, phone=phone))
+         sms.save()
+         print(code)  # Проблема: Логирование кода подтверждения
+
+         hash_code = hashlib.sha256()
+         hash_code.update(unicode(code))  # Проблема 1: unicode() не существует в Python 3
+                                         # Проблема 2: Нет соли для хеширования
+         hash_code = hash_code.hexdigest()
+         print(hash_code)  # Проблема: Логирование хеша кода
+
+         PhoneAuth.delete_by_phone(phone)  # Проблема: Потенциальная race condition с can_send_sms
+
+         phone_auth = PhoneAuth(**dict(phone=phone, code=hash_code, ip_address=ip))
+         phone_auth.save()
+
+         send_sms.delay(sms.id)
+
+         return response(HTTP_200_OK)
+
+ # фоновая задача отправки смс
+ @shared_task
+ def send_sms(object_id):
+     sms = SMSMessage.get_sms(object_id)
+     phone = sms.phone
+     if phone:
+         message = sms.text
+         phone = sms.phone  # Проблема: Дублирование присваивания
+
+         data = {
+             'login': settings.SMSC_LOGIN,  # Проблема: Логин в открытом виде
+             'psw': md5(settings.SMSC_PASSWORD).hexdigest(),  # Проблема: Устаревший MD5
+             'charset': 'utf-8',
+             'mes': message.encode('utf-8'),
+             'phones': phone,
+             'sender': 'hellodoc'  # Проблема: Жестко закодированное значение
+         }
+
+         url = 'https://smsc.ru/sys/send.php'
+         print(data)  # Проблема: Логирование учетных данных
+         if not settings.DEBUG:
+             response = requests.post(url, params=data)
+             sms.error = response  # Проблема: Нет обработки ошибок запроса
+
+         sms.is_delivered = True  # Проблема: Помечаем как доставленное до фактической доставки
+         sms.save()
+________________________________________________________________________________________________________________________
+
+ # компания Молочные Коровки
+
+
+ - Есть три сервиса. Фронт и два бэкэнда.
+ Один бэк это апишка для фронта. Второй бэк это CPU-bound сервис (считает один запрос 5 минут).
+ Как правильно связать все три сервиса (включая фронт), чтобы получить лучший флоу для клиента, который нажимает
+ кнопку "посчитать" и ждёт результат.
+
+ Такую архитектуру используют многие SaaS-платформы для тяжелых вычислений (например, рендеринг видео, ML-предсказания).
+ Отражает best practices для работы с долгими CPU-bound задачами в веб-приложениях
+
+ [Frontend]
+   │ POST /api/calculate
+   ↓
+ [API] → [Queue (RabbitMQ/Kafka)] → [CPU Worker]
+   │ 202 Accepted                     │
+   │ ↑                                ↓
+   └────────────────────────────── [DB/Redis]
+                                       │
+ [Frontend] ← polling/WS ←─────────────┘
+
+
+ 1) Фронт отправляет запрос в API бэкенд
+ Как:
+ - POST-запрос на эндпоинт типа /api/calculate с параметрами задачи (например, { "data": "..." }).
+
+ Зачем:
+ - Клиент инициирует процесс, но не должен зависеть от времени выполнения.
+
+ 2) API бэкенд ставит задачу в очередь (RabbitMQ, Kafka, Redis Queue) и сразу возвращает фронту 202 Accepted + task_id
+
+ Как:
+
+ - API генерирует уникальный task_id (UUID или хеш).
+ - Пишет сообщение в очередь (например, RabbitMQ/Kafka):
+
+ json
+ {
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "data": "..."
+ }
+
+ - Возвращает фронту:
+
+ json
+ {
+   "status": "accepted",
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "check_status_url": "/api/tasks/123e4567-e89b-12d3-a456-426614174000"
+ }
+
+ Зачем:
+
+ - Клиент получает мгновенный ответ (без ожидания 5 минут).
+ - Задача гарантированно попадает в очередь (даже если CPU-сервис перегружен).
+
+ 3) CPU-bound бэкенд забирает задачу из очереди, обрабатывает (5 минут) и сохраняет результат в БД/кеш
+
+ Как:
+
+ - Воркер CPU-сервиса подписан на очередь (например, через channel.basic_consume в RabbitMQ).
+ - Получив задачу, начинает вычисления.
+ - Важно:
+   - Обновляет статус в БД (например, "in_progress").
+   - Сохраняет результат в хранилище (БД/Redis):
+
+     json
+     {
+       "task_id": "123e4567-e89b-12d3-a456-426614174000",
+       "status": "completed",
+       "result": { ... },
+       "timestamp": "2024-02-20T12:00:00Z"
+     }
+
+ Зачем:
+
+ - Очередь развязывает API и CPU-сервис.
+ - Результат сохраняется даже при падении фронта.
+
+
+ 4) Фронт периодически (через polling/WebSocket) запрашивает API бэкенд по task_id
+
+ Polling:
+
+ - Фронт каждые N секунд (например, 5) дергает GET /api/tasks/{task_id}.
+ - API проверяет статус в БД и возвращает:
+
+ json
+ {
+   "status": "in_progress", // или "completed", "failed"
+   "progress": 50, // опционально
+   "result": null // или результат
+ }
+
+ WebSocket:
+
+ - Фронт открывает WS-соединение к API.
+ - API подписывается на события из БД/очереди и отправляет обновления
+
+ Зачем:
+
+ - Клиент видит прогресс (например, прогресс-бар).
+ - Нет риска таймаутов.
+
+
+
+ 5) Когда результат готов — API бэкенд отдаёт его фронту
+
+ Как:
+
+ - Когда статус становится "completed", API забирает результат из БД/кеша.
+ - Для polling: фронт получает его в следующем запросе.
+ - Для WebSocket: API отправляет сообщение:
+
+ json
+ {
+   "event": "task_completed",
+   "task_id": "123e4567-e89b-12d3-a456-426614174000",
+   "result": { ... }
+ }
+
+ Зачем:
+
+ - Клиент получает результат только когда он готов.
+
+ Почему так?
+
+ - Не блокируем HTTP-соединения
+ - CPU-bound сервис масштабируется независимо
+ - Клиент видит статус обработки
+________________________________________________________________________________________________________________________
+
+ # МТС  компания    3 ЗАДАЧИ посмотреть
+
+ # ЗАДАЧА 1
+ # Присваивание d2 = d1 не создаёт новый словарь, а копирует ссылку. Изменения в d2 влияют на d1.
+
+ d1 = {1:1, 2:2, 3:3}
+ d2 = d1                             # d2 — это ссылка на d1, а не копия
+ d2[1]=0                             # меняем d1 через d2
+ print(d1)  # -> {1: 0, 2: 2, 3: 3}
+ print(d2)  # -> {1: 0, 2: 2, 3: 3}
+
+
+ # ЗАДАЧА 2
+ # f1 меняет переданный список, т.к. работает с его элементами.
+ # f2 не меняет исходный список, т.к. переназначает локальную переменную.
+
+ def f1(my_list):
+     my_list[0] = 123            # меняет переданный список
+ def f2(my_list):
+     my_list = [4, 5, 6]         # создаёт локальную переменную, не меняя исходный список
+ l1 = [1, 2, 3]
+ l2 = [1, 2, 3]
+ f1(l1)                          # изменяет l1
+ print(l1)  # -> [123, 2, 3]
+ f2(l2)                          # НЕ изменяет l2
+ print(l2)  # -> [1, 2, 3]
+
+
+ # ЗАДАЧА 3
+ # Если аргумент по умолчанию (L=[]) изменяется, он сохраняет состояние между вызовами.
+ # При передаче своего списка (l) изменения применяются к нему.
+
+ l = [1, 2, 3]
+ def f(a, L=[]):
+     L.append(a)                 # изменяет один и тот же список L при каждом вызове
+     return L
+ f(4)
+ f(5)
+ tmp_l = f(6)
+ print(tmp_l)  # -> [4, 5, 6]
+ f(7, l)                         # передаём внешний список l
+ f(8, l)
+ f(9, l)
+ print(l)      # -> [1, 2, 3, 7, 8, 9]
+________________________________________________________________________________________________________________________
+
+ # Задачи тестовое задание 16 штук   компания СОГАЗ   (2 Задачи не хватает 12, 13)
+ 
+ 
+ # ЗАДАЧА 1
+ # Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ 
+ # ОТВЕТ Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ # Напишите функцию на Python без регулярок находим сумму всех чисел
+ 
+ # Решение с регуляркой
+ def sum_numbers_in_string(s: str) -> int:
+     return sum(map(int, re.findall(r'\d+', s)))
+ 
+ # ВАРИАНТ 1: Если нужны только положительные целые числа
+ def sum_numbers_in_string(s):
+     current_number = ''
+     total = 0
+ 
+     for char in s:
+         if char.isdigit():
+             current_number += char
+         else:
+             if current_number:
+                 total += int(current_number)
+                 current_number = ''
+ 
+     # Добавляем последнее число, если строка заканчивается цифрой
+     if current_number:
+         total += int(current_number)
+ 
+     return total
+ 
+ # ВАРИАНТ 2: С обработкой отрицательных чисел
+ def sum_numbers_in_string(s):
+     current_number = ''
+     total = 0
+     sign = 1  # 1 для положительных, -1 для отрицательных
+ 
+     for char in s:
+         if char.isdigit():
+             current_number += char
+         elif char == '-' and not current_number:
+             sign = -1
+         else:
+             if current_number:
+                 total += sign * int(current_number)
+                 current_number = ''
+                 sign = 1
+ 
+     if current_number:
+         total += sign * int(current_number)
+ 
+     return total
+ 
+ # ВАРИАНТ 3: С использованием генератора и isdigit()
+ def sum_numbers_in_string(s):
+     total = 0
+     num_str = ''
+ 
+     for char in s + ' ':  # Добавляем пробел для обработки последнего числа
+         if char.isdigit():
+             num_str += char
+         elif num_str:
+             total += int(num_str)
+             num_str = ''
+ 
+     return total
+ 
+ # ВАРИАНТ 4: С обработкой чисел с плавающей точкой
+ def sum_numbers_in_string(s):
+     total = 0.0
+     num_str = ''
+     has_decimal = False
+ 
+     for char in s + ' ':  # Добавляем пробел для обработки последнего числа
+         if char.isdigit():
+             num_str += char
+         elif char == '.' and not has_decimal and num_str:
+             num_str += char
+             has_decimal = True
+         elif num_str:
+             total += float(num_str)
+             num_str = ''
+             has_decimal = False
+ 
+     return int(total) if total.is_integer() else total
+ 
+ from itertools import groupby
+ 
+ # ВАРИАНТ 5: Функциональный стиль с группировкой цифр
+ def sum_numbers_in_string(s):
+     total = 0
+     for is_digit, group in groupby(s, key=lambda x: x.isdigit()):
+         if is_digit:
+             total += int(''.join(group))
+     return total
+ 
+ 
+ print(sum_numbers_in_string("abc123xyz45"))              # -> 168  # (123 + 45)
+ print(sum_numbers_in_string("7 chocolates, 3 candies"))  # -> 10   # (7 + 3)
+ print(sum_numbers_in_string("1a2b3c"))                   # -> 6    # (1 + 2 + 3)
+ 
+ 
+ 
+ # ЗАДАЧА 2
+ # Что выведет данный код?
+ 
+ m = [[1, 2, 3], [4,5,6], [7,8,9]]
+ t = list(zip(*m))
+ 
+ # print(list(map(list, t)))  # -> ???
+ # print(t)                   # -> ???
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 2 Что выведет данный код?
+ 
+ # Это транспонированная матрица, где строки стали столбцами, а столбцы — строками.
+ m = [[1, 2, 3], [4,5,6], [7,8,9]]
+ t = list(zip(*m))
+ print(list(map(list, t)))  # -> [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+ print(t)                   # -> [(1, 4, 7), (2, 5, 8), (3, 6, 9)]
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 3
+ # Что выведет данный код?
+ 
+ class Y:
+     def __init__(self, x):
+         self.x = x
+ 
+     def caclucate(self):
+         return self.x * 2 + 1  # Формула: 2x + 1
+ 
+ class Z(Y):
+     def __init__(self, x, y):
+         super().__init__(x)
+         self.y = y
+ 
+     def caclucate(self):
+         return super().caclucate() + self.y  # (2x + 1) + y
+ 
+ class X(Z):
+     def __init__(self, x, y, z):
+         super().__init__(x, y)
+         self.z = z
+ 
+     def caclucate(self):
+         return self.z - super().caclucate()  # z - ((2x + 1) + y)
+ 
+ a = Y(3)
+ b = Z(2, 4)
+ c = X(2, 1, 7)
+ 
+ # print(a.caclucate())  # -> ???
+ # print(b.caclucate())  # -> ???
+ # print(c.caclucate())  # -> ???
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 3 Что выведет данный код?
+ 
+ # Каждый класс переопределяет метод caclucate()
+ class Y:
+     def __init__(self, x):
+         self.x = x
+ 
+     def caclucate(self):
+         return self.x * 2 + 1  # Формула: 2x + 1
+ 
+ class Z(Y):
+     def __init__(self, x, y):
+         super().__init__(x)
+         self.y = y
+ 
+     def caclucate(self):
+         return super().caclucate() + self.y  # (2x + 1) + y
+ 
+ class X(Z):
+     def __init__(self, x, y, z):
+         super().__init__(x, y)
+         self.z = z
+ 
+     def caclucate(self):
+         return self.z - super().caclucate()  # z - ((2x + 1) + y)
+ 
+ a = Y(3)
+ b = Z(2, 4)
+ c = X(2, 1, 7)
+ 
+ print(a.caclucate())  # -> 7   # 3 * 2 + 1 = 7
+ print(b.caclucate())  # -> 9   # (2*2 + 1) + 4 = 5 + 4 = 9
+ print(c.caclucate())  # -> 1   # 7 - ((2*2 + 1) + 1) = 7 - 6 = 1
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 4
+ # Какой из принципов в коде нарушен и как его исправить?
+ 
+ class EmailSender:
+     def send(self, message):
+         print(f"Sending email: {message}")
+ 
+ class MessageService:
+     def __init__(self, email_sender):
+         self.email_sender = email_sender
+ 
+     def send_message(self, message):
+         self.email_sender.send(message)
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 4 Какой из принципов в коде нарушен и как его исправить?
+ 
+ # Нарушен принцип Dependency Inversion (DIP).   DIP (Dependency Inversion Principle) – Принцип инверсии зависимостей
+ # Исправить: Зависить от абстракции (интерфейса), а не от конкретного класса EmailSender.
+ from abc import ABC, abstractmethod
+ 
+ class MessageSender(ABC):
+     @abstractmethod
+     def send(self, message):
+         pass
+ 
+ class EmailSender(MessageSender):
+     def send(self, message):
+         print(f"Sending email: {message}")
+ 
+ class MessageService:
+     def __init__(self, sender: MessageSender):
+         self.sender = sender
+ 
+     def send_message(self, message):
+         self.sender.send(message)
+         
+         
+ # Теперь можно легко добавить новые отправители:
+ 
+ class SmsSender(MessageSender):
+     def send(self, message):
+         print(f"Sending SMS: {message}")
+ 
+ sms_sender = SmsSender()
+ service = MessageService(sms_sender)
+ service.send_message("Hi via SMS!")  # -> Sending SMS: Hi via SMS!
+ 
+ # Вывод:
+ # Принцип Dependency Inversion (DIP) соблюдается, так как:
+ # - MessageService зависит от абстракции (MessageSender), а не от конкретного класса.
+ # - Новые реализации (SmsSender, PushSender) можно добавлять без изменения MessageService.
+ # Код стал гибким и соответствует SOLID особенно принципу DIP.
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 5
+ # На фреймворке fastapi  напишите код который будет принимать в запросе json содержащий name weight и будет создавать
+ # товар в базе после чего возвращать {result: true}  с кодом 201 Created
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 5 На фреймворке fastapi  напишите код который будет принимать в запросе json содержащий name weight и
+ # будет создавать товар в базе после чего возвращать {result: true}  с кодом 201 Created
+ 
+ Если нужен минималистичный API           -> FastAPI.
+ Если нужен полноценный бэкенд с админкой -> Django + DRF.
+ 
+ 
+ # FastAPI более лаконичен и не требует ORM (можно использовать SQLAlchemy напрямую).
+ from fastapi import FastAPI, status, Depends
+ from pydantic import BaseModel
+ from sqlalchemy import create_engine, Column, Integer, String
+ from sqlalchemy.ext.declarative import declarative_base
+ from sqlalchemy.orm import sessionmaker, Session
+ 
+ # Настройка базы данных
+ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+ engine = create_engine(SQLALCHEMY_DATABASE_URL)
+ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+ 
+ Base = declarative_base()
+ 
+ # Модель товара в базе данных
+ class ProductDB(Base):
+     __tablename__ = "products"
+     
+     id = Column(Integer, primary_key=True, index=True)
+     name = Column(String, index=True)
+     weight = Column(Integer)
+ 
+ # Создаем таблицы (в реальном проекте лучше использовать миграции)
+ Base.metadata.create_all(bind=engine)
+ 
+ app = FastAPI()
+ 
+ # Pydantic модель для входящих данных
+ class ProductCreate(BaseModel):
+     name: str
+     weight: int
+     
+ # Pydantic модель для ответа
+ class ProductResponse(BaseModel):
+     result: bool
+ 
+ # Зависимость для получения сессии базы данных
+ def get_db():
+     db = SessionLocal()
+     try:
+         yield db
+     finally:
+         db.close()
+ 
+ @app.post("/products/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+     # Создаём товар в базе данных
+     db_product = ProductDB(name=product.name, weight=product.weight)
+     db.add(db_product)
+     db.commit()
+     db.refresh(db_product)
+     
+     return {"result": True}
+ 
+ 
+ 
+ # Django + DRF требует больше кода, но дает больше "из коробки" (админка, миграции, аутентификация).
+ # ТОЖЕ САМОЕ Django+DRF
+ 
+ 1. Сначала определим модель Product в models.py:
+ from django.db import models
+ 
+ class Product(models.Model):
+     name = models.CharField(max_length=255)
+     weight = models.FloatField()
+ 
+     def __str__(self):
+         return self.name
+         
+         
+ # 2. Затем создадим сериализатор (если используем Django REST Framework) в serializers.py:
+ from rest_framework import serializers
+ from .models import Product
+ 
+ class ProductSerializer(serializers.ModelSerializer):
+     class Meta:
+         model = Product
+         fields = ['name', 'weight']
+         
+         
+ # 3. Напишем представление (view) в views.py:
+ # Вариант с Django REST Framework (рекомендуется):
+ 
+ from rest_framework.views import APIView
+ from rest_framework.response import Response
+ from rest_framework import status
+ from .models import Product
+ from .serializers import ProductSerializer
+ 
+ class CreateProductView(APIView):
+     def post(self, request):
+         serializer = ProductSerializer(data=request.data)
+         if serializer.is_valid():
+             serializer.save()
+             return Response({"result": True}, status=status.HTTP_201_CREATED)
+         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
+ # 4. Напишем представление (urls) в urls.py:
+ from django.urls import path
+ from .views import CreateProductView
+ 
+ urlpatterns = [
+     path('products/', CreateProductView.as_view(), name='create_product'),
+ ]
+ 
+ Не забудьте выполнить миграции (python manage.py makemigrations и python manage.py migrate) после создания модели.
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 6
+ # В базе данных имеется visitors с полями id, first_time (первый визит) и count (общее количество запросов).
+ # Напишите к этой таблице три SQL запроса:
+ # 1) Вывод id всех посетилей, количество визитов которых более 5
+ # 2) Вывод всех id посетилей, зашедших на сайт зимой 2022 года
+ # 3) Вывод пяти дней 2023 года, в которые визиты совершались чаще всего, с количеством визитов в каждый такой день
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 6
+ 
+ 1. Вывод id всех посетителей, количество визитов которых более 5
+ 
+ SELECT id
+ FROM visitors
+ WHERE count > 5;
+ 
+ 
+ 2. Вывод всех id посетителей, зашедших на сайт зимой 2022 года (декабрь 2021, январь и февраль 2022)
+ 
+ SELECT DISTINCT id
+ FROM visitors
+ WHERE first_time BETWEEN '2021-12-01' AND '2022-02-28';
+ 
+ 
+ 3. Вывод пяти дней 2023 года с наибольшим количеством визитов (и количеством визитов в каждый такой день)
+ Проблема: В таблице нет данных о каждом визите.  Неточный, но единственно возможный с данными таблицы   
+ 
+ SELECT DATE(first_time) AS day, SUM(count) AS total_visits
+ FROM visitors
+ WHERE first_time BETWEEN '2023-01-01' AND '2023-12-31'
+ GROUP BY DATE(first_time)
+ ORDER BY total_visits DESC
+ LIMIT 5;
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 7
+ # Опишите струтуру реляционной бд в которой будет хранится лекарства и категории этих лекарст. Одно лекарство при
+ # этом может быть привязано к нескольким категориям одновременно. Пропишите только имена таблиц и полей типы полей.
+ # Иную информацию прописывать не нужно
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 7
+ 
+ Таблицы:
+ 
+ # MEDICINES – хранит информацию о лекарствах.
+ 
+ MEDICINES (
+     id INT,
+     name VARCHAR,
+     description TEXT,
+     manufacturer VARCHAR,
+     price DECIMAL,
+     created_at DATETIME,
+     updated_at DATETIME
+ )
+ 
+ # CATEGORIES – содержит категории лекарств.
+ 
+ CATEGORIES (
+     id INT,
+     name VARCHAR,
+     description TEXT,
+     created_at DATETIME,
+     updated_at DATETIME
+ )
+ 
+ # MEDICINE_CATEGORY – связывает лекарства и категории (многие-ко-многим).
+ 
+ MEDICINE_CATEGORY (
+     medicine_id INT NOT NULL,
+     category_id INT NOT NULL,
+     created_at DATETIME,
+     PRIMARY KEY (medicine_id, category_id),
+     FOREIGN KEY (medicine_id) REFERENCES MEDICINES(id),
+     FOREIGN KEY (category_id) REFERENCES CATEGORIES(id)
+ )
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 8
+ # Какие есть NoSQL базы данных?
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 8
+ 
+ Типы NoSQL баз данных
+ 
+ ДОКУМЕНТООРИЕНТИРОВАННЫЕ (хранят данные в формате JSON/BSON, XML):
+ 
+ - MongoDB (наиболее популярная)
+ - CouchDB, Firebase Firestore, RavenDB
+ - Elasticsearch (поисковая система на основе документов, поддерживает полнотекстовый поиск)
+ 
+ КЛЮЧ-ЗНАЧЕНИЕ (простая структура, высокая скорость):
+ 
+ - Redis (также поддерживает сложные структуры)
+ - DynamoDB (AWS), Riak, etcd
+ 
+ КОЛОНОЧНЫЕ (оптимизированы для аналитики и больших данных):
+ 
+ - Cassandra (распределённая, отказоустойчивая)
+ - HBase (на основе Hadoop)
+ - ClickHouse (OLAP, аналитика в реальном времени)
+ 
+ ГРАФОВЫЕ (эффективны для работы со связями):
+ 
+ - Neo4j (наиболее известная)
+ - ArangoDB (мультимодельная, поддерживает и документы, и графы)
+ - Amazon Neptune
+ 
+ IN-MEMORY (работают в ОЗУ, очень быстрые):
+ 
+ - Redis (поддерживает персистентность)
+ - Memcached (простой кеш, без персистентности)
+ 
+ 
+ Когда использовать?
+  - Гибкость схемы                        -> MongoDB, CouchDB
+  - Высокая скорость доступа              -> Redis, Memcached
+  - Большие объемы данных + аналитика     -> Cassandra, ClickHouse
+  - Сложные связи (соцсети, рекомендации) -> Neo4j
+  - Масштабируемость и отказоустойчивость -> Cassandra, DynamoDB
+  - Полнотекстовый поиск и анализ текстов -> Elasticsearch
+  
+  
+ Когда НЕ выбирать NoSQL?
+  - Нужны транзакции (ACID).
+  - Нужны сложные JOIN-запросы.
+  - Данные жестко структурированы (лучше SQL).
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 9
+ # В каких форматах происходит передача и хранение данных при взаимодействии с NoSQL-хранилищами с которыми вы также
+ # знакомы. Укажите названия хранилищ и соответствующие им форматы данных
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 9
+ 
+ MongoDB       - BSON (бинарный JSON)
+ Redis         - строки, хэши, списки, множества (бинарно-безопасные)
+ Cassandra     - JSON, BSON, строки, бинарные данные (через CQL)
+ Elasticsearch - JSON
+ DynamoDB      - JSON (через SDK), бинарные данные
+ Couchbase     - JSON, бинарные данные
+ RocksDB       - ключ-значение (бинарные данные)
+ Neo4j         - JSON (Cypher-запросы), графовые структуры
+ ClickHouse    - бинарные (столбцовое хранение, сжатие), JSON, CSV, Parquet, Avro, ORC, Protobuf (через коннекторы)
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 10
+ # Какие методы REST вы знаете?  Какие из них ИДЕМПОТЕНТНЫЕ а какие нет.
+ 
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 10
+ 
+ GET     - получение ресурса.
+ POST    - создание ресурса или выполнение операции.                      НЕ ИДЕМПОТЕНТЕН
+ PUT     - полное обновление ресурса (или создание, если не существует).   
+ PATCH   - частичное обновление ресурса.                                  НЕ ИДЕМПОТЕНТЕН
+ DELETE  - удаление ресурса.
+ HEAD    - аналогичен GET, но возвращает только заголовки (без тела).
+ OPTIONS - получение информации о доступных методах для ресурса.
+ 
+ 
+ PATCH НЕ всегда НЕИДЕМПОТЕНТНЫЙ (зависит от логики), а DELETE считается идемпотентным, даже если ресурс уже удалён. 
+ PATCH Обычно неидемпотентный, но может быть идемпотентным, если логика обновления детерминирована
+ (например, замена поля { "status": "completed" }).
+ Если PATCH применяет операции типа { "increment": 1 }, то он неидемпотентный.
+ 
+ 
+ 
+ Идемпотентность методов
+ Идемпотентный метод – это метод, который при многократном выполнении с одними и теми же данными даёт одинаковый результат
+ (не изменяет состояние сервера после первого вызова).
+ 
+ Метод	 Идемпотентный?	 Безопасный?         Описание
+ GET	 Да	             Да (только чтение)  Получение ресурса. Не изменяет сервер.
+ POST    Нет	         Нет                 Создание ресурса. Каждый вызов может создавать новый объект.
+ PUT	 Да	             Нет                 Полное обновление (или создание). Повторные запросы не меняют результат.
+ PATCH	 Нет (обычно)    Нет                 Частичное обновление. Зависит от текущего состояния ресурса.       
+ DELETE	 Да	             Нет                 Удаление ресурса. После первого удаления дальнейшие запросы не изменяют состояние.       
+ HEAD	 Да	             Да                  Как GET, но без тела ответа. Только заголовки.   
+ OPTIONS Да	             Да                  Информация о доступных методах для ресурса.
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 11
+ # Исправить структуру RESTful API чтобы соответствовала стандарту REST
+ # get     /item/id
+ # get     /items/list
+ # add     /items/new/id
+ # edit    /item/id
+ # delete  /items/id
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 11
+ 
+ GET    /items/{id}       - получение одного элемента
+ GET    /items            - получение списка элементов
+ POST   /items            - создание нового элемента (id обычно генерируется сервером)
+ PUT    /items/{id}       - полное обновление элемента
+ PATCH  /items/{id}       - частичное обновление элемента
+ DELETE /items/{id}       - удаление элемента
+ 
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 14
+ # Что в терминале Linux значит   >>   <<   &&
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 14
+ 
+ >> - добавление вывода в конец файла (без перезаписи).
+ << - передача текста в команду (here-document).
+ && - выполнить следующую команду, только если предыдущая успешна.
+ 
+ Кратко:
+ >> - дописать в файл.
+ << - многострочный ввод.
+ && - "и тогда".
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 15
+ # Почему при помощи git revert может быть невозможно откатить merge?
+ # Каким образом можно откатить merge?
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 15
+ 
+ Проблемы с git revert для merge:
+ 
+  - Конфликты изменений, если последующие коммиты зависят от merge.
+  - Нужно указывать правильный родительский коммит (-m 1 или -m 2).
+ 
+ Как откатить merge:
+ 
+  - git revert -m 1 <merge-commit> — откат к состоянию до merge (выбирает первую ветку).
+  - Или использовать git reset --hard <commit-before-merge> (если merge не опубликован).
+ 
+ Кратко: revert с -m, или reset если можно переписать историю.
+ 
+ 
+ 
+ 
+ # ЗАДАЧА 16
+ # С каким типами ошибок в Git Вам обычно приходилось сталкиватся (точные название не обязательно но можно, важно указать
+ # суть каждого типа ошибок)?
+ # Каким образом каждая из этих ошибок решается?
+ 
+ 
+ 
+ 
+ 
+ # ОТВЕТ ЗАДАЧА 16
+ Краткий список ошибок в Git и их решений
+ 1) Конфликты слияния
+  - Суть: Git не может сам объединить изменения.
+  - Решение: Ручное исправление -> git add -> git commit.
+ 
+ 2) Отмена изменений
+  - Суть: Файлы изменены/удалены, но не закоммичены.
+  - Решение:
+     - Отмена правок: git restore <file> (или git checkout -- <file>).
+     - Восстановление удалённых: git restore <file>.
+ 
+ 3) Ошибочный коммит
+  - Суть: Неправильные изменения/сообщение в коммите.
+  - Решение:
+    - Последний коммит: git commit --amend.
+    - Старые коммиты: git rebase -i.
+ 
+ 4) Потерянные коммиты
+  - Суть: Удаление ветки или reset --hard.
+  - Решение: Найти через git reflog, восстановить (git checkout <hash>).
+ 
+ 5) Пуш не в ту ветку
+  - Суть: Изменения в main вместо feature-ветки.
+  - Решение: Откат (git revert/reset), пуш в нужную ветку.
+ 
+ 6) Неотслеживаемые файлы
+  - Суть: Новые файлы не в индексе.
+  - Решение: git add <file> или git add ..
+ 
+ 7) Игнорируемые файлы в Git
+  - Суть: Git следит за файлами из .gitignore.
+  - Решение: git rm --cached <file>.
+ 
+ 8) Отсоединённая ветка
+  - Суть: Локальная ветка не связана с origin.
+  - Решение: git branch -u origin/<branch>.
+ 
+ 9) Жёсткий reset (потеря изменений)
+ - Суть: reset --hard удаляет незакоммиченное.
+ - Решение: Восстановить через git reflog (если коммит был).
+ 
+ 10) Пустые коммиты
+ - Суть: Коммит без изменений.
+ - Решение: Удалить (git reset) или разрешить (--allow-empty).
+ 
+ 
+ Итог:
+ 
+ Конфликты       - ручное исправление.
+ Отмена          - restore/checkout.
+ Потеря коммитов - reflog.
+ Ошибочный пуш   - revert/reset.
+ 
+ 
+ Главные инструменты для исправления ошибок:
+ 
+ git reflog                      - спасает при потере коммитов.
+ git restore / git reset         - отмена изменений.
+ git commit --amend и rebase -i  - правка истории.
+ git stash                       - временное сохранение правок.
+________________________________________________________________________________________________________________________
+
+ Ozon младший-разработчик сети
+
+ 1) Сколько бит в ipv4?   IPv4 - 32 бита (4 байта, форма: 192.168.1.1).
+ 2) Сколько максимум хостов мб в сети с маской /24?  Максимум хостов в /24 - 254 (256 адресов − 2 служебных).
+ 3) Какой командой посмотреть запущенные процессы в Linux?
+ - ps aux     - список процессов.
+ - top / htop - мониторинг в реальном времени.
+ - pstree     - процессы в виде дерева.
+________________________________________________________________________________________________________________________
+
+ СБЕР  ЛИГАЛ     2 ЗАДАЧИ
+
+ ЗАДАЧА 1) Разные способы вывести СПИСОК в обратном порядке в Python
+
+
+ # Вариант 1) Разворот списка через индексы (вариант с СОБЕСЕДОВАНИЯ)                    - O(n)
+ lst = [1, 'a', 'b', 2]
+ n = len(lst)
+ for i in range(len(lst) // 2):
+     lst[i], lst[n-1-i] = lst[n-1-i], lst[i]
+ print(lst)                  # -> [2, 'b', 'a', 1]
+
+ # Вариант 2) Разворот списка через отрицательные индексы (вариант с СОБЕСЕДОВАНИЯ)      - O(n)
+ lst = [1, 'a', 'b', 2]
+ for i in range(len(lst)//2):
+     lst[i], lst[-i-1] = lst[-i-1], lst[i]
+ print(lst)                  # -> [2, 'b', 'a', 1]
+
+ # Вариант 3) Используя метод reverse()                                                  - O(n)
+ lst = [1, 'a', 'b', 2]
+ lst.reverse()
+ print(lst)                  # -> [2, 'b', 'a', 1]
+
+ # Вариант 4) Используя срез [::-1]                                                      - O(n)
+ lst = [1, 'a', 'b', 2]
+ print(lst[::-1])            # -> [2, 'b', 'a', 1]
+
+ # Вариант 5) Используя функцию reversed()                                               - O(n)
+ lst = [1, 'a', 'b', 2]
+ print(list(reversed(lst)))  # -> [2, 'b', 'a', 1]
+
+ # Вариант 6) Через цикл for (итерируясь с конца)                                        - O(n)
+ lst = [1, 'a', 'b', 2]
+ reversed_lst = []
+ for item in lst[::-1]:
+     reversed_lst.append(item)  # append() - O(1), но создание среза lst[::-1]   - O(n)
+ print(reversed_lst)         # -> [2, 'b', 'a', 1]
+
+ # Вариант 7) Используя insert() с перебором исходного списка                            - O(n²)
+ lst = [1, 'a', 'b', 2]
+ reversed_lst = []
+ for item in lst:
+     reversed_lst.insert(0, item)  # insert(0) - O(n) для каждого элемента → итого O(n²)
+ print(reversed_lst)         # -> [2, 'b', 'a', 1]
+
+
+
+ ЗАДАЧА 2) Преобразует список чисел в строку с диапазонами
+
+ lst = [1, 3, 2, 8, 5, 6, 7, 10]
+
+
+ # Вариант 1) сортировка + однопроходный анализ    O(n log n)
+ def list_to_ranges(lst: list[int]) -> str:
+     if not lst:
+         return ""
+
+     lst = sorted(set(lst))  # Удаляем дубликаты и сортируем  #  O(n log n) (из-за сортировки)
+     ranges = []
+     start = lst[0]
+     prev = start
+
+     for num in lst[1:]:  # Проход по списку O(n)
+         if num == prev + 1:
+             prev = num
+         else:
+             if start == prev:
+                 ranges.append(str(start))
+             else:
+                 ranges.append(f"{start}-{prev}")
+             start = num
+             prev = num
+
+     # Добавляем последний диапазон
+     if start == prev:
+         ranges.append(str(start))
+     else:
+         ranges.append(f"{start}-{prev}")
+
+     return ", ".join(ranges)
+
+
+ # Вариант 2) C группировкой последовательных чисел (используя itertools.groupby)  O(n log n)
+ from itertools import groupby
+
+ def list_to_ranges(lst: list[int]) -> str:
+     if not lst:
+         return ""
+
+     lst = sorted(set(lst))
+     ranges = []
+
+     for _, group in groupby(enumerate(lst), key=lambda x: x[1] - x[0]):
+         group = list(group)
+         start = group[0][1]
+         end = group[-1][1]
+         ranges.append(f"{start}-{end}" if start != end else str(start))
+
+     return ", ".join(ranges)
+
+
+ # Вариант 3) С двумя указателями  O(n log n)
+ def list_to_ranges(lst: list[int]) -> str:
+     if not lst:
+         return ""
+
+     lst = sorted(set(lst))
+     ranges = []
+     i = 0
+     n = len(lst)
+
+     while i < n:
+         start = lst[i]
+         while i < n - 1 and lst[i + 1] == lst[i] + 1:
+             i += 1
+         end = lst[i]
+         ranges.append(f"{start}-{end}" if start != end else str(start))
+         i += 1
+
+     return ", ".join(ranges)
+
+ print(list_to_ranges(lst))  # -> "1-3, 5-8, 10"
+________________________________________________________________________________________________________________________
+
+ X5 Задача КАКАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ ВЫВОДА БУДЕТ и что вместо ???  какая аннотация
+
+ import asyncio
+ import typing as t
+
+ async def func1():
+     print('func1 started')  # 4 - выполняется при запуске task1
+     return 42               # 7 - возвращает результат (будет получен в await task1)
+
+
+ async def func2():
+     print('func2 started')  # 5 - выполняется при запуске task2
+     raise Exception()       # 8 - вызывает исключение (будет получено в await task2)
+
+ async def main():
+     print('main started')   # 1 - вход в основную корутину
+
+     # Создаем корутины, но они еще не выполняются
+     coroutine1: t.Coroutine = func1()  # просто создает объект корутины
+     coroutine2 = func2()               # создает объект корутины
+     print('coroutines created')  # 2 - корутины созданы, но не запущены
+
+     # Создаем задачи - теперь они добавлены в event loop и будут выполняться
+     task1 = asyncio.create_task(coroutine1)  # 3 - задача планируется на выполнение
+     task2 = asyncio.create_task(coroutine2)  # задача планируется на выполнение
+     print('tasks created')  # 3 - задачи созданы и добавлены в event loop
+
+     # Даем время на выполнение задач (event loop получает управление)
+     await asyncio.sleep(0.1)  # переключает контекст на выполнение задач
+     print('main woke up')   # 6 - main() продолжает выполнение после sleep
+
+     # Ожидаем результаты выполнения задач
+     res1 = await task1      # получаем результат func1() (уже выполнен к этому моменту)
+     print(f'res1 is {res1}')  # 9 - выводим результат первой задачи
+
+     try:
+         res2 = await task2  # получаем исключение из func2()
+         print(f'res2 is {res2}')  # этот код не выполнится из-за исключения
+     except Exception:
+         print("Exception from task2")  # 10 - обрабатываем исключение
+
+
+ asyncio.run(main())  # запускает event loop и корутину main()
+________________________________________________________________________________________________________________________
+
+ 2 ЗАДАЧИ X5
+
+
+ # ЗАДАЧА 1 ДОПОЛНИТЬ КОД
+
+ some_arr = [{"1": 1}]
+ some_arr = some_arr*  3
+
+ assert some_arr == [{"1": 1}, {"1": 1}, {"1": 1}]
+
+ some_arr[0]["1"] = 2
+
+ assert some_arr == [{"1": 2}, {"1": 2}, {"1": 2}]
+
+ some_arr[1] = "test"
+
+ assert some_arr == [{"1": 2}, 'test', {"1": 2}]
+
+ some_arr = some_arr.append("1")
+
+ assert some_arr == None
+
+
+ КРАТКО ПОЧЕМУ ТАКОЙ ОТВЕТ:
+ - some_arr * 3 создает список с тремя одинаковыми ссылками на один и тот же словарь {"1": 1}.
+ - Изменение some_arr[0]["1"] меняет исходный словарь, поэтому изменение видно во всех элементах списка.
+ - Присваивание some_arr[1] = "test" заменяет ссылку на словарь строкой, не затрагивая другие элементы.
+ - append() модифицирует список на месте и возвращает None, поэтому some_arr становится None.
+
+
+
+ ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА!!!
+
+ # ВАРИАНТ 1: Класс с методами __enter__ и __exit__
+
+ # Класс, если нужна сложная логика (например, управление состоянием).
+ class MyContextManager:
+     def __init__(self, name):
+         self.name = name
+         print(f"Инициализация контекстного менеджера для {self.name}")
+
+     def __enter__(self):
+         print(f"Вход в контекст для {self.name}")
+         # Можно вернуть объект, который будет связан с as-переменной
+         return self
+
+     def __exit__(self, exc_type, exc_val, exc_tb):
+         print(f"Выход из контекста для {self.name}")
+         if exc_type is not None:
+             print(f"Произошло исключение: {exc_val}")
+         # Если вернуть True, исключение будет подавлено
+         return False
+
+
+ # Пример использования
+ with MyContextManager("тестовый ресурс") as cm:
+     print(f"Выполняем операции внутри контекста с {cm.name}")
+     # Если раскомментировать следующую строку, будет видна обработка исключения
+     raise ValueError("Ошибка в контексте")
+
+
+ # ВАРИАНТ 2: Декоратор @contextmanager
+
+ # Декоратор @contextmanager, если контекстный менеджер простой и лаконичный.
+ from contextlib import contextmanager
+
+ @contextmanager
+ def my_context_manager(name):
+     print(f"Подготовка ресурса {name}")
+     resource = f"Ресурс: {name}"
+     try:
+         yield resource  # это значение будет присвоено as-переменной
+     except Exception as e:
+         print(f"Обработка исключения: {e}")
+         raise
+     finally:
+         print(f"Освобождение ресурса {name}")
+
+ # Пример использования
+ with my_context_manager("данные") as res:
+     print(f"Используем {res} внутри контекста")
+________________________________________________________________________________________________________________________
+
+ 2 ЗАДАЧИ МТС FULLSTACK  1) Правильная скобочная последовательность  2) Палиндром (перевернуть число МАТЕМАТИЧЕСКИ)
+
+
+ # ЗАДАЧА 2) Палиндром.  Реализовать функцию, проверяющую число на полиндромность (слева-направо одинаковое).
+
+
+ # ВАРИАНТ 1) перевернуть число МАТЕМАТИЧЕСКИ
+ def is_palindrome(integer: int) -> bool:
+     if integer < 0:
+         return False  # Отрицательные числа не могут быть палиндромами
+     original = integer
+     reversed_num = 0
+     while integer > 0:
+         reversed_num = reversed_num * 10 + integer % 10
+         integer = integer // 10
+     return original == reversed_num
+
+ print(is_palindrome(12321))  # -> True
+ print(is_palindrome(12345))  # -> False
+
+
+ # ВАРИАНТ 2) ОБЫЧНЫЙ
+ def is_palindrome(integer: int) -> bool:
+     str_num = str(integer)
+     # return str_num == str_num[::-1]
+     return str_num == str_num[slice(None, None, -True)]
+
+ print(is_palindrome(12321))  # -> True
+ print(is_palindrome(12345))  # -> False
+________________________________________________________________________________________________________________________
+
+
+ # ВК HR ВОПРОСЫ  ПРОСТО ПОСМОТРЕТЬ
+
+
+ # ВОПРОСЫ 1)
+
+ Клауд:
+
+ Какие механизмы есть в СУБД для отказоустойчивости?
+
+ - Репликация (синхронная/асинхронная) - копирование данных на несколько узлов.
+ - Транзакции и ACID - гарантируют целостность данных даже при сбоях.
+ - Журналирование (WAL - Write-Ahead Logging) - изменения сначала записываются в лог, что позволяет восстановить данные.
+ - Кластеризация - автоматический переход на резервный узел при отказе основного (например, в PostgreSQL с Patroni).
+ - Шардирование - распределение данных для уменьшения последствий отказа одного узла.
+
+ Что означает буква D в аббревиатуре ACID?
+
+ D - Durability (Долговечность) - гарантия, что после подтверждения транзакции (COMMIT) изменения сохранятся даже
+ при сбое системы (например, благодаря записи на диск).
+
+ Какими инструментами можно найти процесс, активно потребляющий ресурсы в Linux?
+
+ top / htop          - интерактивные мониторы процессов.
+ ps aux --sort=-%cpu - вывод процессов с сортировкой по CPU.
+ vmstat 1            - статистика по CPU, памяти, I/O.
+ iotop               - мониторинг процессов, нагружающих диск.
+ glances             - расширенный мониторинг системы.
+
+ Какими инструментами можно узнать нагрузку на диски в Linux?
+
+ iostat -x 1                  - статистика загрузки дисков (await, %util).
+ dstat                        - комбинированная статистика (CPU, disk, network).
+ sar -d 1 (из пакета sysstat) - история нагрузки на диски.
+ iotop                        - какие процессы активно пишут/читают.
+
+ Какими инструментами можно проверить сетевые настройки linux из cli?
+
+ ip a / ifconfig                  - список интерфейсов и их IP.
+ ip route / route -n              - таблица маршрутизации.
+ ss -tulnp / netstat -tulnp       - открытые порты и процессы.
+ ping, traceroute, mtr            - проверка доступности и маршрута.
+ nslookup / dig                   - DNS-запросы.
+ nmcli (если есть NetworkManager) - управление соединениями.
+
+ Что быстрее: синхронная или асинхронная запись в файл?
+
+ Асинхронная запись быстрее, так как данные сначала попадают в буфер (кеш), а запись на диск происходит позже.
+ Синхронная запись медленнее, потому что ОС ждёт подтверждения записи на диск перед завершением операции (например, fsync()).
+
+ В чём разница между списком и картежом в Python?
+
+  - Список (list) – изменяемый (можно добавлять, удалять элементы), [1, 2, 3].
+  - Кортеж (tuple) – неизменяемый (после создания нельзя изменить), (1, 2, 3). Кортежи занимают меньше памяти и работают быстрее.
+
+ Какова сложность поиска в словаре по значению?
+
+  - Поиск по значению (dict.values()) имеет сложность O(n), так как требует перебора всех элементов.
+  - Поиск по ключу – O(1) (хеш-таблица).
+
+ Почему использование модуля "threading" неэффективно для масштабирования процессорных вычислений?
+
+  - Из-за GIL (Global Interpreter Lock) в CPython: только один поток выполняет Python-код одновременно.
+  - Для CPU-задач лучше использовать multiprocessing (параллелизм) или асинхронность (asyncio для I/O).
+
+ Что такое "MRO" и "name mangling" в Python?
+
+ MRO (Method Resolution Order) – порядок поиска методов при наследовании (алгоритм C3, можно посмотреть через ClassName.__mro__).
+ Name mangling – автоматическое преобразование имён вида __var в _ClassName__var для избежания коллизий в наследовании.
+
+ Работал ли с виртуальными системами? Касался ли вообще?
+ Давненько Virtual Box, Песочницы, WMWareWorkstation.
+
+
+
+ # ВОПРОСЫ 2)
+
+ ArenadataDB:
+
+ 1. Можно ли заменить символ в строке и почему?
+ Нет, строки в Python неизменяемы (immutable). Можно создать новую строку с заменой.
+
+ 2. Чем корутина отличается от генератора?
+ Генератор производит значения (yield), корутина может и потреблять (send()), и выполнять асинхронные операции (await).
+ В Python корутины - это расширение генераторов
+
+ 3. Какие примитивы синхронизации есть в AsyncIO?
+  - asyncio.Lock      - блокировка для критических секций.
+  - asyncio.Event     - уведомление между задачами.
+  - asyncio.Semaphore - ограничение числа одновременных задач.
+  - asyncio.Condition - ожидание изменения состояния.
+  - asyncio.Queue     - потокобезопасная очередь.
+
+ 4. Как написать новый Dunder-метод?
+ Определить метод в классе с двойными подчёркиваниями
+ Их нельзя переопределять произвольно, только те, что поддерживаются Python.
+
+ 5. Что быстрее асинхронная или синхронная запись в файл, почему?
+ Синхронная запись обычно быстрее для одного файла, так как нет накладных расходов на event loop.
+ Асинхронная запись (например, через aiofiles) полезна при множестве одновременных операций (например, веб-сервер)
+ На самом деле, асинхронность не ускоряет сам диск, но позволяет выполнять другие задачи во время ожидания.
+
+ 6. Что делает метод type?
+ Как функция: возвращает тип объекта: type(42)  # <class 'int'>
+ Как метакласс: создаёт новый класс:  MyClass = type('MyClass', (Base,), {'x': 42})
+ type - это метакласс по умолчанию для всех классов в Python.
+
+ 7. В чем разница между мягкой и жесткой ссылкой? soft/hard link
+ Жёсткая ссылка (hard link) - это дополнительное имя для файла в файловой системе (inode). Удаление одной ссылки
+ не удаляет данные, пока есть другие ссылки.
+ Мягкая ссылка (symbolic link, symlink) - это ярлык, указывающий на путь. Если оригинал удалён, symlink становится "битым".
+
+ 8. Зачем в питоне использовать замыкание?
+ Сохраняет состояние между вызовами (альтернатива ООП). Используется в декораторах, callback-ах, фабриках функций.
+________________________________________________________________________________________________________________________
+
+ # ВК  ЗАДАЧИ  МНОГО ЗАДАЧ!!!
+
+
+ # ЗАДАЧА 0 (Разогрев) Написать декоратор с параметрами
+
+ import time
+ from functools import wraps
+
+ def retry(max_retries):
+     def decorator(func):
+         @wraps(func)
+         def wrapper(*args, **kwargs):
+             last_exception = None
+             for attempt in range(max_retries):
+                 try:
+                     return func(*args, **kwargs)
+                 except Exception as e:
+                     last_exception = e
+                     print(f"Attempt {attempt + 1} failed. Retrying...")
+                     time.sleep(1)  # Небольшая задержка перед повторной попыткой
+             print(f"All {max_retries} attempts failed")
+             raise last_exception  # Пробрасываем последнее исключение
+         return wrapper
+     return decorator
+
+ # Пример использования
+ @retry(3)
+ def risky_function():
+     import random
+     if random.random() < 0.7:  # 70% вероятность ошибки
+         raise ValueError("Something went wrong!")
+     return "Success!"
+
+
+ # Запустим 10 раз, чтобы увидеть ошибки
+ for _ in range(10):
+     try:
+         print(risky_function())
+     except ValueError as e:
+         print(f"Error: {e}")
+
+
+
+ # ЗАДАЧА 1 Написать код
+
+ # Требования:
+ # Уведомления высылаются регулярно и приходят из разных источников.
+ # Уведомления отправляются в разные каналы.
+ #
+ #
+ # John,email, name@example.com, some content
+ # {"name":"Alice", “type”: “telegram”, "id":"@alice", “content”:”some content”}
+
+
+ # ОТВЕТ ЗАДАЧА 1 Написать код
+
+ import json
+ from abc import ABC, abstractmethod
+
+ # Абстрактный класс для уведомлений
+ class Notification(ABC):
+     def __init__(self, name, content):
+         self.name = name
+         self.content = content
+
+     @abstractmethod
+     def send(self):
+         pass
+
+ # Email уведомление
+ class EmailNotification(Notification):
+     def __init__(self, name, email, content):
+         super().__init__(name, content)
+         self.email = email
+
+     def send(self):
+         print(f"Sending email to {self.name} ({self.email}): {self.content}")
+         # Здесь должна быть реальная логика отправки email
+         return True
+
+ # Telegram уведомление
+ class TelegramNotification(Notification):
+     def __init__(self, name, chat_id, content):
+         super().__init__(name, content)
+         self.chat_id = chat_id
+
+     def send(self):
+         print(f"Sending Telegram message to {self.name} ({self.chat_id}): {self.content}")
+         # Здесь должна быть реальная логика отправки в Telegram
+         return True
+
+ # Фабрика для создания уведомлений
+ class NotificationFactory:
+     @staticmethod
+     def create_notification(data):
+         if isinstance(data, str):
+             # Обработка CSV-подобной строки "John,email,name@example.com,some content"
+             parts = [part.strip() for part in data.split(',')]
+             if len(parts) >= 4 and parts[1].lower() == 'email':
+                 return EmailNotification(parts[0], parts[2], ','.join(parts[3:]))
+
+         elif isinstance(data, dict):
+             # Обработка JSON-подобного словаря
+             if data.get('type', '').lower() == 'telegram':
+                 return TelegramNotification(
+                     data.get('name', ''),
+                     data.get('id', ''),
+                     data.get('content', '')
+                 )
+             elif data.get('type', '').lower() == 'email':
+                 return EmailNotification(
+                     data.get('name', ''),
+                     data.get('id', ''),
+                     data.get('content', '')
+                 )
+
+         return None
+
+ # Менеджер уведомлений
+ class NotificationManager:
+     def __init__(self):
+         self.notifications = []
+
+     def add_notification(self, data):
+         notification = NotificationFactory.create_notification(data)
+         if notification:
+             self.notifications.append(notification)
+
+     def send_all(self):
+         results = []
+         for notification in self.notifications:
+             results.append(notification.send())
+         self.notifications = []
+         return results
+
+ # Пример использования
+ if __name__ == "__main__":
+     manager = NotificationManager()
+
+     # Добавляем уведомления из разных источников
+     manager.add_notification('John,email, name@example.com, some content')
+     manager.add_notification(json.loads('{"name":"Alice", "type": "telegram", "id":"@alice", "content":"some content"}'))
+
+     # Отправляем все уведомления
+     manager.send_all()
+
+
+
+ # ЗАДАЧА 2 ЧТО НЕ ТАК В КОДЕ ПРОСТО ПОСМОТРЕТЬ
+
+ # Разработчик написал разовый скрипт для отправки уведомлений и уволился.
+ # Этот код качественный? Что тебе в нем не нравится?
+
+ # Jhon,email, name@example.com, some content
+ # Jack,telegram, 12345678, some content
+
+ def send_notifications(params):
+    csv_file = open(os.path.dirname(file) + "/list.csv", newline="")
+    f = csv.reader(csv_file, delimiter=",", quotechar="\")
+    for row in f:
+        if not params["skip_email"] and row[1] == "email":
+            print(f"EMAIL: {row[2]}. Hello, {row[0]}! {row[3]}.")
+        elif not params["skip_telegram"] and row[1] == "telegram":
+            print(f"TELEGRAM: {row[2]}. Hello, {row[0]}! {row[3]}.")
+
+ if name == "main":
+    send_notifications(params)
+
+
+ # ОТВЕТ ЗАДАЧА 2 ЧТО НЕ ТАК В КОДЕ ПРОСТО ПОСМОТРЕТЬ
+
+ 1) Утечка ресурсов: Файл не закрывается (csv_file), лучше использовать with open()
+ 3) Синтаксическая ошибка: quotechar="\" - незакрытая кавычка и неэкранированный обратный слэш
+ 4) Отсутствие проверки существования файла: Нет обработки случая, когда файл не существует
+ 5) Жестко закодированный путь: os.path.dirname(file) + "/list.csv" - проблема с конкатенацией путей
+ 6) Неясные зависимости: Непонятно, откуда берутся переменные file и params
+ 7) Магические числа: Использование индексов (row[0], row[1] и т.д.) вместо именованных констант
+ 8) Отсутствие обработки ошибок: Нет try-except для обработки возможных ошибок
+ 9) Опечатка в __name__: if name == "main" вместо if __name__ == "__main__"
+ 10) Использование print: Для логирования лучше использовать модуль logging
+ 11) Хардкод значений: "email" и "telegram" лучше вынести в Enum или константы
+ 12) Отсутствие валидации данных: Нет проверки формата и полноты данных в CSV
+ 13) Проблемы с пробелами: В данных есть пробелы (, name@example.com,), но нет .strip()
+ 14) Смешение ответственности: Функция и читает файл, и отправляет уведомления
+ 15) Нет тестов: Код не модульный и не тестируемый
+ 16) Плохая расширяемость: Добавление нового типа уведомления требует модификации кода
+ 17) Нет документации: Отсутствуют docstring и комментарии
+ 18) Проблемы с кодировкой: Файл открывается без указания кодировки
+ 19) Уязвимости безопасности: Нет проверки входящих данных (например, email)
+ 20) Отсутствие аннотаций типов. Нет type hints
+
+ # "ЗОЛОТАЯ СЕРЕДИНА" между качеством и простотой для данной задачи. НО ДЛЯ production-системы можно сделать лучше.
+
+ import csv
+ import logging
+ import re
+ from enum import Enum, auto
+ from pathlib import Path
+ from typing import Dict, List, Optional, TypedDict
+
+ # Настройка логирования
+ logging.basicConfig(level=logging.INFO)
+ logger = logging.getLogger(__name__)
+
+
+ class NotificationType(Enum):
+     EMAIL = auto()
+     TELEGRAM = auto()
+
+     @classmethod
+     def from_string(cls, value: str) -> Optional['NotificationType']:
+         normalized = value.strip().upper()
+         for member in cls:
+             if member.name == normalized:
+                 return member
+         return None
+
+
+ class NotificationConfig(TypedDict):
+     skip_email: bool
+     skip_telegram: bool
+
+
+ class MessageTemplates:
+     EMAIL = "EMAIL: {address}. Hello, {name}! {message}."
+     TELEGRAM = "TELEGRAM: {address}. Hello, {name}! {message}."
+
+
+ class InvalidDataError(Exception):
+     pass
+
+
+ def is_valid_email(email: str) -> bool:
+     return bool(re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email.strip()))
+
+
+ def is_valid_telegram_id(tg_id: str) -> bool:
+     return tg_id.strip().isdigit()
+
+
+ def read_recipients(csv_path: Path) -> List[Dict[str, str]]:
+     '''Читает CSV файл и возвращает список получателей.'''
+     recipients = []
+
+     with open(csv_path, newline="", encoding="utf-8") as csv_file:
+         # Проверяем есть ли заголовок
+         sample = csv_file.read(1024)
+         csv_file.seek(0)
+         has_header = csv.Sniffer().has_header(sample)
+
+         reader = csv.DictReader(
+             csv_file,
+             fieldnames=["name", "type", "address", "message"],
+             skipinitialspace=True
+         )
+
+         if has_header:
+             next(reader)  # Пропускаем строку заголовка
+
+         for row in reader:
+             recipients.append({k: v.strip() for k, v in row.items()})
+
+     return recipients
+
+
+ def validate_recipient(recipient: Dict[str, str]) -> None:
+     '''Проверяет валидность данных получателя.'''
+     if not all(recipient.values()):
+         raise InvalidDataError("Missing required fields")
+
+     notification_type = NotificationType.from_string(recipient["type"])
+     if notification_type is None:
+         raise InvalidDataError(f"Invalid notification type '{recipient['type']}'")
+
+     if notification_type == NotificationType.EMAIL and not is_valid_email(recipient["address"]):
+         raise InvalidDataError(f"Invalid email format '{recipient['address']}'")
+
+     if notification_type == NotificationType.TELEGRAM and not is_valid_telegram_id(recipient["address"]):
+         raise InvalidDataError(f"Invalid Telegram ID '{recipient['address']}'")
+
+
+ def send_notification(recipient: Dict[str, str], config: NotificationConfig) -> None:
+     '''Отправляет одно уведомление.'''
+     notification_type = NotificationType.from_string(recipient["type"])
+
+     handlers = {
+         NotificationType.EMAIL: (
+             lambda cfg: not cfg["skip_email"],
+             MessageTemplates.EMAIL
+         ),
+         NotificationType.TELEGRAM: (
+             lambda cfg: not cfg["skip_telegram"],
+             MessageTemplates.TELEGRAM
+         ),
+     }
+
+     if notification_type in handlers:
+         should_send, template = handlers[notification_type]
+         if should_send(config):
+             logger.info(template.format(**recipient))
+
+
+ def send_notifications(config: NotificationConfig, csv_path: str) -> None:
+     '''
+     Send notifications to recipients based on data from CSV file.
+
+     Args:
+         config: Dictionary with notification settings:
+             - skip_email: bool - whether to skip email notifications
+             - skip_telegram: bool - whether to skip telegram notifications
+         csv_path: Path to CSV file with recipient data
+
+     CSV file format:
+         name, type, address, message
+     '''
+     try:
+         csv_path = Path(csv_path).resolve()
+         logger.info(f"Processing notifications from file: {csv_path}")
+
+         if not csv_path.exists():
+             raise FileNotFoundError(f"CSV file not found at {csv_path}")
+
+         recipients = read_recipients(csv_path)
+
+         for row_num, recipient in enumerate(recipients, start=1):
+             try:
+                 validate_recipient(recipient)
+                 send_notification(recipient, config)
+             except InvalidDataError as e:
+                 logger.warning(f"Row {row_num}: {str(e)}, skipping")
+             except Exception as e:
+                 logger.error(f"Row {row_num}: Error processing recipient - {str(e)}")
+                 continue
+
+     except FileNotFoundError as e:
+         logger.error(str(e))
+     except csv.Error as e:
+         logger.error(f"CSV parsing error: {str(e)}")
+     except Exception as e:
+         logger.error(f"Unexpected error: {str(e)}")
+     else:
+         logger.info("Notifications processing completed successfully")
+
+
+ if __name__ == "__main__":
+     config: NotificationConfig = {
+         "skip_email": False,
+         "skip_telegram": False
+     }
+     send_notifications(config, csv_path="list.csv")
+
+
+
+ # ЗАДАЧА 3 ЗА СКОЛЬКО ОТРАБОТАЕТ АСИНХРОННЫЙ КОД И КАКИЕ БУДУТ ПРИНТЫ
+
+ import asyncio
+
+ async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")
+     return delay
+
+ async def main():
+     await fetch_data(1)
+     await fetch_data(2)
+     await fetch_data(3)
+
+ asyncio.run(main())
+
+
+ # ОТВЕТ ЗАДАЧА 3 ЗА СКОЛЬКО ОТРАБОТАЕТ АСИНХРОННЫЙ КОД И КАКИЕ БУДУТ ПРИНТЫ
+
+ # ВЫПОЛНЕНИЕ БУДЕТ ЗА 6 СЕКУНД   Работает ПОСЛЕДОВАТЕЛЬНО, а НЕ ПАРАЛЛЕЛЬНО(асинхронно).
+
+ # Использование await перед каждой функцией в исходном коде заставляет их выполняться ПОСЛЕДОВАТЕЛЬНО, а НЕ ПАРАЛЛЕЛЬНО.
+ # Коротко: await блокирует текущую корутину, пока операция не завершится → выполнение становится последовательным.
+
+
+ import asyncio
+
+ async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")
+     return delay
+
+ async def main():
+     await fetch_data(1)
+     await fetch_data(2)
+     await fetch_data(3)
+
+ asyncio.run(main())
+
+ # ВЫВОД
+ # Inside function before 1 sleep...
+ # Inside function after 1 sleep...
+ # Inside function before 2 sleep...
+ # Inside function after 2 sleep...
+ # Inside function before 3 sleep...
+ # Inside function after 3 sleep...
+
+
+ # РАБОТАЕТ 3 СЕКУНДЫ  ПАРАЛЛЕЛЬНО(асинхронно), нужно использовать asyncio.gather() или asyncio.create_task().
+
+ import asyncio
+
+ # asyncio.create_task() (КОНТРОЛЬ над задачами)            # asyncio.gather()  (рекомендуется для простых случаев)
+ async def fetch_data(delay):                               async def fetch_data(delay):
+     print(f"Inside function before {delay} sleep...")          print(f"Inside function before {delay} sleep...")
+     await asyncio.sleep(delay)                                 await asyncio.sleep(delay)
+     print(f"Inside function after {delay} sleep...")           print(f"Inside function after {delay} sleep...")
+     return delay                                               return delay
+
+ async def main():                                          async def main():
+     # Создаем задачи (они запускаются сразу)                   # Запускаем все корутины параллельно
+     task1 = asyncio.create_task(fetch_data(1))                 await asyncio.gather(
+     task2 = asyncio.create_task(fetch_data(2))                     fetch_data(1),
+     task3 = asyncio.create_task(fetch_data(3))                     fetch_data(2),
+                                                                    fetch_data(3)
+     # Ждем завершения всех задач                               )
+     await task1
+     await task2
+     await task3
+
+ asyncio.run(main())                                        asyncio.run(main())
+
+ # ВЫВОД                                                    # ВЫВОД
+ # Inside function before 1 sleep...                        # Inside function before 1 sleep...
+ # Inside function before 2 sleep...                        # Inside function before 2 sleep...
+ # Inside function before 3 sleep...                        # Inside function before 3 sleep...
+ # Inside function after 1 sleep...                         # Inside function after 1 sleep...
+ # Inside function after 2 sleep...                         # Inside function after 2 sleep...
+ # Inside function after 3 sleep...                         # Inside function after 3 sleep...
+
+
+
+ # ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
+
+ def division(a, b):
+     return a / b
+
+
+ # ОТВЕТ ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
+
+ import pytest
+
+ def test_division_normal_cases():
+     # Тестирование нормальных случаев
+     assert division(10, 2) == 5.0
+     assert division(9, 3) == 3.0
+     assert division(1, 2) == 0.5
+     assert division(0, 5) == 0.0
+     assert division(-10, 2) == -5.0
+     assert division(-9, -3) == 3.0
+
+
+ def test_division_float_result():
+     # Тестирование случаев с дробным результатом
+     assert division(5, 2) == 2.5
+     assert division(1, 3) == pytest.approx(0.333333, rel=1e-6)
+
+
+ def test_division_by_zero():
+     # Тестирование деления на ноль
+     with pytest.raises(ZeroDivisionError):
+         division(10, 0)
+
+     with pytest.raises(ZeroDivisionError):
+         division(0, 0)
+
+
+ def test_division_invalid_input():
+     # Тестирование неверного ввода (не числа)
+     with pytest.raises(TypeError):
+         division("10", 2)
+
+     with pytest.raises(TypeError):
+         division(10, "2")
+
+     with pytest.raises(TypeError):
+         division("a", "b")
+
+
+
+ # ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+
+ class HybridContext:
+     def __init__(self):
+         pass
+
+
+ def __enter__(self):
+     return self
+
+
+ def __exit__(self, exc_type, exc_val, exc_tb):
+
+
+ with HybridContext(127.0.1.1) as e:
+     ...
+
+
+ # ОТВЕТ ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+
+ # ВАРИАНТ 1 Собственная реализация контекстного менеджера
+
+ # Исключения подавляются, так как метод __exit__ возвращает True.
+ class HybridContext:
+     def __init__(self, ip_address):
+         self.ip_address = ip_address
+
+     def __enter__(self):
+         print(f"Подключение к {self.ip_address}")
+         return self
+
+     def __exit__(self, exc_type, exc_val, exc_tb):
+         print(f"Отключение от {self.ip_address}")
+         if exc_type is not None:
+             print(f"Произошла ошибка: {exc_val}")
+         return True  # Подавляем исключения
+
+
+ # Использование
+ with HybridContext("127.0.1.1") as e:
+     print(F"Выполнение кода внутри контекста")
+     # raise Exception("Тестовая ошибка")  # Раскомментируйте для теста обработки ошибок
+
+ # ВЫВОД
+ # Подключение к 127.0.1.1
+ # Выполнение кода внутри контекста
+ # Отключение от 127.0.1.1
+
+
+
+ # ВАРИАНТ 2 Реализация с использованием contextlib
+ from contextlib import contextmanager
+
+ @contextmanager
+ def hybrid_context(ip_address):
+     print(f"Подключение к {ip_address}")
+     try:
+         yield ip_address
+     except Exception as e:
+         print(f"Произошла ошибка: {e}")
+         # return True  # Чтобы было подавление исключений
+     finally:
+         print(f"Отключение от {ip_address}")
+
+ # Использование
+ with hybrid_context("127.0.1.1") as ip:
+     print(f"Выполнение кода внутри контекста с IP {ip}")
+     # raise Exception("Тестовая ошибка")  # Раскомментируйте для теста обработки ошибок
+
+ # ВЫВОД
+ # Подключение к 127.0.1.1
+ # Выполнение кода внутри контекста с IP 127.0.1.1
+ # Отключение от 127.0.1.1
+________________________________________________________________________________________________________________________
+
+ # ЗАДАЧА Integer to Roman (leetcode)    SmartKit  Ритейл-Процессинг
+
+
+ # Все варианты работают за O(1) по времени и O(1) по памяти (так как используют фиксированный объем дополнительной памяти)
+
+ # Вариант 4 (жесткое кодирование) - самый быстрый на реальных данных, так как не содержит циклов и рекурсии.
+ # Остальные варианты чуть медленнее из-за циклов, но разница незначительна для ограниченного диапазона входных чисел.
+
+
+ # ВАРИАНТ ЧЕРЕЗ  библиотеку pip install roman
+ import roman
+
+ def intToRoman(num: int) -> str:
+     try:
+         return roman.toRoman(num)
+     except roman.InvalidRomanNumeralError:
+         return "Invalid number (must be 1-3999)"
+
+ print(intToRoman(3749))  # -> MMMDCCXLIX
+ print(intToRoman(58))    # -> LVIII
+ print(intToRoman(1994))  # -> MCMXCIV
+
+
+ # ВАРИАНТ 1  Жадный алгоритм с фиксированными значениями
+ def intToRoman(num: int) -> str:
+     values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+     symbols = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+     roman = []
+     for i in range(len(values)):
+         while num >= values[i]:
+             roman.append(symbols[i])
+             num -= values[i]
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 2  Использование списка кортежей
+ def intToRoman(num: int) -> str:
+     val_symbols = [
+         (1000, 'M'),
+         (900, 'CM'),
+         (500, 'D'),
+         (400, 'CD'),
+         (100, 'C'),
+         (90, 'XC'),
+         (50, 'L'),
+         (40, 'XL'),
+         (10, 'X'),
+         (9, 'IX'),
+         (5, 'V'),
+         (4, 'IV'),
+         (1, 'I')
+     ]
+     roman = []
+     for val, symbol in val_symbols:
+         while num >= val:
+             roman.append(symbol)
+             num -= val
+         if num == 0:
+             break
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 3  Использование словаря
+ def intToRoman(num: int) -> str:
+     val_to_roman = {
+         1000: 'M',
+         900: 'CM',
+         500: 'D',
+         400: 'CD',
+         100: 'C',
+         90: 'XC',
+         50: 'L',
+         40: 'XL',
+         10: 'X',
+         9: 'IX',
+         5: 'V',
+         4: 'IV',
+         1: 'I'
+     }
+     roman = []
+     for val in sorted(val_to_roman.keys(), reverse=True):
+         while num >= val:
+             roman.append(val_to_roman[val])
+             num -= val
+     return ''.join(roman)
+
+
+ # ВАРИАНТ 4 Жесткое кодирование для каждой цифры  # Очень быстрое решение (O(1) по времени, так как нет циклов).
+ def intToRoman(num: int) -> str:
+     thousands = ["", "M", "MM", "MMM"]
+     hundreds = ["", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"]
+     tens = ["", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"]
+     ones = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"]
+
+     return (
+         thousands[num // 1000] +
+         hundreds[(num % 1000) // 100] +
+         tens[(num % 100) // 10] +
+         ones[num % 10]
+     )
+
+
+ # ВАРИАНТ 5  Рекурсивный подход
+ def intToRoman(num: int) -> str:
+     val_symbols = [
+         (1000, 'M'),
+         (900, 'CM'),
+         (500, 'D'),
+         (400, 'CD'),
+         (100, 'C'),
+         (90, 'XC'),
+         (50, 'L'),
+         (40, 'XL'),
+         (10, 'X'),
+         (9, 'IX'),
+         (5, 'V'),
+         (4, 'IV'),
+         (1, 'I')
+     ]
+     for val, symbol in val_symbols:
+         if num >= val:
+             return symbol + intToRoman(num - val)
+     return ""  # для num = 0
+
+ print(intToRoman(3749))  # -> MMMDCCXLIX
+ print(intToRoman(58))    # -> LVIII
+ print(intToRoman(1994))  # -> MCMXCIV
+________________________________________________________________________________________________________________________
+
+ # ЗАДАЧИ High Sky LONDON
+
+
+ # ЗАДАЧА 1) что выведет код?
+
+ first = {1: 'ONE', 2: 'TWO'}
+ second = first
+ second[2] = 'NEW'
+ print(first)   # -> {1: 'ONE', 2: 'NEW'}
+ print(second)  # -> {1: 'ONE', 2: 'NEW'}
+
+
+ # ЗАДАЧА 2) что выведет код?
+
+ res = [1, 2, 3, 4, 5]
+ res.pop()
+ print(res.pop())   # -> 4
+ print(res)         # -> [1, 2, 3]
+ print(res.pop(0))  # -> 1
+
+
+ # ЗАДАЧА 3) НАПИСАТЬ ФУНКЦИЮ ПЕРЕМЕСТИТЬ НУЛИ В НАЧАЛО, СОХРАНЯЯ ПОРЯДОК ОСТАЛЬНЫХ ЭЛЕМЕНТОВ    4 ВАРИАНТА
+
+ res = [1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 0]
+
+ # ВАРИАНТ 1) (через фильтрацию и объединение)   требует O(n) дополнительной памяти.     Сложность    O(n)
+ def move_zeros_to_start(lst: list[int]) -> list[int]:
+     zeros = [x for x in lst if x == 0]
+     non_zeros = [x for x in lst if x != 0]
+     return zeros + non_zeros
+
+
+ # ВАРИАНТ 2) (через sorted с ключом)                                                                 O(n log n)
+ def move_zeros_to_start(lst: list[int]) -> list[int]:
+     return sorted(lst, key=lambda x: x != 0)  # False (0) будет раньше True (ненулевые)
+
+ print(move_zeros_to_start(res))  # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
+
+
+ # ВАРИАНТ 3) in-place сортировку (если нужно изменить исходный список)  МЕНЯЕТ ИСХОДНЫЙ СПИСОК!!!    O(n log n)
+ def move_zeros_to_start(lst: list[int]) -> list[int]:
+     lst.sort(key=lambda x: x != 0)  # Меняет исходный список!
+     return lst
+
+ print(move_zeros_to_start(res))  # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
+ print(res)                       # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
+
+
+ # ВАРИАНТ 4 (эффективный in-place за O(n)) - если важно сохранить порядок и сделать in-place         O(n)
+ def move_zeros_to_start_inplace_efficient(lst: list[int]) -> None:
+     zero_pos = 0
+     for i in range(len(lst)):
+         if lst[i] == 0:
+             lst.insert(zero_pos, lst.pop(i))
+             zero_pos += 1
+
+ move_zeros_to_start_inplace_efficient(res)
+ print(res)                       # -> [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5]
+________________________________________________________________________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2296,6 +4868,53 @@ ________________________________________________________________________________
      FROM t1
  ) AS numbered
  WHERE rn = 1;
+________________________________________________________________________________________________________________________
+
+ ВК  2 задачи в одной (ДВА В ОДНОМ)
+
+ goods (id, title, type, price)
+
+ 1) Нужно получить количество товаров каждого типа с ценой товара больше 15.
+
+ -- Эти запросы подсчитают все товары с price > 15, независимо от того, есть ли NULL в title или нет.
+ SELECT type, COUNT(*) AS goods_count  SELECT type, COUNT(id) AS goods_count  SELECT type, COUNT(1) AS goods_count
+ FROM goods                            FROM goods                             FROM goods
+ WHERE price > 15                      WHERE price > 15                       WHERE price > 15
+ GROUP BY type;                        GROUP BY type;                         GROUP BY type;
+
+ -- Если title НЕ содержит NULL значений    -- Если title содержит NULL значений
+ SELECT type, COUNT(title) AS goods_count   SELECT type, COUNT(title) AS goods_count
+ FROM goods                                 FROM goods
+ WHERE price > 15                           WHERE price > 15 AND title is not NULL
+ GROUP BY type;                             GROUP BY type;
+
+
+ 2) Нужно получить количество товаров каждого типа с ценой товара больше 15. Показать нужно только количество меньше 5.
+
+  -- Эти запросы подсчитают все товары с price > 15, независимо от того, есть ли NULL в title или нет.
+ SELECT type, COUNT(*) AS goods_count  SELECT type, COUNT(id) AS goods_count  SELECT type, COUNT(1) AS goods_count
+ FROM goods                            FROM goods                             FROM goods
+ WHERE price > 15                      WHERE price > 15                       WHERE price > 15
+ GROUP BY type                         GROUP BY type                          GROUP BY type
+ HAVING COUNT(*) < 5;                  HAVING COUNT(id) < 5;                  HAVING COUNT(1) < 5;
+
+ -- Вариант 1 (использование алиаса)        -- Вариант 2 (использование агрегатной функции)
+ SELECT type, COUNT(title) AS goods_count   SELECT type, COUNT(title) AS goods_count
+ FROM goods                                 FROM goods
+ WHERE price > 15                           WHERE price > 15
+ GROUP BY type                              GROUP BY type
+ HAVING goods_count < 5;                    HAVING COUNT(title) < 5;
+
+
+ # Все 4 варианта (COUNT(*), COUNT(1), COUNT(id), COUNT(title)) дадут одинаковый результат, если:
+ id является PRIMARY KEY (значит не может быть NULL)
+ title не содержит NULL значений
+
+ # Разбор вариантов COUNT(*), COUNT(1), COUNT(id), COUNT(title)
+ COUNT(*) - считает все строки в группе, включая NULL.  COUNT(*) будет наиболее предпочтительным вариантом.
+ COUNT(1) - эквивалентен COUNT(*), потому что 1 - это не-NULL константа, и она учитывается для каждой строки.
+ COUNT(id) - считает только строки, где id не NULL (если id - PRIMARY KEY, разницы с COUNT(*) нет).
+ COUNT(title) - считает только не-NULL значения title
 ________________________________________________________________________________________________________________________
 
 
@@ -4785,6 +7404,8 @@ ________________________________________________________________________________
 
  # Для получения всех элементов коллекции
  print([1, 2, 3][:])  # -> [1, 2, 3]
+ # Для кортежа тоже самое
+ print((1, 2, 3)[:])  # -> (1, 2, 3)
  -----------------------------------------------------------------------------------------------------------------------
 
  # Отметьте верные способы создать список (list) с элементами [1, 2, 3, 4]
@@ -5866,6 +8487,15 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(sets)  # -> {0, 1, 2, 3, frozenset({'a', 'b'})}
  sets.remove({'a', 'b'})  # <-----   Можно удалить множество set из set
  print(sets)  # -> {0, 1, 2, 3}
+
+ # ОТВЕТ ПОЧЕМУ В ФИГУРНЫХ   это его стандартное строковое представление (repr).
+ print(frozenset(('a', 'b')))  # -> frozenset({'b', 'a'})
+ print(frozenset(['a', 'b']))  # -> frozenset({'b', 'a'})
+ print(set(('a', 'b')))        # -> {'a', 'b'}
+ print(set(['a', 'b']))        # -> {'a', 'b'}
+
+ # Независимо от того, передан кортеж, список или множество, repr(frozenset(...)) всегда возвращает строку в формате
+ # frozenset({...}). Это сделано для единообразия и удобства отладки.
  -----------------------------------------------------------------------------------------------------------------------
 
  # .keys() и .items() объекта  dict()  Удивительно похожи на frozenset()
@@ -7110,6 +9740,97 @@ print(*res if sum(res) < sum(res_2) else *res_2)   # -> SyntaxError: invalid syn
  print(longestPalindrome("babad"))     # -> bab
  print(longestPalindrome("cbbd"))      # -> bb
  print(longestPalindrome("aaaaa"))     # -> aaaaa
+ -----------------------------------------------------------------------------------------------------------------------
+
+ # Даны строка-шаблон pattern и строка s. Нужно определить, соответствует ли строка s шаблону pattern.    Word Pattern
+
+ # Время: O(n), где n — длина pattern (один проход по всем символам и словам).
+ # Память: O(n), так как храним словари для всех уникальных символов и слов.
+ def wordPattern(pattern: str, s: str) -> bool:
+     words = s.split()  # Разбиваем строку на слова
+
+     # Если длины не совпадают, соответствия быть не может
+     if len(pattern) != len(words):
+         return False
+
+     # Создаём два словаря для двустороннего соответствия
+     char_to_word = {}  # ключ: символ, значение: слово
+     word_to_char = {}  # ключ: слово, значение: символ
+
+     for char, word in zip(pattern, words):
+         # Проверяем, что символ соответствует слову
+         if char in char_to_word:
+             if char_to_word[char] != word:
+                 return False
+         else:
+             char_to_word[char] = word
+
+         # Проверяем, что слово соответствует символу
+         if word in word_to_char:
+             if word_to_char[word] != char:
+                 return False
+         else:
+             word_to_char[word] = char
+
+     return True
+
+
+ print(wordPattern("abba", "dog cat cat dog")) # -> True
+ print(wordPattern("aaaa", "dog cat cat dog")) # -> False
+ -----------------------------------------------------------------------------------------------------------------------
+
+ # Даны две строки s и t. Нужно определить, являются ли они изоморфными.   Тоже самое     leetcode   Word Pattern
+
+ def isIsomorphic(s: str, t: str) -> bool:
+     if len(s) != len(t):
+         return False
+
+     s_to_t = {}  # Словарь для соответствия s → t
+     t_to_s = {}  # Словарь для соответствия t → s
+
+     for char_s, char_t in zip(s, t):
+         # Проверяем соответствие s → t
+         if char_s in s_to_t:
+             if s_to_t[char_s] != char_t:
+                 return False
+         else:
+             s_to_t[char_s] = char_t
+
+         # Проверяем соответствие t → s
+         if char_t in t_to_s:
+             if t_to_s[char_t] != char_s:
+                 return False
+         else:
+             t_to_s[char_t] = char_s
+
+     return True
+
+
+ print(isIsomorphic("egg", "add")) # -> True
+ print(isIsomorphic("foo", "bar")) # -> False
+ -----------------------------------------------------------------------------------------------------------------------
+
+ # МОЖНО ПЕРЕДЕЛАТЬ В СТАНДАРТНЫЕ СТРУКТУРЫ ДАННЫХ PYTHON!  collections
+ from collections import deque, Counter
+
+ a_deque = deque([1, 2, 3])
+ print(a_deque)         # -> deque([1, 2, 3])
+ print(list(a_deque))   # -> [1, 2, 3]
+
+ b_counter = Counter([1, 2, 3])
+ print(b_counter)         # -> Counter({1: 1, 2: 1, 3: 1})
+ print(dict(b_counter))   # -> {1: 1, 2: 1, 3: 1}
+ -----------------------------------------------------------------------------------------------------------------------
+
+ ### Это распаковка: в цикле пара ["a","b"] сразу раскладывается в a и b, а второе значение из zip попадает в val.
+ equations = [["a", "b"], ["b", "c"]]
+ values = [2.0, 3.0]
+                                               # ТОЖЕ САМОЕ
+ for (a, b), val in zip(equations, values):    for eq, val in zip(equations, values):
+     print(a, b, val)                              a, b = eq
+                                                   print(a, b, val)
+ # -> a b 2.0
+ # -> b c 3.0
  -----------------------------------------------------------------------------------------------------------------------
 
 

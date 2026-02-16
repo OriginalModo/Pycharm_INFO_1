@@ -32,6 +32,7 @@ def rle(s: str) -> str:
 
 
 
+
 # print(rle("aaaabbcaa"))  # a4b2c1a2
 
 
@@ -98,6 +99,7 @@ print(rle("aaaabbcaa"))  # a4b2c1a2
 # Придумал сам)
 def rle(s: str) -> str:
     return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+    # return re.sub(r'(?P<first>\w)(?P=first)+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)  # ИМЕНОВАННЫЕ ГРУППЫ!
 
 print(rle("aaaabbcaa"))  # a4b2c1a2
 """
@@ -117,6 +119,9 @@ head = [0, 3, 1, 0, 4, 5, 2, 0]
 
 def mergeNodes(head):
     pass
+
+
+
 
 
 
@@ -157,6 +162,32 @@ def mergeNodes(head):                             def mergeNodes(head):
 
 
 print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+
+
+# ВАРИАНТ 3  
+# GROUPBY (itertools.groupby + sum):
+# Время: O(n) — один проход по head, каждый элемент попадает ровно в одну группу и суммируется один раз.
+# Память: O(k) на res; доп. память groupby — O(1) (ленивые группы, элементы не копируются).
+#         В худшем случае k = O(n) ⇒ память O(n) (из-за результата).
+
+# Примечание: если вместо sum(group) делать list(group), память станет O(m) на размер группы (и суммарно O(n)),
+# потому что вы начнёте копировать элементы групп в списки.
+
+from itertools import groupby
+
+def mergeNodes(head):
+    return [sum(group) for key, group in groupby(head, key=lambda x: x != 0) if key]
+    
+### ТОЖЕ САМОЕ!!!
+def mergeNodes(head):
+    res = []
+    for i, group in itertools.groupby(head, key=lambda x: x!=0):
+        if i:
+            res.append(sum(group))
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
 """
 
 
@@ -293,6 +324,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # ### TODO 409. Longest Palindrome
 # Задача: дана строка s из букв (a-z, A-Z). Нужно вернуть длину
 # самого длинного палиндрома, который можно собрать из этих букв.
@@ -348,6 +380,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!   ВЫВОД ДЛИНЫ
 # def longestPalindrome(self, s: str) -> int:
+
+
+
 
 
 
@@ -464,6 +499,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # # ### TODO РЕШИТЬ!
 # def canPartition(self, nums: List[int]) -> bool:
+
+
 
 
 
@@ -621,6 +658,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 2) Вариант "итеративный": стек (node, remaining_sum) (O(n) время, O(n) память)
 #
@@ -709,6 +748,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!   def mirror(p, q)   return mirror(p.left, q.right) and mirror(p.right, q.left)
 # def isSymmetric(self, root: Optional[TreeNode]) -> bool:
+
+
+
+
+
 
 
 
@@ -809,6 +853,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 2) Вариант "итеративный": BFS (O(n) время, O(w) память)
 #
@@ -899,6 +945,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!       p.left, q.left     p.right, q.right
 # def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:
+
+
+
 
 
 
@@ -1133,6 +1182,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # --- 2) Итеративно (BFS) — лучше для minDepth, можно закончить на первом листе ---
 ## BFS = Breadth-First Search — поиск в ширину (идём по уровням: сначала корень, потом все дети, потом внуки и т.д.).
 
@@ -1318,6 +1368,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 # Время: O(1) на операцию
 # Память: O(n)
 
+### TODO РЕШЕНИЕ
 # class MinStack:
 #     def __init__(self):
 #         self.stack = []
@@ -1438,6 +1489,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # ### TODO 20. Valid Parentheses
 # Задача: дана строка s, состоящая из скобок () {} [].
 # Нужно проверить, является ли строка корректной:
@@ -1483,6 +1535,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def isValid(self, s: str) -> bool:
+
+
 
 
 
@@ -1651,6 +1705,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
+
 # ============================================================
 # 2) Вариант "универсальный": добавить newInterval и сделать merge (O(n log n) время)
 #
@@ -1739,6 +1798,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ### TODO 228. Summary Ranges  + ВАРИАНТ С СОБЕСЕДОВАНИЯ   nums = sorted(set(nums))  return ", ".join(res)
 # Задача: дан НЕ отсортированный массив уникальных целых nums.
 # Нужно вернуть список диапазонов, которые покрывают все числа ровно один раз.
@@ -1808,6 +1871,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ! + ВАРИАНТ С СОБЕСЕДОВАНИЯ   nums = sorted(set(nums))  return ", ".join(res)
 # def summaryRanges(self, nums: List[int]) -> List[str]:
+
+
+
 
 
 
@@ -1925,6 +1991,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!  + ВЫВОД ПОСЛЕДОВАТЕЛЬНОСТИ
 # def longestConsecutive(self, nums: List[int]) -> int:
+
+
+
+
 
 
 
@@ -2083,6 +2153,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # ### TODO 202. Happy Number
 # Задача: определить, является ли число n "счастливым".
 # Процесс:
@@ -2215,8 +2286,6 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def twoSum(self, nums: list[int], target: int) -> list[int]:
-
-
 
 
 
@@ -2652,6 +2721,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ============================================================
 # 1b) Вариант: вернуть саму подстроку (sliding window + last seen index)
 #
@@ -2739,6 +2812,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!   + ВЫВОД ПОДМАССИВА
 # def minSubArrayLen(self, target: int, nums: list[int]) -> int:
+
+
+
+
 
 
 
@@ -2849,7 +2926,16 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 # # # ### TODO РЕШИТЬ!  БОНУС  + ВЫВОД ПОДМАССИВА
-# def maxSubArrayLen(self, nums: list[int], k: int) -> int:
+def maxSubArrayLen(nums: list[int], k: int) -> int:
+    pass
+
+
+
+
+# print(maxSubArrayLen([1, -1, 5, -2, 3], k = 3))  # -> 4
+# print(maxSubArrayLen([-2, -1, 2, 1], k = 1))     # -> 2
+
+
 
 
 
@@ -2936,7 +3022,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 #
 # Сложность:
 # Время: O(n^2)
-# Память: O(1) доп. (сортировка в Python может использовать доп. память)
+# Память: O(1) доп. (сортировка в Python может использовать доп. память)     O(n) (из-за sort в Python) + O(k) на результат
 
 ### “Если нельзя модифицировать вход, использую nums = sorted(nums)  — получаю отсортированную копию; это +O(n) память.”
 
@@ -2976,6 +3062,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!    range(n - 2)    nums[i] > 0 break   i > 0 and nums[i] == nums[i - 1] continue    l, r = i+1, n-1
 # def threeSum(self, nums: list[int]) -> list[list[int]]:
+
+
+
 
 
 
@@ -3122,6 +3211,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!                                            s = numbers[l] + numbers[r]       [l + 1, r + 1]
 # def twoSum(self, numbers: list[int], target: int) -> list[int]:
+
+
+
 
 
 
@@ -3341,6 +3433,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 2) Вариант "простой" для Python: встроенный find (обычно O(n), но зависит от реализации)
 #
@@ -3448,6 +3542,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ============================================================
 # 2) Альтернатива без split: ручной разбор справа налево
 #
@@ -3538,6 +3636,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # ### TODO РЕШИТЬ!   3 ВАРИАНТА   2 ХОРОШИХ + 1 ПЛОХОЙ!       [:-1] == с начала до элемента с индексом -1, но не включая его
 # def longestCommonPrefix(self, strs: List[str]) -> str:
+
+
+
+
 
 
 
@@ -3658,6 +3760,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # ### TODO РЕШИТЬ!                          i = len(s) - 1
 # def lengthOfLastWord(self, s: str) -> int:
+
+
 
 
 
@@ -3860,6 +3964,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 1) Вариант "лучший для собеседования": один проход слева направо (O(n), O(1))
 #
@@ -3970,7 +4076,6 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
-
 # ============================================================
 # 2) Вариант "простой": префикс/суффикс максимумы (O(n) время, O(n) память)
 #
@@ -4065,6 +4170,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # ### TODO РЕШИТЬ!
 # def candy(self, ratings: list[int]) -> int:
+
+
+
 
 
 
@@ -4175,6 +4283,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # ### TODO РЕШИТЬ!
 # def canCompleteCircuit(self, gas: list[int], cost: list[int]) -> int:
+
+
+
+
 
 
 
@@ -4364,6 +4476,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
 # ============================================================
 # 1) Вариант "лучший для собеседования": counting (O(n) время, O(n) память)
 #
@@ -4461,6 +4576,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ### TODO 55. Jump Game
 # Задача: дан массив nums, где nums[i] — максимальная длина прыжка из позиции i.
 # Стартуем с индекса 0. Нужно понять, можно ли добраться до последнего индекса.
@@ -4512,6 +4631,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
+
 # ### TODO 122. Best Time to Buy and Sell Stock II
 # Задача: дан массив prices, где prices[i] — цена акции в i-й день.
 # Можно совершать сколько угодно сделок (покупка/продажа), но держать можно максимум 1 акцию.
@@ -4555,6 +4679,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def maxProfit(self, prices: List[int]) -> int:
+
+
+
+
+
 
 
 
@@ -4613,6 +4742,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ### TODO 189. Rotate Array
 # Задача: дан массив nums и число k.
 # Нужно повернуть массив вправо на k шагов (k >= 0) in-place.
@@ -4663,6 +4796,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!  deque.rotate поворот ВЛЕВО !   Написить поворот ВПРАВО!   k = n - k
 # def rotate(self, nums: List[int], k: int) -> None:
+
 
 
 
@@ -4749,6 +4883,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 2) Вариант "простой": HashMap (частоты)
 #
@@ -4819,6 +4955,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def removeDuplicates(self, nums: List[int]) -> int:
+
+
+
 
 
 
@@ -4912,6 +5051,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # ============================================================
 # 1) Вариант "лучший для собеседования": slow/fast pointers (write pointer)
 #
@@ -4967,6 +5107,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 ### TODO РЕШИТЬ! УДАЛИТЬ ДУБЛИКАТЫ!
 
 # def clean_duplicates(lst: list):
+
+
+
 
 
 
@@ -5059,6 +5202,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def removeElement(nums, val):
+
+
+
+
+
 
 
 
@@ -5178,6 +5326,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
+
 # ### TODO Math
 
 
@@ -5226,6 +5379,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def plusOne(self, digits: List[int]) -> List[int]:
+
+
+
 
 
 
@@ -5286,6 +5442,12 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def isPalindrome(self, x: int) -> bool:
+
+
+
+
+
+
 
 
 

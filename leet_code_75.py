@@ -1,8 +1,4 @@
-
-
-
-
-
+import itertools
 from typing import List, Optional
 import re
 from collections import deque
@@ -33,6 +29,8 @@ a = 'aaaabbcaa'
 from itertools import groupby
 def rle(s: str) -> str:
     pass
+
+
 
 
 
@@ -102,6 +100,7 @@ print(rle("aaaabbcaa"))  # a4b2c1a2
 # Придумал сам)
 def rle(s: str) -> str:
     return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+    # return re.sub(r'(?P<first>\w)(?P=first)+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)  # ИМЕНОВАННЫЕ ГРУППЫ!
 
 print(rle("aaaabbcaa"))  # a4b2c1a2
 """
@@ -119,6 +118,7 @@ head = [0, 3, 1, 0, 4, 5, 2, 0]
 
 def mergeNodes(head):
     pass
+
 
 
 
@@ -159,6 +159,32 @@ def mergeNodes(head):                             def mergeNodes(head):
 
 
 print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
+
+
+# ВАРИАНТ 3
+# GROUPBY (itertools.groupby + sum):
+# Время: O(n) — один проход по head, каждый элемент попадает ровно в одну группу и суммируется один раз.
+# Память: O(k) на res; доп. память groupby — O(1) (ленивые группы, элементы не копируются).
+#         В худшем случае k = O(n) ⇒ память O(n) (из-за результата).
+
+# Примечание: если вместо sum(group) делать list(group), память станет O(m) на размер группы (и суммарно O(n)),
+# потому что вы начнёте копировать элементы групп в списки.
+
+from itertools import groupby
+
+def mergeNodes(head):
+    return [sum(group) for key, group in groupby(head, key=lambda x: x != 0) if key]
+    
+### ТОЖЕ САМОЕ!!!
+def mergeNodes(head):
+    res = []
+    for i, group in itertools.groupby(head, key=lambda x: x!=0):
+        if i:
+            res.append(sum(group))
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
 """
 
 
@@ -221,6 +247,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!   key=lambda x: x[1]   points[0][1]   if s > arrow_x
 # def findMinArrowShots(self, points: List[List[int]]) -> int:
+
+
 
 
 
@@ -291,6 +319,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!  key=lambda x: x[1]   intervals[0][1]   if s < last_end
 # def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
+
+
+
+
 
 
 
@@ -507,6 +539,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
 # ============================================================
 # 2) Вариант "короткий": рекурсивный
 #
@@ -583,6 +618,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!     left   right
 # def maxLevelSum(self, root: Optional[TreeNode]) -> int:
+
+
+
 
 
 
@@ -691,6 +729,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!     right   left
 # def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+
+
+
+
+
 
 
 
@@ -942,6 +985,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ============================================================
 # 2) Вариант "лучший для собеседования": Prefix Sum + HashMap (O(n))
 #
@@ -1056,6 +1101,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
+
 # ============================================================
 # 2) Вариант "лучше для собеседования в Python" (итеративный DFS без рекурсии)
 #
@@ -1147,6 +1197,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def leafSimilar(self, root1, root2):
+
+
+
+
 
 
 
@@ -1896,6 +1950,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # 2) Альтернатива: regex (Python-only трюк)
 # Важно: regex не умеет нормально парсить вложенные скобки напрямую,
 # поэтому делаем повторные замены “самых внутренних” блоков вида k[letters],
@@ -2105,6 +2160,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # 2) Альтернатива: без Counter (обычный dict частот)
 # Паттерн: Hash Table
 
@@ -2201,6 +2258,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # 2) Без Counter (ручной словарь частот)
 # Паттерн: Hash Table / Counting
 
@@ -2287,6 +2346,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # 2) Альтернатива: без Counter (ручной словарь)
 # Паттерн: Hash Table
 
@@ -2362,6 +2423,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # ### TODO Prefix Sum
 
 
@@ -2413,6 +2475,11 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def pivotIndex(nums: list[int]) -> int:
+
+
+
+
+
 
 
 
@@ -2496,6 +2563,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 # def longestSubarray(nums: list[int]) -> int:
+#     k = 1
 #     left = 0
 #     zeros = 0
 #     best = 0
@@ -2504,7 +2572,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 #         if nums[right] == 0:
 #             zeros += 1
 #
-#         while zeros > 1:
+#         while zeros > k:
 #             if nums[left] == 0:
 #                 zeros -= 1
 #             left += 1
@@ -2523,6 +2591,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!    best = max(best, i - left)
 # def longestSubarray(nums: list[int]) -> int:
+
+
+
 
 
 
@@ -2573,6 +2644,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!
 # def longestOnes(nums: list[int], k: int) -> int:
+
+
 
 
 
@@ -2639,6 +2712,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 ### TODO БОНУС
 # ### TODO 485. Max Consecutive Ones
 # Задача: дан бинарный массив nums (только 0 и 1).
@@ -2682,6 +2757,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 ### TODO РЕШИТЬ!  БОНУС  ЕДИНИЦЫ ПОДРЯД!
 # def findMaxConsecutiveOnes(self, nums: List[int]) -> int:
+
+
+
 
 
 
@@ -2787,6 +2865,7 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
 # def maxVowelsOnly(s: str, k: int) -> str:
 #     vowels = set("aeiou")
 #
@@ -2869,6 +2948,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ### TODO Two Pointers
 
 
@@ -2927,6 +3008,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
+
 # ### TODO 11. Container With Most Water
 # Задача: по массиву height найти две линии (i и j), которые дают максимальную площадь воды.
 # Площадь = (j - i) * min(height[i], height[j]).
@@ -2971,6 +3056,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def maxArea(height: list[int]) -> int:
+
+
+
 
 
 
@@ -3097,7 +3185,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
-# 2) Альтернатива: swap, когда встречаем ненулевой (тоже in-place)    ТЕКУЩЕЕ РЕШЕНИЕ ЛУЧШЕ И ПРОЩЕ
+
+# 2) Альтернатива: swap, когда встречаем ненулевой (тоже in-place)    ТЕКУЩЕЕ РЕШЕНИЕ ЛУЧШЕ И ПРОЩЕ  <---------
 # Паттерн: Two Pointers (swap)
 
 # Сложность:
@@ -3132,6 +3221,10 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 ### TODO БОНУС
 # # # ### TODO РЕШИТЬ!  НУЛИ в НАЧАЛО   2 ВАРИАНТА НАПИСАТЬ
 # def move_zeros_to_start(nums: list[int]) -> None:
+
+
+
+
 
 
 
@@ -3263,6 +3356,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ### TODO 334. Increasing Triplet Subsequence
 # Задача: проверить, существует ли тройка индексов i < j < k такая, что
 # nums[i] < nums[j] < nums[k]. Если да — True, иначе False.
@@ -3326,6 +3421,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
+
 # ### TODO 238. Product of Array Except Self
 # Задача: вернуть массив answer, где answer[i] = произведение всех nums[j], j != i.
 # Деление использовать нельзя.
@@ -3380,6 +3478,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ### TODO 151. Reverse Words in a String
 # Задача: развернуть порядок слов в строке s.
 # Вход может содержать ведущие/хвостовые пробелы и несколько пробелов между словами.
@@ -3419,6 +3519,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def reverseWords(s: str) -> str:
+
+
+
 
 
 
@@ -3512,6 +3615,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def reverseVowels(s: str) -> str:
+
+
+
 
 
 
@@ -3622,6 +3728,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # 2) Альтернатива (то же самое, но “вручную” без list comprehension)
 # Сложность:
 # Время: O(n)
@@ -3699,6 +3807,8 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 
 
+
+
 # ### TODO 1768. Merge Strings Alternately
 # Задача: объединить две строки word1 и word2, чередуя символы: берём 1 символ из word1, потом 1 символ из word2, и так далее.
 # Если одна строка закончилась раньше — дописываем оставшуюся часть другой строки в конец.
@@ -3760,6 +3870,9 @@ print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> 
 
 # # # ### TODO РЕШИТЬ!
 # def mergeAlternately(word1: str, word2: str) -> str:
+
+
+
 
 
 

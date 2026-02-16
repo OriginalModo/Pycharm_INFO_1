@@ -12,7 +12,7 @@ import time
 import types
 import re
 from collections import namedtuple, defaultdict, Counter, deque
-from itertools import count, product, pairwise
+from itertools import count, product, pairwise, cycle, compress, dropwhile, takewhile, filterfalse, repeat, accumulate, chain
 import ctypes
 from dataclasses import dataclass, field
 from typing import NamedTuple, ChainMap
@@ -85,6 +85,49 @@ from pydantic.v1.validators import constr_length_validator
 10) docker-compose up   – запуск контейнеров через docker-compose.yml
     docker-compose down – остановить и удалить контейнеры из docker-compose.yml
 """
+
+
+
+### Curl - Запросы  5 самых популярных curl-запросов (шаблоны),
+"""
+1) GET (получить данные)
+curl "https://api.example.com/items"
+
+
+2) GET с параметрами
+curl "https://api.example.com/items?limit=10&sort=desc"
+
+
+3) GET с авторизацией (Bearer token)
+curl "https://api.example.com/items" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json"
+
+
+4) POST с JSON (создать)
+curl -X POST "https://api.example.com/items" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"name":"test","count":3}'
+
+
+5) PUT/PATCH/DELETE (обновить/удалить)
+# обновить полностью (PUT)
+curl -X PUT "https://api.example.com/items/123" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"name":"updated"}'
+
+# обновить частично (PATCH)
+curl -X PATCH "https://api.example.com/items/123" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"name":"partial"}'
+
+# удалить (DELETE)
+curl -X DELETE "https://api.example.com/items/123
+"""
+
 
 
 
@@ -279,7 +322,7 @@ name = change_name(name)  # Чтобы изменить name
 cat = change_cat(cat)     # Чтобы изменить cat  clear внутри НЕ нужен
 change_cat(cat)
 
-print(name)  # -> JerryJerry
+print(name)  # -> Jerry
 print(cat)   # -> {'name': 'Jerry', 'age': 3}
 
 # --- Вывод ---     Строка неизменяемая (создаем новый объект при изменении)
@@ -844,8 +887,9 @@ Child(b=2, a=1)  # -> ???
 # ОТВЕТ
 Child(b=2, a=1)  # -> TypeError: Base.__init__() got an unexpected keyword argument 'b'
 
-# Код выполнится без ошибок, потому что Child не является датаклассом и принимает b как обычный атрибут,
-# а поле a наследуется от Base без строгой проверки типов.
+# Код упадёт с ошибкой, потому что Child НЕ dataclass и не генерирует свой __init__.
+# Поэтому Child наследует Base.__init__(a), а он не принимает аргумент b.
+# => TypeError: Base.__init__() got an unexpected keyword argument 'b'
 
 
 
@@ -1056,6 +1100,10 @@ print(lst[1:4:-1])  # -> []
 
 # Для отрицательного шага (-1) начальный индекс должен быть больше конечного, иначе Python возвращает []
 
+# При шаге -1 срез идёт влево, поэтому должно быть start > stop.
+# В lst[1:4:-1] старт 1, стоп 4 — идти “назад” некуда, поэтому результат [].
+
+print(lst[4:1:-1])  # -> [5, 4, 3]
 
 
 # 27) Что напечатает скрипт?
@@ -1080,6 +1128,129 @@ print(a)  # -> [1, [2, 5], [[3, 6]]]
 """
 
 
+
+
+# GIL переключение УСТАНОВКА/ПРОСМОТР ВРЕМЕНИ
+
+
+
+
+
+# ОТВЕТ GIL переключение УСТАНОВКА/ПРОСМОТР ВРЕМЕНИ
+"""
+- Переключение между потоками — НЕ “магия”: есть time-slicing (sys.setswitchinterval) + точки release GIL в C.  <-----
+import sys
+print(sys.getswitchinterval())  # -> 0.005
+"""
+
+
+
+
+
+#  -- yield from  VS for i in ...: yield i --  ПРОСТО ПОСМОТРЕТЬ!!!
+#  return value в ГЕНЕРАТОРЕ приводит к StopIteration(value)   <-----
+"""
+- for ... yield ... — просто отдаёт элементы (только next()).
+- yield from — полностью “проксирует” подгенератор: next + send/throw/close и возвращает его return (StopIteration.value).
+
+yield from - позволяет внешнему генератору получить значение, которое подгенератор вернул через return.  <-----
+
+# 1) ОДНИ И ТЕ ЖЕ элементы (тут разницы почти нет)
+def a():
+    for x in [1, 2, 3]:
+        yield x
+
+def b():
+    yield from [1, 2, 3]
+
+
+# 2) РАЗНИЦА: yield from умеет забирать return value подгенератора
+def subgen():
+    yield 1
+    yield 2
+    return 99  # "результат" подгенератора
+
+def outer_for():
+    # просто отдаём элементы, но 99 "теряется"
+    for x in subgen():
+        yield x
+
+def outer_yieldfrom():
+    # отдаём элементы и получаем return value
+    result = yield from subgen()
+    yield ("result", result)
+
+print(list(outer_for()))
+# [1, 2]
+
+print(list(outer_yieldfrom()))
+# [1, 2, ('result', 99)]
+"""
+
+
+
+
+# Чем `yield from` лучше, чем `for x in it: yield x`?  ПРОСТО ПОСМОТРЕТЬ!!!
+"""
+→ Цикл делегирует только значения.
+`yield from` делегирует ещё send/throw/close и корректно прокидывает завершение генератора,
+поэтому это “правильная” прокси-делегация.
+Плюс часто немного быстрее.
+"""
+
+
+
+#  -- ТОЛЬКО Data-descriptor  ПЕРЕБИВАЕТ obj.__dict__ --   ПРОСТО ПОСМОТРЕТЬ!
+"""
+Data-descriptor (например property) → имеет приоритет над obj.__dict__.                            <-------
+Non-data descriptor (только __get__, например обычная функция-метод) → НЕ перебивает:
+если в obj.__dict__ есть атрибут с тем же именем, он его перекроет.
+
+data-descriptor (__get__ + __set__/__delete__) ПЕРЕБИВАЕТ obj.__dict__
+non-data descriptor (только __get__) НЕ перебивает → obj.__dict__ может его перекрыть
+
+### “Перебивает” obj.__dict__ только data-descriptor (у которого есть __set__ и/или __delete__).   <-------
+### DATA-DESCRIPTOR - ПЕРЕБИВАЕТ!
+class A:
+    @property
+    def x(self): return 1
+
+a = A()
+a.__dict__['x'] = 999
+print(a.x)          # 1  (property перебил)
+
+### NON-DATA-DESCRIPTOR - НЕ ПЕРЕБИВАЕТ!
+class A:
+    def f(self): return "method"
+
+a = A()
+a.__dict__['f'] = 999
+print(a.f)       # 999 (obj.__dict__ перебил non-data descriptor)
+"""
+
+
+# __getattribute__  vs  __getattr__  ПРОСТО ПОСМОТРЕТЬ!!!
+"""
+__getattribute__ вызывается на любое обращение к атрибуту (всегда первым).
+__getattr__ вызывается только если атрибут НЕ найден обычным способом
+            (не нашли ни в instance __dict__, ни в классе/родителях, ни через дескрипторы).
+            
+class A:
+    x = 1
+    def __getattr__(self, name):
+        return f"нет {name}"
+
+a = A()
+print(a.x)   # 1      (__getattr__ НЕ вызовется)
+print(a.y)   # "нет y" (__getattr__ вызовется)
+
+
+__getattr__ — отдельный “фолбэк” только для чтения, фолбэка для записи нет
+              (если запись нельзя/некуда — будет исключение или сработает дескриптор).
+              
+__setattr__ — “перехватчик” записи (как __getattribute__ для чтения), 
+             но “фолбэка” как __getattr__ для записи НЕТ.
+"""
 
 
 
@@ -1233,6 +1404,16 @@ __hash__ = object.__hash__
 print([1, 2, 3][:])  # -> [1, 2, 3]
 # Для кортежа тоже самое
 print((1, 2, 3)[:])  # -> (1, 2, 3) 
+
+
+# Для списка lst[:] делает поверхностную копию списка (новый list с теми же элементами).
+lst = [1, 2, 3]
+copy_lst = lst[:]       # shallow copy списка
+print(copy_lst)         # -> [1, 2, 3]
+
+# Для кортежа (1,2,3)[:] вернёт тот же самый кортеж (кортежи неизменяемые, копия не нужна).
+t = (1, 2, 3)
+print(t[:] is t)        # -> True (обычно)
 """
 
 
@@ -1789,9 +1970,9 @@ print(f'asizeof   NoSlots:    {asizeof.asizeof(no_slots)} байт')    # -> asi
 
 
 
-# Замеры ПУСТЫХ обьектом встроенных Python  ПРОСТО ПОСМОТРЕТЬ!!!
+# Замеры ПУСТЫХ обьектов встроенных Python  ПРОСТО ПОСМОТРЕТЬ!!!
 """
- --- Замеры ПУСТЫХ обьектом встроенных Python ---
+ --- Замеры ПУСТЫХ обьектов встроенных Python ---
  
                             -- Примеры list vs [] vs deque() vs heapq --                       <-----
                             
@@ -1974,10 +2155,10 @@ print(f'getsizeof None:  {sys.getsizeof(None)} байт')               # -> get
 print(f'asizeof   None:  {asizeof.asizeof(None)} байт')             # -> asizeof   None:       16 байт
 
 
-my_str = str()
-print(f'getsizeof str():  {sys.getsizeof(my_str)} байт')            # -> getsizeof str():      49 байт
-print(f'asizeof   str():  {asizeof.asizeof(my_str)} байт')          # -> asizeof   str():      56 байт
-print(f'asizeof   "":     {asizeof.asizeof("")} байт')              # -> asizeof   "":         56 байт
+my_str = str()                                                                                           ### БЫЛО!!! <-----
+print(f'getsizeof str():  {sys.getsizeof(my_str)} байт')            # -> getsizeof str():      41 байт   # 49 байт
+print(f'asizeof   str():  {asizeof.asizeof(my_str)} байт')          # -> asizeof   str():      48 байт   # 56 байт
+print(f'asizeof   "":     {asizeof.asizeof("")} байт')              # -> asizeof   "":         48 байт   # 56 байт
 
 
 my_range = range(0)
@@ -2148,6 +2329,8 @@ print(result)  # -> 8                            print(result)  # -> 8
 
 class MyDict:
     pass
+
+
 
 
 
@@ -2334,6 +2517,7 @@ print(c._get(2))  # -> KeyError
 
 
 
+
 # ОТВЕТ Несколько способов доказать, что в Python числа от -5 до 256 являются синглтонами (кешируются)
 """
 res = len([i for i in range(-5, 300) if i is int(str(i))])
@@ -2344,6 +2528,7 @@ print(res_2)   # -> 262
 
 
 # Напишите  Обход в Обратном порядке в цикле for
+
 
 
 
@@ -2367,7 +2552,6 @@ print([*range(10, 0, -1)])  # -> [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
 
 s = 'информатика'
-
 
 
 
@@ -2544,6 +2728,7 @@ print(a, b)  # -> 7 4
 # Пример 4
 # Напечатайте индекс наименьшего числа в списке.
 lst = [5, 8, 3, 2, 7, 4, 9]
+
 
 
 
@@ -2802,6 +2987,7 @@ def parse_json(data):
 
 
 
+
 # print(parse_json(json_data))  # -> ('1234', {'email': 'xxx@mail.com'})
 # print(parse_json(json_data))  # -> (False, '26.05.2023')
 
@@ -2834,7 +3020,7 @@ print(parse_json(json_data))  # -> ('1234', {'email': 'xxx@mail.com'})
 
 
 
-# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИСАТЬ 2 ВАРИАНТА   СУММА+ГРУППА
+# Разделить по Нулям(0) и получить сумму  Merge Nodes in Between Zeros   НАПИСАТЬ 2 ВАРИАНТА   СУММА+ГРУППА+ITERTOOL.GROUPBY
 # if s: нужен, чтобы не добавлять пустую сумму.
 
 
@@ -2843,7 +3029,6 @@ head = [0, 3, 1, 0, 4, 5, 2, 0]
 
 def mergeNodes(head):
     pass
-
 
 
 
@@ -2887,6 +3072,30 @@ def mergeNodes(head):                             def mergeNodes(head):
 
 print(mergeNodes(head))  # -> [4, 11]             print(mergeNodes(head))  # -> [[3, 1], [4, 5, 2]]
 
+
+# GROUPBY (itertools.groupby + sum):
+# Время: O(n) — один проход по head, каждый элемент попадает ровно в одну группу и суммируется один раз.
+# Память: O(k) на res; доп. память groupby — O(1) (ленивые группы, элементы не копируются).
+#         В худшем случае k = O(n) ⇒ память O(n) (из-за результата).
+
+# Примечание: если вместо sum(group) делать list(group), память станет O(m) на размер группы (и суммарно O(n)),
+# потому что вы начнёте копировать элементы групп в списки.
+
+from itertools import groupby
+
+def mergeNodes(head):
+    return [sum(group) for key, group in groupby(head, key=lambda x: x != 0) if key]
+    
+### ТОЖЕ САМОЕ!!!
+def mergeNodes(head):
+    res = []
+    for i, group in itertools.groupby(head, key=lambda x: x!=0):
+        if i:
+            res.append(sum(group))
+    return res
+
+head = [0, 3, 1, 0, 4, 5, 2, 0]
+print(mergeNodes(head))  # -> [4, 11]
 
 
 def mergeNodes(head):
@@ -2936,18 +3145,8 @@ print(mergeNodes(head))  # -> [4, 11]
 
 # ДОПОЛНИТЕЛЬНЫЕ ВАРИАНТЫ РЕШЕНИЯ
 
-# Вариант 1: Использование генераторов и itertools
-from itertools import groupby
 
-def mergeNodes(head):
-    return [sum(group) for key, group in groupby(head, key=lambda x: x != 0) if key]
-
-head = [0, 3, 1, 0, 4, 5, 2, 0]
-print(mergeNodes(head))  # -> [4, 11]
-
-
-
-# Вариант 2: С использованием флага для отслеживания между нулями
+# Вариант 1: С использованием флага для отслеживания между нулями
 def mergeNodes(head):
     res = []
     between_zeros = False
@@ -3049,6 +3248,7 @@ def rle(s: str) -> str:
     pass
 
 
+
 # print(rle("aaaabbcaa"))  # a4b2c1a2
 
 
@@ -3115,8 +3315,31 @@ print(rle("aaaabbcaa"))  # a4b2c1a2
 # Придумал сам)
 def rle(s: str) -> str:
     return re.sub(r'(\w)\1+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)
+    # return re.sub(r'(?P<first>\w)(?P=first)+|\w', lambda x: f'{x[0][0]}{len(x[0])}', s)  # ИМЕНОВАННЫЕ ГРУППЫ!
 
 print(rle("aaaabbcaa"))  # a4b2c1a2
+"""
+
+
+
+
+# Без ругулярки Пароль!  ПРОСТО ПОСМОТРЕТЬ!
+"""
+# ЗАДАЧА!
+
+Длина минимум 6 символов
+Содержит букву нижнего регистра
+Содержит букву верхнего регистра
+Содержит цифру
+Может содержать только буквы и цифры (_ не подойдёт)
+Если пароль подходит - выведите True, иначе - False.
+
+
+# ОТВЕТ
+text = 'ddddddd4ddddAs'
+
+funcs, password = (str.isalpha, str.isupper, str.islower, str.isdigit), text
+print(all(map(lambda func: any(map(func, password)), funcs)) and len(password) >= 6)  # -> True
 """
 
 
@@ -3150,7 +3373,6 @@ print(re.findall(r'\d*1', text))   # -> ['17383147371']          Без ?
 # Интересные квантификаторы  жадные НЕ жадные
 
 res = '12345'
-
 
 
 
@@ -3381,6 +3603,15 @@ re.findall("(?:[abc])+", "abc")  # -> ['abc']   # Группа БЕЗ захва
 # Интересный момент с плюсом + 
 print(re.findall(r'(?:\w)(\w+)', text))         # -> ['bc123']
 print(re.findall(r'(?:\w)(\w)+', text))         # -> ['3']
+
+
+print(re.findall(r'(?:[A-Z]) (\d)', "ABC 123"))             # -> ['1']
+
+# ?: - НЕЛЬЗЯ ДОБАВИТЬ!    Никак !(?:...) — это некаптурящая группа, а (?P<name>...) — именованная каптурящая.
+print(re.findall(r'(?P<s>[A-Z]) (?P<ss>\d)', "ABC 123"))    # -> [('C', '1')]
+
+### К ИМЕНОВАННОЙ ГРУППЕ НЕЛЬЗЯ ДОБАВИТЬ ?:
+print(re.findall(r'(?:?P<s>[A-Z]) (?P<ss>\d)', "ABC 123"))  # -> re.error: nothing to repeat at position 3
 """
 
 
@@ -3414,7 +3645,6 @@ print(re.findall(r'(?<!$)[A-Z]+', text))   # -> ['ABC']
 
 
 text = r'6996966969'
-
 
 
 
@@ -3532,9 +3762,10 @@ print(c)  # -> {'z': 8, 'w': 5, 'x': 6, 'y': 7}
 
 
 
-# Устранить дубликаты и оставить Порядок элементов  fromkeys
+# Устранить дубликаты и оставить Порядок элементов  fromkeys   + ### СОЗДАНИЕ СЛОВАРЯ
 
 my_lst = [10, 10, 10, 2, 3]
+
 
 
 
@@ -3549,6 +3780,12 @@ print(set(my_lst))                         # -> {3, 10, 2}
 # Сохраняем порядок
 print(dict.fromkeys(my_lst).keys())        # -> dict_keys([10, 2, 3])
 print(list(dict.fromkeys(my_lst).keys()))  # -> [10, 2, 3]
+
+
+### СОЗДАНИЕ СЛОВАРЯ
+print(dict(zip(['one', 'two', 'three'], [1, 2, 3])))        # -> {'one': 1, 'two': 2, 'three': 3}
+print(dict(zip(['one', 'two', 'three'], [1, 2, 3, 3, 3])))  # -> {'one': 1, 'two': 2, 'three': 3}
+print(dict(zip(['one', 'two', 'three'], [1,])))             # -> {'one': 1}
 """
 
 
@@ -3666,9 +3903,10 @@ def foo(L = None):
     pass
 
 
-# foo()  # [1]
-# foo()  # [1]
-# foo()  # [1]
+
+foo()  # [1]
+foo()  # [1]
+foo()  # [1]
 
 
 
@@ -3758,8 +3996,6 @@ print([*it])  # -> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 
-
-
 # Функцию-Генератор  range(5) и Обычный генератор
 """
 # Генератор
@@ -3785,7 +4021,38 @@ print(i for i in range(5))         # <generator object <genexpr> at 0x000001790A
 """
 
 
-# Напишите Конструкцию yield from и ЕЁ аналог
+# Напишите Конструкцию yield from и ЕЁ аналог  ПРОСТО ЗАПУСТИТЬ!
+
+# 1) ОДНИ И ТЕ ЖЕ элементы (тут разницы почти нет)
+def a_gen():
+    for x in [1, 2, 3]:
+        yield x
+
+def b_gen():
+    yield from [1, 2, 3]
+
+# print(*a_gen())  # - > 123
+# print(*b_gen())  # - > 123
+
+
+# 2) РАЗНИЦА: yield from умеет забирать return value подгенератора
+def subgen():
+    yield 1
+    yield 2
+    return 99  # "результат" подгенератора
+
+def outer_for():
+    # просто отдаём элементы, но 99 "теряется"
+    for x in subgen():
+        yield x
+
+def outer_yieldfrom():
+    # отдаём элементы и получаем return value
+    result = yield from subgen()
+    yield ("result", result)
+
+# print(list(outer_for()))         # -> [1, 2]
+# print(list(outer_yieldfrom()))   # -> [1, 2, ('result', 99)]
 
 
 
@@ -3794,9 +4061,7 @@ print(i for i in range(5))         # <generator object <genexpr> at 0x000001790A
 
 
 
-
-
-# yield from  - это просто сокращенная форма for item in iterable: yield item
+# yield from  - это НЕ просто сокращенная форма for item in iterable: yield item
 """
 def gen_list1(iterable):
     for i in list(iterable):
@@ -3809,8 +4074,49 @@ def gen_list2(iterable):
 
 print(list(gen_list1('python')))  # -> ['p', 'y', 't', 'h', 'o', 'n']
 print([*gen_list2('python')])     # -> ['p', 'y', 't', 'h', 'o', 'n']
-"""
 
+
+
+#  -- yield from  VS for i in ...: yield i --  ПРОСТО ПОСМОТРЕТЬ!!!
+#  return value в ГЕНЕРАТОРЕ приводит к StopIteration(value)   <-----
+
+- for ... yield ... — просто отдаёт элементы (только next()).
+- yield from — полностью “проксирует” подгенератор: next + send/throw/close и возвращает его return (StopIteration.value).
+
+yield from - позволяет внешнему генератору получить значение, которое подгенератор вернул через return.  <-----
+
+# 1) ОДНИ И ТЕ ЖЕ элементы (тут разницы почти нет)
+def a():
+    for x in [1, 2, 3]:
+        yield x
+
+def b():
+    yield from [1, 2, 3]
+
+print(*a_gen())  # - > 123
+print(*b_gen())  # - > 123
+
+
+# 2) РАЗНИЦА: yield from умеет забирать return value подгенератора
+def subgen():
+    yield 1
+    yield 2
+    return 99  # "результат" подгенератора
+
+def outer_for():
+    # просто отдаём элементы, но 99 "теряется"
+    for x in subgen():
+        yield x
+
+def outer_yieldfrom():
+    # отдаём элементы и получаем return value
+    result = yield from subgen()
+    yield ("result", result)
+
+print(list(outer_for()))        # -> [1, 2]
+print(list(outer_yieldfrom()))  # -> [1, 2, ('result', 99)]    
+
+"""
 
 
 # Напишите Функцию-Генератор  range(1, 5) и Обычный генератор  range(1, 5)
@@ -3853,13 +4159,15 @@ my_generator = (x**2 for x in my_list)
 
 
 
-
-
 # Ответ Как перевернуть генератор/итератор?    reversed(list)
+# Напрямую — НЕЛЬЗЯ: генератор одноразовый и не хранит элементы, поэтому у него НЕТ “конца”, к которому можно обратиться.
 """
 # Что будет на выходе ПОСМОТРИ
 my_list = [1, 2, 3, 4, 5]
 my_generator = (x**2 for x in my_list)
+
+# # TypeError: генератор одноразовый, без len/индексов (не Sequence), поэтому reversed() не работает
+print(reversed(my_generator))        # -> TypeError: 'generator' object is not reversible
 
 print(reversed(list(my_generator)))  # -> <list_reverseiterator object at 0x000001C4286F3A00>
 print(my_generator)                  # -> <generator object <genexpr> at 0x000001CA17B23850>
@@ -3871,8 +4179,29 @@ print(list(my_generator))            # -> []
 
 # Cоздайте свой Итератор 2 варианта  ОДНОРАЗОВЫЙ И МНОГОРАЗОВЫЙ
 
+## Вариант 1: __iter__ с yield → возвращает новый генератор-итератор каждый раз, объект можно перебирать МНОГО раз.
 class Iterator:
     pass
+
+
+
+
+# s = Iterator(1, 5)
+# print(*s)  # -> 1 2 3 4
+# print(*s)  # -> 1 2 3 4
+
+
+# Вариант 2: __iter__ -> self → объект сам итератор, хранит состояние (start меняется), поэтому ОДНОРАЗОВЫЙ (как генератор).
+class Iterator_2:
+    pass
+
+
+
+
+# s_2 = Iterator_2(1, 5)
+# print(*s_2)  # -> 1 2 3 4
+# print(*s_2)  # ->
+
 
 
 
@@ -3897,7 +4226,7 @@ print(*s)  # -> 1 2 3 4
 
 
 # Вариант 2: __iter__ -> self → объект сам итератор, хранит состояние (start меняется), поэтому ОДНОРАЗОВЫЙ (как генератор).
-class Iterator:
+class Iterator_2:
     def __init__(self, start, stop):
         self.start = start
         self.stop = stop
@@ -3912,9 +4241,9 @@ class Iterator:
         self.start += 1
         return current
 
-s = Iterator(1, 5)
-print(*s)  # -> 1 2 3 4
-print(*s)  # -> 
+s_2 = Iterator_2(1, 5)
+print(*s_2)  # -> 1 2 3 4
+print(*s_2)  # -> 
 """
 
 
@@ -4074,9 +4403,6 @@ exec("""for i in range(3):
     print(i, end=' ')""")                          # -> 0 1 2      # ОТСТУПЫ СОБЛЮДАЕМ!
     
 
-### 2) exec() — выполняет код (инструкции), результата НЕ возвращает
-
-
 ### 3) compile() — “предкомпилирует” строку в объект кода 
 # Если один и тот же код выполняется много раз — можно скомпилировать один раз, а потом вызывать.
 
@@ -4114,6 +4440,9 @@ def names():
 
 
 
+
+
+
 # Замыкание
 """
 def names():
@@ -4140,6 +4469,7 @@ print(names()((lambda x: x+5)(2)))        # -> [7]
 
 def pow_(base):
     pass
+
 
 
 
@@ -4326,6 +4656,9 @@ cats = [Cat('Tom', 3), Cat('Angela', 4)]
 
 
 
+
+
+
 ### ОТВЕТЫ
 # print(sorted(cats, key=lambda x: x.age))  # -> [Cat Tom, age is 3, Cat Angela, age is 4]
 # print(sorted(cats, key=attrgetter('age')))  # -> [Cat Tom, age is 3, Cat Angela, age is 4]
@@ -4464,7 +4797,6 @@ h = [20, 10, 1, 2]
 
 
 
-
 # Пример heapq
 """
 import heapq
@@ -4547,6 +4879,7 @@ print(heapq.heappop(res))             # -> -20
 
 def my_sum(a_list: list) -> int:
     pass
+
 
 
 
@@ -4636,6 +4969,8 @@ print(max(lst))   # -> 3
 
 
 
+
+
 # Ответ Использовать  from memory_profiler import memory_usage   и   from pympler.asizeof import asizeof
 """
 from memory_profiler import memory_usage
@@ -4663,6 +4998,12 @@ print(f"Size of my_list: {size} bytes")                # -> Size of my_list: 202
 
 
 # Использовать __slots__ Написать класс  no_slots/with_slots  Замерить размер структур  asizeof.asizeof/sys.getsizeof
+
+
+
+
+
+
 
 
 
@@ -4713,7 +5054,6 @@ b.name = 'a'                                                b.name = 'a'
 
 
 
-
 # __slots__ в dataclasses
 """
 from dataclasses import dataclass
@@ -4729,7 +5069,41 @@ p.a = 10    # -> AttributeError: 'Point' object has no attribute 'a'
 """
 
 
+
+
+# -- Доказательства использования памяти:    Экономия памяти
+# __slots__ — уменьшить объем памяти, занимаемый каждым экземпляром объекта.
+
+
+
+
+
+
+
+
+
+
+
+
+# ОТВЕТ -- Доказательства использования памяти:    Экономия памяти
+# __slots__ — уменьшить объем памяти, занимаемый каждым экземпляром объекта.
+"""
+from pympler import asizeof
+class Foo: pass
+class Bar: __slots__ = ()
+
+foos = [Foo() for f in range(100000)]
+bars = [Bar() for b in range(100000)]
+
+print(asizeof.asizeof(foos))   # -> 13600984
+print(asizeof.asizeof(bars))   # -> 4000984
+"""
+
+
+
+
 # Напишите Singleton
+
 
 
 
@@ -4906,6 +5280,17 @@ MyClass = type('MyClass', (), {'x': 42, 'foo': lambda self: self.x})
 my_ = MyClass()
 print(my_.x)       # -> 42 
 print(my_.foo())   # -> 42
+
+
+### types.new_class(name, bases=(), kwds=None, exec_body=None)
+import types
+
+def body(ns):
+    ns["a"] = 1
+
+A = types.new_class("M", (), {}, body)
+print(A().a)        # 1
+print(A().__dict__) # {}
 """
 
 # Тоже самое что и выше но с ключевым словом class!
@@ -4922,9 +5307,22 @@ print(my_.x)       # -> 42
 print(my_.foo())   # -> 42
 """
 
+# # type - это тип всех типов, для которых не указан явно иной метакласс
+"""
+# type - это тип всех типов, для которых не указан явно иной метакласс
+print(type(type))   # -> <class 'type'>
+print(type(object)) # -> <class 'type'>
+print(type(list))   # -> <class 'type'>
+print(type(set))    # -> <class 'type'>
+print(type(dict))   # -> <class 'type'>
+print(type(bool))   # -> <class 'type'>
+print(type(int))    # -> <class 'type'>
+print(type(str))    # -> <class 'type'>
+print(type(collections.deque))  # -> <class 'type'>
+"""
 
 
-# Использовать setattr/delattr/hasattr/getattr
+# Использовать setattr/delattr/hasattr/getattr   ПОЛУЧИТЬ ДОСТУП К private/protected АТРИБУТАМ           <-----
 
 
 @dataclass
@@ -4932,6 +5330,9 @@ class New:
     name: str = 'Chuck Norris'
     surname: str = 'Sasya'
     number: int = 10
+    _protected: str = 'я защищенный атрибут'
+    __private: str = 'я приватный атрибут'
+
 
 
 
@@ -4946,6 +5347,9 @@ class New:
 
 # delattr(object, name)
 # hasattr(object, name)
+
+# print(getattr(New, '_protected'))     # -> я защищенный атрибут
+# print(getattr(New, '_New__private'))  # -> я приватный атрибут
 """
 from dataclasses import dataclass
 
@@ -4967,14 +5371,23 @@ getattr(New, 'AAAA')                 # AttributeError: type object 'New' has no 
 
 
 
-# Создайте класс с property: Создайте функции для управления получением, установкой и удалением атрибута
+# Создайте класс с property: Создайте функции для управления получением, установкой и удалением атрибута  ПЕРЕБИТЬ!!!
 
 
 
 
 class C:
-    def __init__(self):
-        self._x = None
+    pass
+
+
+
+
+
+# с = C()
+# с.__dict__['x'] = 999
+# с.__dict__['f'] = 999
+# print(с.x)          # 1    (property перебил)
+# print(с.f)          # 999  (obj.__dict__ перебил non-data descriptor)
 
 
 
@@ -4994,24 +5407,31 @@ class C:
     def __init__(self):
         self._x = None
 
+
     @property
     def x(self):
         """I'm the 'x' property."""
-        return self._x
+        return 1
+        # return self._x
 
     @x.setter
     def x(self, value):
         if not isinstance(value, int):
-            raise ValueError
+            raise ValueError('hehe')
         self._x = value
 
     @x.deleter
     def x(self):
         del self._x
 
-c = C()
-c.x = 10
-print(c.x)  # 10
+    def f(self): return "method"
+
+
+с = C()
+с.__dict__['x'] = 999
+с.__dict__['f'] = 999
+print(с.x)          # 1    (property перебил)
+print(с.f)          # 999  (obj.__dict__ перебил non-data descriptor)
 
 
 # Примеры встроенных объектов дескрипторов: classmethod, staticmethod, property, функции в целом      <-----
@@ -5090,6 +5510,7 @@ second = {4: 4, 5: 5}
 
 
 
+
 # Ответы ChainMap
 """
 from collections import ChainMap
@@ -5110,6 +5531,7 @@ print(chain)  # -> ChainMap({1: 200, 2: 2, 3: 3}, {4: 4, 5: 5})
 # Использовать Counter
 
 text = 'hello'
+
 
 
 
@@ -5174,6 +5596,9 @@ print(order3==order4)                     # -> False
 
 
 text = 'hello'
+
+
+
 
 
 
@@ -5306,15 +5731,14 @@ print(a_deque)  # -> deque([5, 1, 2, 3, 4], maxlen=5)
 
 
 # itertools.count(start=0, step=1)
-# Использовать count
+# Использовать count  + islice   <-----
 
 
 
 
 
 
-
-# Ответы count
+# Ответы count  + islice   <-----
 """
 from itertools import count
 for i in count(10):
@@ -5542,6 +5966,7 @@ print([*compress('ABCDEF', [1,0,1,0,1,1])])     # -> ['A', 'C', 'E', 'F']
 # Использовать dropwhile
 
 a = [1, 4, 6, 4, 1]
+
 
 
 
@@ -5932,7 +6357,6 @@ a = 'XYZ'
 
 
 
-
 # Ответ
 #  --- Отличия    combinations  vs  combinations_with_replacement vs  permutations ---
 """
@@ -5956,6 +6380,7 @@ print(list(combinations_with_replacement('XY', 2)))   # -> [('X', 'X'), ('X', 'Y
 
 
 iterable = [1, 2, 3, 4, 5, 6]
+
 
 
 
@@ -6040,6 +6465,7 @@ print(first([]))  # -> ValueError: first() was called on an empty iterable, and 
 
 
 
+
 # Ответы one
 """
 from more_itertools import one
@@ -6072,6 +6498,7 @@ print(one(it))   # -> ValueError: too few items in iterable (expected 1)
 
 
 
+
 # Ответы only
 """
 from more_itertools import only
@@ -6086,6 +6513,7 @@ print(only([1, 2], too_long=TypeError))  # -> TypeError
 
 # more_itertools.unique_everseen(iterable, key=None) - Создавайте уникальные элементы, сохраняя порядок.
 # Использовать unique_everseen
+
 
 
 
@@ -6309,7 +6737,7 @@ print(partial(multiply, 5)())     # TypeError: multiply() missing 1 required pos
 
 
 
-# @functools.wraps(wrapped, assigned=WRAPPER_ASSIGNMENTS, updated=WRAPPER_UPDATES)
+# @functools.wraps(wrapped, assigned=WRAPPER_ASSIGNMENTS, updated=WRAPPER_UPDATES)    НАПИСАТЬ 2 ВАРИАНТА + finally  <----
 # 1) Написать декоратор, который выводит на экран время работы произвольной функции и используем   from functools import wraps
 
 
@@ -6321,11 +6749,18 @@ print(partial(multiply, 5)())     # TypeError: multiply() missing 1 required pos
 
 
 
-# Ответ 1)
+# Ответ 1)  НАПИСАТЬ 2 ВАРИАНТА + finally   <----
 """
 from functools import wraps
 from time import time, perf_counter
 
+
+### БЕЗ res НЕ сможешь замерить время правильно, потому что return сразу завершит функцию.
+# Нельзя: return func(...); print(...)
+# Поэтому сначала вызываем func (сохраняем/возвращаем результат), затем печатаем время
+# (или используем try/finally).
+
+# 1) Печатает время ТОЛЬКО если func() завершилась без исключения (если будет ошибка — до print не дойдёт).
 def timer(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -6337,6 +6772,20 @@ def timer(func):
     wrapper.__name__ = func.__name__   # Тоже самое что   @wraps(func)  Только ручное  
     wrapper.__doc__ = func.__doc__     # Тоже самое что   @wraps(func)  Только ручное
     return wrapper
+    
+    
+# 2) (try/finally) печатает время ВСЕГДА, даже если func() упадёт с исключением (исключение при этом всё равно пробросится наружу).
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = perf_counter()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            finish = perf_counter()
+            print(f"Время выполнения функции '{func.__name__}': {finish - start:.4f} секунд")
+    return wrapper
+    
 
 @timer    # Если навесить еще то будет замерять еще раз     <----
 @timer
@@ -6357,11 +6806,13 @@ example_function(1000000)  # -> Время выполнения функции '
 
 
 
+
 # Ответ 1.1)
 # Класс как ДЕКОРАТОР
 """
 from time import perf_counter
 
+# 1) Печатает время ТОЛЬКО если self.fn() завершилась без исключения (если будет ошибка — до print после вызова не дойдёт).
 class Timer:
     def __init__(self, func):
         self.fn = func
@@ -6373,6 +6824,23 @@ class Timer:
         finish = perf_counter()
         print(f"Функция {self.fn.__name__} отработала за {finish - start}")
         return result
+
+
+# 2) (try/finally) Печатает время ВСЕГДА, даже если self.fn() упадёт с исключением
+# (исключение при этом всё равно пробросится наружу).
+class Timer:
+    def __init__(self, func):
+        self.fn = func
+
+    def __call__(self, *args, **kwargs):
+        start = perf_counter()
+        print(f"Вызывается функция {self.fn.__name__}")
+        try:
+            return self.fn(*args, **kwargs)
+        finally:
+            finish = perf_counter()
+            print(f"Функция {self.fn.__name__} отработала за {finish - start}")
+
 
 @Timer
 def example_function(n):
@@ -6541,7 +7009,7 @@ class MyDate(BaseModel):
     n: int
     s: str = 'a'
     items: list[str] = []
-    items_2: list[str] = [1, 2, 3]
+    items_2: list[int] = [1, 2, 3]
 
 m = MyDate(n=1)
 m1 = MyDate(n=1)
@@ -6595,6 +7063,14 @@ print(Point.__annotations__)               print(Point.__annotations__)         
 
 
 
+# @safe_decorator
+# def divide(a, b):
+#     return a / b
+#
+#
+# print(divide(10, 0))  # -> division by zero
+# print(divide(10, 2))  # -> 5.0
+
 
 
 # Ответ 2)
@@ -6604,7 +7080,7 @@ def safe_decorator(func):
    def wrapper(*args, **kwargs):
        try:
            return func(*args, **kwargs)
-       except ZeroDivisionError as e:
+       except ZeroDivisionError as e:     ### except (ZeroDivisionError, ValueError, TypeError) as e:   
            return e
    return wrapper
                                                 # Тоже самое Но нацело деление и ошибка другая
@@ -6704,6 +7180,9 @@ if __name__ == '__main__':
 
 
 
+
+
+
 # Ответ 3)
 """
 def fibonacci_generator(a, b):
@@ -6768,6 +7247,7 @@ print(fibonacci_iterative(10))  # Вывод: 55
 
 
 
+
 # Ответ 4)
 """
 def read_unicode_file(file_path):
@@ -6807,6 +7287,7 @@ fib_gen = fib()
 
 
 # Создать Абстрактный класс  и Унаследоваться от него     from abc import ABC, abstractmethod
+
 
 
 
@@ -6878,6 +7359,8 @@ print(c.fff())  # -> None
 
 
 
+
+
 # Ответ Protocol vs ABC
 """
 # С ABC (обязательное наследование)                # С Protocol (без наследования)
@@ -6903,6 +7386,8 @@ print(dog.sound())  # Гав!                         make_sound(Dog())  # Га�
 
 
 # Написать Асинхронный код
+
+
 
 
 
@@ -6993,6 +7478,8 @@ if __name__ == '__main__':                                       if __name__ == 
 
 
 
+
+
 # ОТВЕТ gather vs TaskGroup
 """
 # ПРИМЕР gather
@@ -7066,6 +7553,9 @@ if __name__ == '__main__':
 
 
 
+
+
+
 # Ответ  Как запустить что-то в потоке и вывести результат?  from concurrent.futures import ThreadPoolExecutor
 """
 from concurrent.futures import ThreadPoolExecutor
@@ -7083,6 +7573,8 @@ with ThreadPoolExecutor(max_workers=1) as executor:
 
 # Как запустить что-то в Процессах и вывести результат?   # lambda не сериализуется pickle   ProcessPoolExecutor
 # if __name__ == "__main__": для защиты от рекурсии.
+
+
 
 
 
@@ -7137,6 +7629,7 @@ if __name__ == "__main__":
 
 def findMaxConsecutiveOnes(nums: list) -> int:
     pass
+
 
 
 
@@ -7241,6 +7734,7 @@ print(findMaxConsecutiveOnes([1, 0, 1, 1, 0, 1]))  # -> 2
 
 def findMaxConsecutiveOnes(nums: list) -> int:
     pass
+
 
 
 
@@ -7391,7 +7885,6 @@ print(findMaxConsecutiveSequence([0, 0, 0]))           # -> (1, [1])
 
 def findMaxConsecutiveOnes(nums: list[int], k: int) -> int:
     pass
-
 
 
 
@@ -7668,7 +8161,6 @@ print(lengthOfLongestSubstring("dvdf"))      # -> 3       print(lengthOfLongestS
 ### расширение от центра (Expand Around Center)
 def longestPalindrome(s: str) -> str:
     pass
-
 
 
 
@@ -8209,6 +8701,8 @@ __import__('sys').stdout.write(str(binary_search(target, d)))  # -> 8   Тоже
 
 
 
+
+
 # Реализация Quick Sort/Быстрая сортировка   Quicksort обычно работает быстрее, Merge Sort на практике
 """
 # Вариант 1: Опорный элемент — последний элемент массива
@@ -8301,7 +8795,6 @@ print("Отсортированный массив:", sorted_arr)  # -> Отсо
 
 
 
-
 # 1) Сортировка пузырьком (Bubble Sort)    Время: O(n²) в худшем и среднем случаях, O(n) в лучшем.   Пространство: O(1)
 """
 # Тоже самое                                            # Тоже самое
@@ -8329,9 +8822,6 @@ __import__('sys').stdout.write(f'(Bubble Sort): {sorted_arr}')  # -> (Bubble Sor
 
 # 2) Написать Сортировку выбором (Selection Sort)
 # Время: O(n²) во всех случаях.   Пространство: O(1)
-
-
-
 
 
 
@@ -8393,7 +8883,6 @@ __import__('sys').stdout.write(f'(Insertion Sort): {sorted_arr}')  # -> (Inserti
 
 # 4) Написать Быстрая сортировка (Quick Sort)   Quicksort обычно работает быстрее, Merge Sort на практике
 # O(n log n) в среднем случае, O(n²) в худшем. Пространство: O(log n) для рекурсии.
-
 
 
 
@@ -8530,6 +9019,9 @@ __import__('sys').stdout.write(f'(Heap Sort): {sorted_arr}')  # -> (Heap Sort): 
 # Время: O(n log n) в среднем, O(n) в лучшем случае.  Пространство: O(n)
 # Python 3.10 и раньше: TimSort.
 # Python 3.11 и позже: по сути TimSort-подобная сортировка, но с merge policy Powersort (иногда это и называют “Powersort в Python”)
+
+
+
 
 
 
@@ -8772,8 +9264,50 @@ __import__('sys').stdout.write(f'(Bucket Sort): {sorted_arr}')  # -> (Bucket Sor
 
 
 
+# НАПИСАТЬ N+1 Django vs FastAPI
+##  FastAPI  SQLAlchemy   Django ORM
+##  joinedload()          == select_related()
+##  selectinload()        == prefetch_related()
+
+
+
+
+
+
+
+
+# ОТВЕТ НАПИСАТЬ N+1 Django ORM vs FastAPI SQLAlchemy
+##  FastAPI           Django
+##  joinedload()   == select_related()
+##  selectinload() == prefetch_related()
+
+"""
+
+### FastAPI (обычно SQLAlchemy / SQLModel)                    ### Django ORM                                                      
+                                                                             
+# FK / OneToOne → joinedload() или selectinload()             # FK / OneToOne → select_related("fk_field")                                                              
+from sqlalchemy import select                                 Book.objects.select_related("author")                                          
+from sqlalchemy.orm import joinedload                                                                            
+                                                                             
+stmt = select(Book).options(joinedload(Book.author))          # ManyToMany / OneToMany (reverse FK) → prefetch_related("m2m_or_reverse")                                                                  
+books = session.scalars(stmt).all()                           Book.objects.prefetch_related("tags")                                              
+                                                              Author.objects.prefetch_related("books")              
+                                                                        
+# ManyToMany / OneToMany → чаще selectinload()                                                                          
+from sqlalchemy.orm import selectinload                                                                         
+                                                                            
+stmt = select(Book).options(selectinload(Book.tags))
+books = session.scalars(stmt).all()
+"""
+
+
 
 # --- Django  Чуть-чуть ---
+
+
+
+
+
 
 # Напишите raw-запрос
 
@@ -8895,6 +9429,7 @@ class Person(models.Model):
 
 
 
+
 # Ответ 1. Вывести список людей и городов, где они живут:
 """
 people_with_cities = Person.objects.select_related('city').values('name', 'city__name')
@@ -8959,7 +9494,6 @@ for city in top_cities:
 
 
 # 1)OR  Найдем всех людей, у которых имя "John" ИЛИ фамилия "Doe"
-
 
 
 
@@ -9044,6 +9578,8 @@ first_item = next(iter(queryset))  # Возвращает первый элем�
 
 
 
+
+
 # Ответ 3. len(): Получает количество объектов в QuerySet и выполняет запрос.
 """
 count = len(MyModel.objects.all())
@@ -9087,6 +9623,7 @@ filtered_objects = MyModel.objects.filter(name='example')  # Запрос вып
 """
 
 # 7. first() и last(): Получает первый или последний объект и выполняет запрос.
+
 
 
 
@@ -9167,12 +9704,13 @@ for obj in result:
 
 # Ответ 12. values() и values_list(): Эти методы возвращают список словарей или кортежей соответственно, выполняя запрос.
 """
-queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями
-queryset = MyModel.objects.values_list('id', 'name')      # Возвращает список кортежей
-queryset = MyModel.objects.values_list('name', flat=True) # Результаты в виде списков
+queryset = MyModel.objects.values('id', 'name')           # Возвращает словари с указанными полями  {'id': ..., 'name': ...}
+queryset = MyModel.objects.values_list('id', 'name')      # Возвращает список кортежей              (id, name)
+queryset = MyModel.objects.values_list('name', flat=True) # Результаты в виде списков               ['Ann', 'Bob']
 """
 
 # 13. Срезы: Использование срезов для получения определенного количества объектов.
+
 
 
 
@@ -9190,6 +9728,7 @@ first_five = queryset[:5]  # Выполняет запрос и возвраща
 
 
 
+
 # Ответ 14. Оптимизация запросов: Используйте select_related() и prefetch_related() для оптимизации запросов к связанным объектам.
 """
 results = MyModel.objects.select_related('related_model').all()  # Пример использования select_related
@@ -9197,7 +9736,44 @@ results = MyModel.objects.select_related('related_model').all()  # Пример 
 results = MyModel.objects.prefetch_related('related_models').all()  # Пример использования prefetch_related
 """
 
+
+
+### НАПИСАТЬ SQLAlchemy  joinedload() / selectinload()
+
+
+
+
+
+### ОТВЕТ НАПИСАТЬ SQLAlchemy  joinedload() / selectinload()
+"""
+Шпаргалка (SQLAlchemy ↔ Django ORM):
+- joinedload()   ≈ select_related()     # JOIN
+- selectinload() ≈ prefetch_related()   # отдельные запросы + merge
+
+### FastAPI (обычно SQLAlchemy / SQLModel)           
+                                                     
+# FK / OneToOne → joinedload() или selectinload()    
+from sqlalchemy import select                        
+from sqlalchemy.orm import joinedload                
+                                                     
+stmt = select(Book).options(joinedload(Book.author)) 
+books = session.scalars(stmt).all()                  
+                                                     
+                                                     
+# ManyToMany / OneToMany → чаще selectinload()       
+from sqlalchemy.orm import selectinload              
+                                                     
+stmt = select(Book).options(selectinload(Book.tags))
+books = session.scalars(stmt).all()
+"""
+
+
+
+
+
+
 # 15. iterator(): Позволяет итерироваться по QuerySet без загрузки всех объектов в память.
+
 
 
 
@@ -9854,15 +10430,12 @@ def intToRoman(num: int) -> str:
 
 
 
-
-
 def romanToInt(s: str) -> int:
     # res = {
     #     'I': 1, 'V': 5, 'X': 10, 'L': 50,
     #     'C': 100, 'D': 500, 'M': 1000
     # }
     pass
-
 
 
 
@@ -10076,6 +10649,11 @@ print(intToRoman(1994))  # -> MCMXCIV
 
 
 # ЗАДАЧА 0 (Разогрев) Написать декоратор с параметрами
+# Потому что в except ... можно указывать только класс(ы) исключений, а не экземпляр исключения.
+
+
+
+
 
 
 
@@ -10083,6 +10661,7 @@ print(intToRoman(1994))  # -> MCMXCIV
 
 
 # ОТВЕТ ЗАДАЧА 0 (Разогрев) Написать декоратор с параметрами
+# Потому что в except ... можно указывать только класс(ы) исключений, а не экземпляр исключения.
 """
 import time
 from functools import wraps
@@ -10094,8 +10673,10 @@ def retry(max_retries):
             last_exception = None
             for attempt in range(max_retries):
                 try:
-                    return func(*args, **kwargs)
-                except Exception as e:
+                    return func(*args, **kwargs)    
+                except Exception as e:            
+                ### Exception('hehe') — это объект/экземпляр этого класса    <----
+                ### except Exception('hehe') as e: # TypeError: catching classes that do not inherit from BaseException is not allowed
                     last_exception = e
                     print(f"Attempt {attempt + 1} failed. Retrying...")
                     time.sleep(1)  # Небольшая задержка перед повторной попыткой
@@ -10122,9 +10703,102 @@ for _ in range(10):
 """
 
 
+### ОБЪЯСНИНЕНИЕ ОШИБКИ -> TypeError: catching classes that do not inherit from BaseException is not allowed   <------
+# В except можно писать только класс исключения, а не объект.
+# ✅ except Exception as e: — Exception это класс
+# ❌ except Exception('hehe') as e: — Exception('hehe') это экземпляр, его ловить нельзя → поэтому TypeError.
+"""
+# Если хочешь “hehe”, делай так:
+
+except Exception as e:
+    print("hehe")
+
+raise Exception("hehe") from last_exp
+
+# Синтаксис except ожидает вот такое:
+
+except Exception as e:
+
+# или:
+except (ValueError, TypeError) as e:
+
+# Но когда ты пишешь:
+except Exception('hehe') as e:
+
+# ты передаёшь не класс, а объект, и Python пытается трактовать его как “класс для перехвата”,
+# но это не класс → поэтому и ругается: TypeError: catching classes that do not inherit from BaseException is not allowed
 
 
-# ЗАДАЧА 1 Написать код
+
+import time
+from functools import wraps
+
+def retry(max_retries):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                ### Exception('hehe') — это объект/экземпляр этого класса    <----
+                except Exception('hehe') as e: # TypeError: catching classes that do not inherit from BaseException is not allowed
+                    last_exception = e
+                    print(f"Attempt {attempt + 1} failed. Retrying...")
+                    time.sleep(1)  # Небольшая задержка перед повторной попыткой
+            print(f"All {max_retries} attempts failed")
+            raise last_exception  # Пробрасываем последнее исключение
+        return wrapper
+    return decorator
+
+
+### TypeError: catching classes that do not inherit from BaseException is not allowed
+"""
+
+
+
+
+### ПРОСТО ПОСМОТРЕТЬ ПЕРЕД ЗАДАЧЕЙ 1!
+### self в super().__init__(...) писать не нужно: метод уже “привязан” к текущему объекту, и Python передаёт self автоматически.
+
+
+
+"""
+Мини-правило:                                                <--------------
+__new__: работает с cls (создаёт объект)
+__init__: работает с self (настраивает уже созданный объект)
+
+
+### РАБОТАЕТ!
+class A:
+    def __init__(self, x):
+        print("A", x)
+
+class B(A):
+    def __init__(self, x):
+        super().__init__(x)      # ✅ self передастся автоматически
+        # super().__init__(self, x)  # ❌ TypeError: лишний аргумент
+
+b = B(10)  # -> A 10
+
+### НЕ РАБОТАЕТ!
+class A:
+    def __init__(self, x):
+        print("A", x)
+
+class B(A):
+    def __init__(self, x):
+        # super().__init__(x)      # ✅ self передастся автоматически
+        super().__init__(self, x)  # ❌ TypeError: лишний аргумент
+
+b = B(10)  # -> TypeError: A.__init__() takes 2 positional arguments but 3 were given
+"""
+
+
+
+
+# ЗАДАЧА 1 Написать код    super().__init__(name, content)  --> НЕ ПРИНИМАЕТ SELF   <-----
+### self в super().__init__(...) писать не нужно: метод уже “привязан” к текущему объекту, и Python передаёт self автоматически.
 """
 Требования:
 Уведомления высылаются регулярно и приходят из разных источников.
@@ -10137,7 +10811,16 @@ John,email, name@example.com, some content
 
 
 
-# ОТВЕТ ЗАДАЧА 1 Написать код
+
+
+
+
+
+
+
+
+# ОТВЕТ ЗАДАЧА 1 Написать код   super().__init__(name, content)  --> НЕ ПРИНИМАЕТ SELF   <-----
+### self в super().__init__(...) писать не нужно: метод уже “привязан” к текущему объекту, и Python передаёт self автоматически.
 """
 import json
 from abc import ABC, abstractmethod
@@ -10545,6 +11228,7 @@ def division(a, b):
 
 
 
+
 # ОТВЕТ ЗАДАЧА 4 НАПИСАТЬ ТЕСТЫ ДЛЯ ФУНКЦИИ
 """
 import pytest
@@ -10588,7 +11272,7 @@ def test_division_invalid_input():
 
 
 
-# ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+# ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА) + 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
 # КАРКАС
 """
 class HybridContext:
@@ -10614,7 +11298,11 @@ with HybridContext(127.0.1.1) as e:
 
 
 
-# ОТВЕТ ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА)
+
+
+
+
+# ОТВЕТ ЗАДАЧА 5 НАПИСАТЬ СОБСТВЕННЫЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР (НАПИШИ 2 ВАРИАНТА) + 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
 """
 # ВАРИАНТ 1 Собственная реализация контекстного менеджера
 
@@ -10669,6 +11357,106 @@ with hybrid_context("127.0.1.1") as ip:
 # Подключение к 127.0.1.1
 # Выполнение кода внутри контекста с IP 127.0.1.1
 # Отключение от 127.0.1.1
+
+
+### Вариант 1: свой async-контекстный менеджер (__aenter__ / __aexit__) 
+
+import asyncio
+
+class AsyncHybridContext:
+    def __init__(self, ip_address):
+        self.ip_address = ip_address
+
+    async def __aenter__(self):
+        print(f"Подключение к {self.ip_address}")
+        await asyncio.sleep(0)  # тут могла бы быть реальная async-операция
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print(f"Отключение от {self.ip_address}")
+        if exc_type is not None:
+            print(f"Произошла ошибка: {exc_val}")
+        return True  # подавить исключение (False/None — не подавлять)
+
+# Использование
+async def main():
+    async with AsyncHybridContext("127.0.1.1") as ctx:
+        print("Выполнение кода внутри async-контекста")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+
+### Вариант 2: через contextlib.asynccontextmanager
+
+import asyncio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def async_hybrid_context(ip_address):
+    print(f"Подключение к {ip_address}")
+    try:
+        await asyncio.sleep(0)  # async setup
+        yield ip_address
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        # чтобы подавить исключение:
+        # return
+        raise  # если хочешь НЕ подавлять
+    finally:
+        print(f"Отключение от {ip_address}")
+        await asyncio.sleep(0)  # async cleanup
+
+# Использование
+async def main():
+    async with async_hybrid_context("127.0.1.1") as ip:
+        print(f"Выполнение кода внутри async-контекста с IP {ip}")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+
+
+### Вариант 1: ExitStack (sync) — когда контекстов много/они динамические
+from contextlib import ExitStack
+
+def main():
+    with ExitStack() as stack:
+        f1 = stack.enter_context(open("a.txt", "w"))
+        f2 = stack.enter_context(open("b.txt", "w"))
+        f1.write("hello\n")
+        f2.write("world\n")
+
+main()
+
+
+
+### Вариант 2: AsyncExitStack (async) — то же самое, но для async-контекстов
+import asyncio
+from contextlib import AsyncExitStack, asynccontextmanager
+
+@asynccontextmanager
+async def connect(name):
+    print("open", name)
+    try:
+        yield name
+    finally:
+        print("close", name)
+
+async def main():
+    async with AsyncExitStack() as stack:
+        c1 = await stack.enter_async_context(connect("svc1"))
+        c2 = await stack.enter_async_context(connect("svc2"))
+        print("use", c1, c2)
+
+asyncio.run(main())
+
+
+### ExitStack и AsyncExitStack — это классы из contextlib
+from contextlib import ExitStack, AsyncExitStack
+
+print(ExitStack)      # <class 'contextlib.ExitStack'>
+print(AsyncExitStack) # <class 'contextlib.AsyncExitStack'>
 """
 
 
@@ -10746,6 +11534,22 @@ nmcli (если есть NetworkManager) - управление соединен
 “Синхронная” с fsync/O_SYNC — медленнее.
 
 
+ (ОС vs Python)     <----------
+ 
+ ОС = операционная система (Windows / Linux / macOS)
+ 
+ 1) ОС (синхронная/асинхронная запись на диск)   АСИНХРОННАЯ/БУФЕРИЗОВАННАЯ (через кэш ОС) - БЫСТРЕЕ!!!
+
+ - write() без fsync/O_SYNC → асинхронная/буферизованная (через кэш ОС) (без гарантии на диск): ОС кладёт в кэш и сразу возвращает.
+ - write() + fsync() или O_SYNC → синхронная (с гарантией на диск): ждёшь, пока запишется на SSD/HDD.
+
+ 2) Python (синхронный код vs asyncio):          СИНХРОННЫЙ - БЫСТРЕЕ!!!  
+
+ - Синхронный Python write() для ОДНОГО файла часто быстрее (меньше накладных).
+ - Асинхронный Python (asyncio/aiofiles) диск не ускоряет — просто не блокирует при многих операциях.
+ 
+
+
 В чём разница между списком и картежом в Python? 
 
  - Список (list) – изменяемый (можно добавлять, удалять элементы), [1, 2, 3].
@@ -10819,6 +11623,19 @@ ArenadataDB:
 - asyncio/aiofiles — не ускоряет диск; для одного файла часто медленнее из-за накладных расходов,
   но полезно при многих параллельных операциях, чтобы не блокировать программу.
 
+ (ОС vs Python)     <----------
+ 
+ ОС = операционная система (Windows / Linux / macOS)
+ 
+ 1) ОС (синхронная/асинхронная запись на диск)   АСИНХРОННАЯ/БУФЕРИЗОВАННАЯ (через кэш ОС) - БЫСТРЕЕ!!!
+
+ - write() без fsync/O_SYNC → асинхронная/буферизованная (через кэш ОС) (без гарантии на диск): ОС кладёт в кэш и сразу возвращает.
+ - write() + fsync() или O_SYNC → синхронная (с гарантией на диск): ждёшь, пока запишется на SSD/HDD.
+
+ 2) Python (синхронный код vs asyncio):          СИНХРОННЫЙ - БЫСТРЕЕ!!!  
+
+ - Синхронный Python write() для ОДНОГО файла часто быстрее (меньше накладных).
+ - Асинхронный Python (asyncio/aiofiles) диск не ускоряет — просто не блокирует при многих операциях.
 
 
 6. Что делает метод type?
@@ -10826,9 +11643,15 @@ ArenadataDB:
 Как метакласс: создаёт новый класс:  MyClass = type('MyClass', (Base,), {'x': 42})
 
 7. В чем разница между мягкой и жесткой ссылкой? soft/hard link
+
+1) ОПЕРАЦИОННАЯ СИСТЕМА  ОС: soft/hard link (файлы)
 Жёсткая ссылка (hard link) - это дополнительное имя для файла в файловой системе (inode). Удаление одной ссылки
 не удаляет данные, пока есть другие ссылки.
 Мягкая ссылка (symbolic link, symlink) - это ярлык, указывающий на путь. Если оригинал удалён, symlink становится "битым".
+
+2) PYTHON ССЫЛКИ НА ОБЪЕКТЫ В ПАМЯТИ - Python: strong/weak reference (память, weakref)
+Обычная (сильная) ссылка удерживает объект: пока есть ссылка → объект не удалится.
+Слабая ссылка (weakref) не удерживает: если сильных ссылок нет → объект удалится, а weakref станет None.
 
 8. Зачем в питоне использовать замыкание?
 Сохраняет состояние между вызовами (альтернатива ООП). Используется в декораторах, callback-ах, фабриках функций.
@@ -10917,15 +11740,15 @@ print(is_palindrome(12345))  # -> False
 some_arr = [{"1": 1}]
 some_arr = some_arr * 3
 
-assert some_arr == …  
+assert some_arr == … 
 
 some_arr[0]["1"] = 2
 
-assert some_arr == …
+assert some_arr == … 
 
 some_arr[1] = "test"
 
-assert some_arr == …
+assert some_arr == … 
 
 some_arr = some_arr.append("1")
 
@@ -10964,7 +11787,7 @@ assert some_arr == None
 """
 
 
-# ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА!!!
+# ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА + 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
 
 
 
@@ -10972,7 +11795,9 @@ assert some_arr == None
 
 
 
-# ОТВЕТ ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА!!!
+
+
+# ОТВЕТ ЗАДАЧА 2  НАПИСАТЬ СВОЙ КОНТЕКСТНЫЙ МЕНЕДЖЕР  2 ВАРИАНТА + 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
 """
 # ВАРИАНТ 1: Класс с методами __enter__ и __exit__   
 
@@ -11001,6 +11826,36 @@ with MyContextManager("тестовый ресурс") as cm:
     # Если раскомментировать следующую строку, будет видна обработка исключения
     raise ValueError("Ошибка в контексте")
     
+
+    
+### Вариант 1: свой async-контекстный менеджер (__aenter__ / __aexit__) 
+
+import asyncio
+
+class AsyncHybridContext:
+    def __init__(self, ip_address):
+        self.ip_address = ip_address
+
+    async def __aenter__(self):
+        print(f"Подключение к {self.ip_address}")
+        await asyncio.sleep(0)  # тут могла бы быть реальная async-операция
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print(f"Отключение от {self.ip_address}")
+        if exc_type is not None:
+            print(f"Произошла ошибка: {exc_val}")
+        return True  # подавить исключение (False/None — не подавлять)
+
+# Использование
+async def main():
+    async with AsyncHybridContext("127.0.1.1") as ctx:
+        print("Выполнение кода внутри async-контекста")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+
     
 # ВАРИАНТ 2: Декоратор @contextmanager
 
@@ -11022,7 +11877,197 @@ def my_context_manager(name):
 # Пример использования
 with my_context_manager("данные") as res:
     print(f"Используем {res} внутри контекста")
+    
+    
+    
+### Вариант 2: через contextlib.asynccontextmanager
+
+import asyncio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def async_hybrid_context(ip_address):
+    print(f"Подключение к {ip_address}")
+    try:
+        await asyncio.sleep(0)  # async setup
+        yield ip_address
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        # чтобы подавить исключение:
+        # return
+        raise  # если хочешь НЕ подавлять
+    finally:
+        print(f"Отключение от {ip_address}")
+        await asyncio.sleep(0)  # async cleanup
+
+# Использование
+async def main():
+    async with async_hybrid_context("127.0.1.1") as ip:
+        print(f"Выполнение кода внутри async-контекста с IP {ip}")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+
+### Вариант 1: ExitStack (sync) — когда контекстов много/они динамические
+from contextlib import ExitStack
+
+def main():
+    with ExitStack() as stack:
+        f1 = stack.enter_context(open("a.txt", "w"))
+        f2 = stack.enter_context(open("b.txt", "w"))
+        f1.write("hello\n")
+        f2.write("world\n")
+
+main()
+
+
+
+### Вариант 2: AsyncExitStack (async) — то же самое, но для async-контекстов
+import asyncio
+from contextlib import AsyncExitStack, asynccontextmanager
+
+@asynccontextmanager
+async def connect(name):
+    print("open", name)
+    try:
+        yield name
+    finally:
+        print("close", name)
+
+async def main():
+    async with AsyncExitStack() as stack:
+        c1 = await stack.enter_async_context(connect("svc1"))
+        c2 = await stack.enter_async_context(connect("svc2"))
+        print("use", c1, c2)
+
+asyncio.run(main())
+
+
+### ExitStack и AsyncExitStack — это классы из contextlib
+from contextlib import ExitStack, AsyncExitStack
+
+print(ExitStack)      # <class 'contextlib.ExitStack'>
+print(AsyncExitStack) # <class 'contextlib.AsyncExitStack'>
 """
+
+
+
+
+
+# НАПИСАТЬ 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
+
+
+
+
+
+
+
+
+
+
+# ОТВЕТ 2 АСИНХРОННЫХ + ExitStack+AsyncExitStack!!!
+"""
+
+    
+### Вариант 1: свой async-контекстный менеджер (__aenter__ / __aexit__) 
+
+import asyncio
+
+class AsyncHybridContext:
+    def __init__(self, ip_address):
+        self.ip_address = ip_address
+
+    async def __aenter__(self):
+        print(f"Подключение к {self.ip_address}")
+        await asyncio.sleep(0)  # тут могла бы быть реальная async-операция
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        print(f"Отключение от {self.ip_address}")
+        if exc_type is not None:
+            print(f"Произошла ошибка: {exc_val}")
+        return True  # подавить исключение (False/None — не подавлять)
+
+# Использование
+async def main():
+    async with AsyncHybridContext("127.0.1.1") as ctx:
+        print("Выполнение кода внутри async-контекста")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+### Вариант 2: через contextlib.asynccontextmanager
+
+import asyncio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def async_hybrid_context(ip_address):
+    print(f"Подключение к {ip_address}")
+    try:
+        await asyncio.sleep(0)  # async setup
+        yield ip_address
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+        # чтобы подавить исключение:
+        # return
+        raise  # если хочешь НЕ подавлять
+    finally:
+        print(f"Отключение от {ip_address}")
+        await asyncio.sleep(0)  # async cleanup
+
+# Использование
+async def main():
+    async with async_hybrid_context("127.0.1.1") as ip:
+        print(f"Выполнение кода внутри async-контекста с IP {ip}")
+        # raise Exception("Тестовая ошибка")
+
+asyncio.run(main())
+
+
+### Вариант 1: ExitStack (sync) — когда контекстов много/они динамические
+from contextlib import ExitStack
+
+def main():
+    with ExitStack() as stack:
+        f1 = stack.enter_context(open("a.txt", "w"))
+        f2 = stack.enter_context(open("b.txt", "w"))
+        f1.write("hello\n")
+        f2.write("world\n")
+
+main()
+
+
+
+### Вариант 2: AsyncExitStack (async) — то же самое, но для async-контекстов
+import asyncio
+from contextlib import AsyncExitStack, asynccontextmanager
+
+@asynccontextmanager
+async def connect(name):
+    print("open", name)
+    try:
+        yield name
+    finally:
+        print("close", name)
+
+async def main():
+    async with AsyncExitStack() as stack:
+        c1 = await stack.enter_async_context(connect("svc1"))
+        c2 = await stack.enter_async_context(connect("svc2"))
+        print("use", c1, c2)
+
+asyncio.run(main())
+
+
+### ExitStack и AsyncExitStack — это классы из contextlib
+from contextlib import ExitStack, AsyncExitStack
+
+print(ExitStack)      # <class 'contextlib.ExitStack'>
+print(AsyncExitStack) # <class 'contextlib.AsyncExitStack'>
+"""
+
 
 
 
@@ -11032,7 +12077,7 @@ import asyncio
 import typing as t
 
 async def func1():
-    print('func1 started')  # ???
+    print('func1 started')  # ??? 4
     return 42
    
 
@@ -11166,6 +12211,8 @@ lst = [1, 'a', 'b', 2]
 
 
 
+
+
 # ОТВЕТ  ЗАДАЧА 1) Разные способы вывести СПИСОК в обратном порядке в Python
 """
 # Вариант 1) Разворот списка через индексы (вариант с СОБЕСЕДОВАНИЯ)                    - O(n)
@@ -11219,8 +12266,6 @@ lst = [1, 3, 2, 8, 5, 6, 7, 10]
 
 def list_to_ranges(lst: list[int]) -> str:
     pass
-
-
 
 
 
@@ -11425,6 +12470,9 @@ s = "abc123xyz45" # Будет 168  # (123 + 45)
 
 def sum_numbers_in_string(s: str) -> int:
     pass
+
+
+
 
 
 
@@ -11895,6 +12943,7 @@ urlpatterns = [
 
 
 
+
 # ОТВЕТ ЗАДАЧА 6
 """
 1. Вывод id всех посетителей, количество визитов которых более 5
@@ -12260,6 +13309,7 @@ i % 3,5 => FizzBuzz
 
 
 
+
 # Ответ Задание 1) FizzBuzz  компания вроде DOG
 """
 # i % 15 == 0 действительно эквивалентно i % 3 == 0 and i % 5 == 0
@@ -12581,6 +13631,7 @@ print(a is c)  # -> False
 
 d1 = {'a': 50, 'b': 100, 'c':200}
 d2 = {'a': 200, 'b': 100, 'd':300}
+
 
 
 
@@ -13009,9 +14060,12 @@ def knapsack(weights, costs, max_limit):
 
 
 
+
+
 # cost, items = knapsack(weights, costs, max_limit)
 # print(f"Максимальная стоимость: {cost}")           # ->  Максимальная стоимость: 50
 # print(f"Выбранные предметы: {items}")              # ->  Выбранные предметы: [(10, 20), (30, 30)]
+
 
 
 
@@ -13308,6 +14362,8 @@ alphabet = ascii_lowercase
 
 def replace_odd_chars(s):
     pass
+
+
 
 
 
@@ -13658,12 +14714,14 @@ def is_correct_brackets(text):
 
 
 
-# print(is_correct_brackets('(((())))'))  # True
-# print(is_correct_brackets('(((())'))  # False
-# print(is_correct_brackets('())))'))  # False
-# print(is_correct_brackets('((((){}[]{}[])))'))  # True
-# print(is_correct_brackets('(){}[]{}[])))'))  # False
-# print(is_correct_brackets('(){}[]{}[]'))  # True
+
+
+# print(is_correct_brackets('(((())))'))          # -> True
+# print(is_correct_brackets('(((())'))            # -> False
+# print(is_correct_brackets('())))'))             # -> False
+# print(is_correct_brackets('((((){}[]{}[])))'))  # -> True
+# print(is_correct_brackets('(){}[]{}[])))'))     # -> False
+# print(is_correct_brackets('(){}[]{}[]'))        # -> True
 
 
 
@@ -13800,7 +14858,6 @@ def clean_duplicates(lst: list) -> list:
 
 
 
-
 # print(clean_duplicates([1, 2, 1]))        # -> [1, 2, 1]         # -> [1, 2]
 # print(clean_duplicates([1, 2, 1, 2, 3]))  # -> [1, 2, 1, 2, 3]   # -> [1, 2, 3]
 # print(clean_duplicates([1, 1, 2, 2, 3]))  # -> [1, 2, 3]         # -> [1, 2, 3]
@@ -13932,6 +14989,7 @@ xs = [
 
 
 
+
 # Ответ  Yandex-Маркет Задача Отсортировать по двум параметрам. Как я сделал я не знаю
 r"""
 xs = [
@@ -14041,6 +15099,8 @@ target = 9
 # Написать 2 варианта range(len(nums)-1), zip  и еще 2 через pairwise, combinations
 def twoSum(nums, target):
     pass
+
+
 
 
 
@@ -14191,6 +15251,7 @@ ________________________________________________________________________________
 
 class MyDict:
     pass
+
 
 
 
@@ -14378,6 +15439,9 @@ def sort_array(arr):
     pass
 
 
+
+
+
 # numbers = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 # print(sort_array(numbers))  # -> [1, 8, 3, 6, 5, 4, 7, 2, 9, 0]
 
@@ -14452,6 +15516,7 @@ def flatten(*args):
 # 2 Варианта
 def flatten(*items):
     pass
+
 
 
 
@@ -14822,6 +15887,21 @@ print(longest_sequence(arr))  # -> [1, 2, 3, 4, 5]
 # Функция не отработала корректно
 
 
+
+
+
+
+
+
+
+
+
+# @retry(retries=5, delay=2)
+# def unstable_function():
+#     if time.time() % 2 > 1.5:
+#         raise ValueError("Случайная ошибка")
+#     return "Успех!"
+# print(unstable_function())
 
 
 
@@ -15378,6 +16458,7 @@ print([(lambda x, i=i: i)(222222) for i in range(10)])  # -> [0, 1, 2, 3, 4, 5, 
 Ozon младший-разработчик
 
 1) Сколько бит в ipv4?   IPv4 - 32 бита (4 байта, форма: 192.168.1.1).
+   Всего 4 октета = 32 бита.  1 октет = 8 бит (то же самое, что 1 байт)
 2) Сколько максимум хостов мб в сети с маской /24?  Максимум хостов в /24 - 254 (256 адресов − 2 служебных).
 3) Какой командой посмотреть запущенные процессы в Linux?
 - ps aux     - список процессов.
